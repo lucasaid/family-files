@@ -8,6 +8,93 @@ import { Person } from '../context/types';
 
 function generateId() { return crypto.randomUUID(); }
 
+const S = {
+  page: {
+    padding: '32px 36px',
+    maxWidth: 680,
+    color: '#ddd',
+    fontFamily: 'system-ui, sans-serif',
+  } as React.CSSProperties,
+  header: {
+    display: 'flex',
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
+    marginBottom: 28,
+    paddingBottom: 16,
+    borderBottom: '1px solid #1e1e2e',
+  } as React.CSSProperties,
+  title: {
+    fontFamily: '"Georgia", "Times New Roman", serif',
+    fontSize: 22,
+    fontWeight: 400,
+    color: '#c8d8f8',
+    margin: 0,
+  } as React.CSSProperties,
+  count: {
+    fontSize: 11,
+    fontWeight: 500,
+    letterSpacing: '0.08em',
+    textTransform: 'uppercase' as const,
+    color: '#444',
+  },
+  addBtn: {
+    background: 'none',
+    border: '1px solid #2a2a3a',
+    borderRadius: 3,
+    padding: '5px 14px',
+    color: '#9bb8f5',
+    fontSize: 11,
+    fontWeight: 500,
+    letterSpacing: '0.08em',
+    textTransform: 'uppercase' as const,
+    cursor: 'pointer',
+  },
+  addRow: {
+    display: 'flex',
+    gap: 8,
+    marginBottom: 12,
+    padding: '10px 0',
+    borderBottom: '1px solid #1e1e2e',
+  } as React.CSSProperties,
+  input: {
+    flex: 1,
+    background: '#0d0d14',
+    border: '1px solid #2a3a5a',
+    borderRadius: 3,
+    padding: '5px 10px',
+    color: '#ddd',
+    fontSize: 13,
+    fontFamily: 'system-ui, sans-serif',
+    outline: 'none',
+  },
+  saveBtn: {
+    background: 'none',
+    border: '1px solid #2a4a2a',
+    borderRadius: 3,
+    padding: '5px 12px',
+    color: '#7ecfa0',
+    fontSize: 11,
+    letterSpacing: '0.06em',
+    textTransform: 'uppercase' as const,
+    cursor: 'pointer',
+  },
+  cancelBtn: {
+    background: 'none',
+    border: 'none',
+    color: '#444',
+    fontSize: 11,
+    cursor: 'pointer',
+    padding: '5px 8px',
+  },
+  emptyState: {
+    padding: '32px 0',
+    color: '#444',
+    fontSize: 13,
+    fontStyle: 'italic',
+    letterSpacing: '0.02em',
+  },
+};
+
 export default function PeopleManager() {
   const { state, dispatch } = useAppContext();
   const { people, photos, documents } = state;
@@ -16,6 +103,7 @@ export default function PeopleManager() {
   const [newName, setNewName] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
 
   const photoCount = (id: string) => photos.filter(p => p.faces.some(f => f.personId === id)).length;
   const docCount = (id: string) => documents.filter(d => d.personIds.includes(id)).length;
@@ -40,17 +128,12 @@ export default function PeopleManager() {
   const saveName = async (person: Person) => {
     if (!editName.trim()) return;
     const newName = editName.trim();
-    if (newName === person.name) {
-      setEditingId(null);
-      return;
-    }
+    if (newName === person.name) { setEditingId(null); return; }
     const updatedPeople = people.map(p => p.id === person.id ? { ...p, name: newName } : p);
     try {
       dispatch({ type: 'UPDATE_PERSON', person: { ...person, name: newName } });
       dispatch({ type: 'RENAME_PERSON_IN_FACES', personId: person.id, newName });
       await writePeopleJson(updatedPeople);
-
-      // Update face name in every photo that references this person
       const affectedPhotos = photos.filter(p => p.faces.some(f => f.personId === person.id));
       await Promise.all(affectedPhotos.map(photo => {
         const updatedFaces = photo.faces.map(f =>
@@ -58,7 +141,6 @@ export default function PeopleManager() {
         );
         return writeFaceRegions(photo.fsPath, updatedFaces);
       }));
-
       setEditingId(null);
     } catch (err) {
       dispatch({ type: 'UPDATE_PERSON', person });
@@ -85,54 +167,150 @@ export default function PeopleManager() {
   };
 
   return (
-    <div style={{ padding: 24, maxWidth: 600 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <h2 style={{ margin: 0, color: '#ddd' }}>People</h2>
+    <div style={S.page}>
+      <div style={S.header}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
+          <h2 style={S.title}>People</h2>
+          {people.length > 0 && (
+            <span style={S.count}>{people.length} {people.length === 1 ? 'record' : 'records'}</span>
+          )}
+        </div>
         {!adding && (
-          <button onClick={() => setAdding(true)}
-            style={{ background: '#2d3a5a', border: '1px solid #3a4a7a', borderRadius: 4, padding: '5px 14px', color: '#9bb8f5', cursor: 'pointer', fontSize: 13 }}>
-            Add person
+          <button onClick={() => setAdding(true)} style={S.addBtn}>
+            + Add person
           </button>
         )}
       </div>
 
       {adding && (
-        <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-          <input autoFocus value={newName} onChange={e => setNewName(e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter') addPerson(); if (e.key === 'Escape') setAdding(false); }}
-            placeholder="Name" style={{ flex: 1, background: '#1e1e30', border: '1px solid #3a3a5a', borderRadius: 3, padding: '4px 8px', color: '#ddd', fontSize: 13 }} />
-          <button onClick={addPerson} style={{ background: '#2d5a2d', border: '1px solid #3a7a3a', borderRadius: 3, padding: '4px 12px', color: '#7ecfa0', fontSize: 13, cursor: 'pointer' }}>Add</button>
-          <button onClick={() => setAdding(false)} style={{ background: '#2a2a3a', border: '1px solid #3a3a4a', borderRadius: 3, padding: '4px 12px', color: '#888', fontSize: 13, cursor: 'pointer' }}>Cancel</button>
+        <div style={S.addRow}>
+          <input
+            autoFocus
+            value={newName}
+            onChange={e => setNewName(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') addPerson(); if (e.key === 'Escape') { setAdding(false); setNewName(''); } }}
+            placeholder="Full name"
+            style={S.input}
+          />
+          <button onClick={addPerson} style={S.saveBtn}>Save</button>
+          <button onClick={() => { setAdding(false); setNewName(''); }} style={S.cancelBtn}>Cancel</button>
         </div>
       )}
 
       {people.length === 0 && !adding && (
-        <div style={{ color: '#666', fontSize: 14 }}>No people in roster yet. Add one to get started.</div>
+        <div style={S.emptyState}>No people in the archive yet.</div>
       )}
 
-      {people.map(person => (
-        <div key={person.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid #222' }}>
-          {editingId === person.id ? (
-            <>
-              <input autoFocus value={editName} onChange={e => setEditName(e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter') saveName(person); if (e.key === 'Escape') setEditingId(null); }}
-                style={{ flex: 1, background: '#1e1e30', border: '1px solid #3a3a5a', borderRadius: 3, padding: '3px 6px', color: '#ddd', fontSize: 13 }} />
-              <button onClick={() => saveName(person)} style={{ background: '#2d5a2d', border: '1px solid #3a7a3a', borderRadius: 3, padding: '2px 8px', color: '#7ecfa0', fontSize: 12, cursor: 'pointer' }}>Save</button>
-              <button onClick={() => setEditingId(null)} style={{ background: 'none', border: 'none', color: '#666', fontSize: 12, cursor: 'pointer' }}>Cancel</button>
-            </>
-          ) : (
-            <>
-              <span onClick={() => navigate(`/people/${person.id}`)}
-                style={{ flex: 1, color: '#9bb8f5', cursor: 'pointer', fontSize: 14 }}>
-                {person.name}
-              </span>
-              <span style={{ color: '#555', fontSize: 11 }}>{photoCount(person.id)} photos · {docCount(person.id)} docs</span>
-              <button onClick={() => startRename(person)} style={{ background: 'none', border: 'none', color: '#666', cursor: 'pointer', fontSize: 12 }}>Rename</button>
-              <button onClick={() => deletePerson(person)} style={{ background: 'none', border: 'none', color: '#e55', cursor: 'pointer', fontSize: 12 }}>Delete</button>
-            </>
-          )}
-        </div>
-      ))}
+      <div>
+        {people.map((person, i) => {
+          const pc = photoCount(person.id);
+          const dc = docCount(person.id);
+          const isHovered = hoveredId === person.id;
+          const isEditing = editingId === person.id;
+
+          return (
+            <div
+              key={person.id}
+              onMouseEnter={() => setHoveredId(person.id)}
+              onMouseLeave={() => setHoveredId(null)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                padding: '11px 0',
+                borderBottom: '1px solid #1a1a26',
+                transition: 'background 0.1s',
+              }}
+            >
+              {isEditing ? (
+                <>
+                  <input
+                    autoFocus
+                    value={editName}
+                    onChange={e => setEditName(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') saveName(person); if (e.key === 'Escape') setEditingId(null); }}
+                    style={{ ...S.input, flex: 1 }}
+                  />
+                  <button onClick={() => saveName(person)} style={S.saveBtn}>Save</button>
+                  <button onClick={() => setEditingId(null)} style={S.cancelBtn}>Cancel</button>
+                </>
+              ) : (
+                <>
+                  {/* Index number */}
+                  <span style={{
+                    fontSize: 10,
+                    fontWeight: 500,
+                    color: '#333',
+                    letterSpacing: '0.06em',
+                    width: 24,
+                    textAlign: 'right',
+                    flexShrink: 0,
+                    userSelect: 'none',
+                  }}>
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+
+                  {/* Name */}
+                  <span
+                    onClick={() => navigate(`/people/${person.id}`)}
+                    style={{
+                      flex: 1,
+                      color: isHovered ? '#c8d8f8' : '#bbb',
+                      fontSize: 14,
+                      cursor: 'pointer',
+                      fontFamily: '"Georgia", "Times New Roman", serif',
+                      letterSpacing: '0.01em',
+                      transition: 'color 0.12s',
+                    }}
+                  >
+                    {person.name}
+                  </span>
+
+                  {/* Counts */}
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    {pc > 0 && (
+                      <span style={{ fontSize: 10, color: '#555', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                        {pc} photo{pc !== 1 ? 's' : ''}
+                      </span>
+                    )}
+                    {dc > 0 && (
+                      <span style={{ fontSize: 10, color: '#555', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                        {dc} doc{dc !== 1 ? 's' : ''}
+                      </span>
+                    )}
+                    {pc === 0 && dc === 0 && (
+                      <span style={{ fontSize: 10, color: '#333', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                        no records
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Actions — revealed on hover */}
+                  <div style={{
+                    display: 'flex',
+                    gap: 4,
+                    opacity: isHovered ? 1 : 0,
+                    transition: 'opacity 0.15s',
+                  }}>
+                    <button
+                      onClick={() => startRename(person)}
+                      style={{ background: 'none', border: 'none', color: '#9bb8f5', fontSize: 11, cursor: 'pointer', padding: '2px 6px', letterSpacing: '0.04em' }}
+                    >
+                      Rename
+                    </button>
+                    <button
+                      onClick={() => deletePerson(person)}
+                      style={{ background: 'none', border: 'none', color: '#664444', fontSize: 11, cursor: 'pointer', padding: '2px 6px', letterSpacing: '0.04em' }}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

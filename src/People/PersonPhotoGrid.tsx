@@ -1,5 +1,5 @@
 // src/People/PersonPhotoGrid.tsx
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Photo } from '../context/types';
 import { useAppContext } from '../context/AppContext';
@@ -9,9 +9,16 @@ interface Props { personId: string }
 export default function PersonPhotoGrid({ personId }: Props) {
   const { state, dispatch } = useAppContext();
   const navigate = useNavigate();
+  const [hoveredPath, setHoveredPath] = useState<string | null>(null);
   const photos = state.photos.filter(p => p.faces.some(f => f.personId === personId));
 
-  if (photos.length === 0) return <div style={{ color: '#666', fontSize: 13 }}>No photos tagged.</div>;
+  if (photos.length === 0) {
+    return (
+      <div style={{ color: '#444', fontSize: 13, fontStyle: 'italic', padding: '8px 0' }}>
+        No photos tagged.
+      </div>
+    );
+  }
 
   const openPhoto = (photo: Photo) => {
     dispatch({ type: 'SET_ACTIVE_PHOTO', photo });
@@ -19,16 +26,54 @@ export default function PersonPhotoGrid({ personId }: Props) {
   };
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: 6 }}>
-      {photos.map(photo => (
-        <img
-          key={photo.path}
-          src={photo.path}
-          alt={photo.file}
-          onClick={() => openPhoto(photo)}
-          style={{ width: '100%', aspectRatio: '1', objectFit: 'cover', borderRadius: 4, cursor: 'pointer', border: '1px solid #2a2a3a' }}
-        />
-      ))}
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: 4 }}>
+      {photos.map(photo => {
+        const isHovered = hoveredPath === photo.path;
+        return (
+          <div
+            key={photo.path}
+            onClick={() => openPhoto(photo)}
+            onMouseEnter={() => setHoveredPath(photo.path)}
+            onMouseLeave={() => setHoveredPath(null)}
+            style={{
+              position: 'relative',
+              aspectRatio: '1',
+              cursor: 'pointer',
+              overflow: 'hidden',
+              borderRadius: 2,
+              border: `1px solid ${isHovered ? '#2a3a5a' : '#1a1a26'}`,
+              transition: 'border-color 0.15s',
+            }}
+          >
+            <img
+              src={photo.path}
+              alt={photo.file}
+              style={{
+                width: '100%', height: '100%', objectFit: 'cover',
+                display: 'block',
+                transform: isHovered ? 'scale(1.04)' : 'scale(1)',
+                transition: 'transform 0.2s',
+              }}
+            />
+            {isHovered && (
+              <div style={{
+                position: 'absolute', inset: 0,
+                background: 'linear-gradient(to top, rgba(0,0,0,.7) 0%, transparent 50%)',
+                display: 'flex', alignItems: 'flex-end', padding: '6px 8px',
+              }}>
+                <span style={{
+                  fontSize: 10, color: 'rgba(255,255,255,.7)',
+                  letterSpacing: '0.04em', lineHeight: 1.3,
+                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                  maxWidth: '100%',
+                }}>
+                  {photo.date ?? photo.file}
+                </span>
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }
