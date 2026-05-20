@@ -5,27 +5,27 @@ import { writeFaceRegions } from '../utils/exiftool';
 import { writePeopleJson } from '../utils/people';
 import { FaceRegion, Person } from '../context/types';
 
-interface Props {
-  filePath: string;
-  fileName: string;
-}
-
+interface Props { filePath: string; fileName: string }
 interface Box { x: number; y: number; w: number; h: number }
+
+const ITEM_HEIGHT = 30;
+const MAX_VISIBLE = 6;
 
 export default function FaceTagger({ filePath, fileName }: Props) {
   const { state, dispatch } = useAppContext();
   const { people, activePhoto } = state;
   const containerRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
   const [dragging, setDragging] = useState(false);
   const [startPct, setStartPct] = useState<{ x: number; y: number } | null>(null);
   const [box, setBox] = useState<Box | null>(null);
   const [nameQuery, setNameQuery] = useState('');
   const [saving, setSaving] = useState(false);
+  const [activeIdx, setActiveIdx] = useState(0);
 
-  useEffect(() => {
-    setBox(null);
-    setNameQuery('');
-  }, [fileName]);
+  useEffect(() => { setBox(null); setNameQuery(''); setActiveIdx(0); }, [fileName]);
 
   useEffect(() => {
     if (!dragging) return;
@@ -34,56 +34,47 @@ export default function FaceTagger({ filePath, fileName }: Props) {
     return () => window.removeEventListener('mouseup', stop);
   }, [dragging]);
 
-  function pctFromEvent(e: React.MouseEvent): { x: number; y: number } | null {
+  // Reset active index when query changes
+  useEffect(() => { setActiveIdx(0); }, [nameQuery]);
+
+  // Scroll active item into view
+  useEffect(() => {
+    if (!listRef.current) return;
+    const el = listRef.current.children[activeIdx] as HTMLElement;
+    el?.scrollIntoView({ block: 'nearest' });
+  }, [activeIdx]);
+
+  function pctFromEvent(e: React.MouseEvent) {
     if (!containerRef.current) return null;
     const rect = containerRef.current.getBoundingClientRect();
-    return {
-      x: (e.clientX - rect.left) / rect.width,
-      y: (e.clientY - rect.top) / rect.height,
-    };
+    return { x: (e.clientX - rect.left) / rect.width, y: (e.clientY - rect.top) / rect.height };
   }
 
   const onMouseDown = (e: React.MouseEvent) => {
     const pct = pctFromEvent(e);
     if (!pct) return;
-    setStartPct(pct);
-    setDragging(true);
-    setBox(null);
-    setNameQuery('');
+    setStartPct(pct); setDragging(true); setBox(null); setNameQuery('');
   };
-
   const onMouseMove = (e: React.MouseEvent) => {
     if (!dragging || !startPct) return;
     const cur = pctFromEvent(e);
     if (!cur) return;
-    setBox({
-      x: Math.min(startPct.x, cur.x),
-      y: Math.min(startPct.y, cur.y),
-      w: Math.abs(cur.x - startPct.x),
-      h: Math.abs(cur.y - startPct.y),
-    });
+    setBox({ x: Math.min(startPct.x, cur.x), y: Math.min(startPct.y, cur.y), w: Math.abs(cur.x - startPct.x), h: Math.abs(cur.y - startPct.y) });
   };
+  const onMouseUp = () => setDragging(false);
 
-  const onMouseUp = () => { setDragging(false); };
-
-  const filteredPeople = people.filter(p =>
-    p.name.toLowerCase().includes(nameQuery.toLowerCase())
-  );
+  const filteredPeople = people.filter(p => p.name.toLowerCase().includes(nameQuery.toLowerCase()));
   const trimmed = nameQuery.trim();
   const exactMatch = people.find(p => p.name.toLowerCase() === trimmed.toLowerCase());
   const canAddNew = trimmed.length > 0 && !exactMatch;
+  const totalItems = filteredPeople.length + (canAddNew ? 1 : 0);
 
   const confirmTag = async (person: Person) => {
     if (!box || !activePhoto) return;
     setSaving(true);
-    const region: FaceRegion = {
-      personId: person.id,
-      name: person.name,
-      x: box.x, y: box.y, w: box.w, h: box.h,
-    };
+    const region: FaceRegion = { personId: person.id, name: person.name, x: box.x, y: box.y, w: box.w, h: box.h };
     try {
-      const updatedFaces = [...activePhoto.faces, region];
-      await writeFaceRegions(filePath, updatedFaces);
+      await writeFaceRegions(filePath, [...activePhoto.faces, region]);
       dispatch({ type: 'ADD_FACE_REGION', file: fileName, region });
       dispatch({ type: 'SET_TAGGING_MODE', enabled: false });
     } catch (err) {
@@ -98,13 +89,28 @@ export default function FaceTagger({ filePath, fileName }: Props) {
     if (!trimmed) return;
     const person: Person = { id: crypto.randomUUID(), name: trimmed };
     dispatch({ type: 'ADD_PERSON', person });
-    try {
-      await writePeopleJson([...people, person]);
-    } catch {
-      // person is in state; json write failure is non-fatal here
-    }
+    try { await writePeopleJson([...people, person]); } catch { /* non-fatal */ }
     confirmTag(person);
   };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setActiveIdx(i => Math.min(i + 1, totalItems - 1));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setActiveIdx(i => Math.max(i - 1, 0));
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (activeIdx < filteredPeople.length) confirmTag(filteredPeople[activeIdx]);
+      else if (canAddNew) createAndTag();
+    } else if (e.key === 'Escape') {
+      setBox(null);
+    }
+  };
+
+  // Decide whether dropdown opens upward or downward based on box position
+  const opensUpward = box ? box.y > 0.5 : true;
 
   return (
     <div
@@ -112,81 +118,189 @@ export default function FaceTagger({ filePath, fileName }: Props) {
       onMouseDown={onMouseDown}
       onMouseMove={onMouseMove}
       onMouseUp={onMouseUp}
-      style={{ position: 'absolute', inset: 0, cursor: 'crosshair' }}
+      style={{ position: 'absolute', inset: 0, cursor: saving ? 'wait' : 'crosshair' }}
     >
+      {/* Selection rectangle */}
       {box && (
         <div style={{
           position: 'absolute',
           left: `${box.x * 100}%`, top: `${box.y * 100}%`,
           width: `${box.w * 100}%`, height: `${box.h * 100}%`,
-          border: '2px dashed #fff', background: 'rgba(255,255,255,.05)',
+          border: saving ? '2px solid rgba(155,184,245,.6)' : '2px dashed rgba(255,255,255,.8)',
+          background: saving ? 'rgba(155,184,245,.08)' : 'rgba(255,255,255,.04)',
           pointerEvents: 'none',
+          transition: 'border-color 0.2s, background 0.2s',
         }} />
       )}
+
+      {/* Picker panel */}
       {box && !dragging && (
         <div
           onMouseDown={e => e.stopPropagation()}
           style={{
             position: 'absolute',
-            left: `${box.x * 100}%`,
-            top: `${box.y * 100}%`,
-            transform: 'translateY(-100%)',
-            background: '#1e2535', border: '1px solid #4a70c0',
-            borderRadius: 4, padding: 8, minWidth: 140, zIndex: 100,
-            boxShadow: '0 4px 12px rgba(0,0,0,.5)',
+            left: `${Math.min(box.x * 100, 70)}%`,
+            ...(opensUpward
+              ? { top: `${box.y * 100}%`, transform: 'translateY(-100%) translateY(-4px)' }
+              : { top: `${(box.y + box.h) * 100}%`, transform: 'translateY(4px)' }),
+            width: 210,
+            background: 'rgba(10, 13, 22, 0.97)',
+            border: '1px solid rgba(74, 112, 192, 0.5)',
+            borderRadius: 6,
+            zIndex: 200,
+            boxShadow: '0 8px 32px rgba(0,0,0,.7), 0 0 0 1px rgba(74,112,192,.15)',
+            overflow: 'hidden',
+            backdropFilter: 'blur(8px)',
+          }}
+        >
+          {/* Search input */}
+          <div style={{
+            padding: '8px 10px 6px',
+            borderBottom: '1px solid rgba(255,255,255,.06)',
           }}>
-          <input
-            autoFocus
-            value={nameQuery}
-            onChange={e => setNameQuery(e.target.value)}
-            onKeyDown={e => {
-              if (e.key === 'Enter') {
-                if (filteredPeople.length > 0) confirmTag(filteredPeople[0]);
-                else if (canAddNew) createAndTag();
-              }
-            }}
-            placeholder="Search people…"
+            <div style={{ position: 'relative' }}>
+              <span style={{
+                position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)',
+                fontSize: 11, color: '#3a5080', pointerEvents: 'none', userSelect: 'none',
+              }}>
+                ⌕
+              </span>
+              <input
+                ref={inputRef}
+                autoFocus
+                value={nameQuery}
+                onChange={e => setNameQuery(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Search people…"
+                style={{
+                  width: '100%', boxSizing: 'border-box',
+                  background: 'rgba(255,255,255,.04)',
+                  border: '1px solid rgba(74,112,192,.3)',
+                  borderRadius: 4,
+                  padding: '5px 8px 5px 24px',
+                  color: '#d0dff8',
+                  fontSize: 12,
+                  fontFamily: 'system-ui, sans-serif',
+                  outline: 'none',
+                  letterSpacing: '0.01em',
+                }}
+              />
+            </div>
+            {saving && (
+              <div style={{
+                fontSize: 10, color: '#9bb8f5', letterSpacing: '0.08em',
+                textTransform: 'uppercase', marginTop: 5, textAlign: 'center',
+                animation: 'facePulse 1.2s ease-in-out infinite',
+              }}>
+                Saving…
+              </div>
+            )}
+          </div>
+
+          {/* Results list */}
+          <div
+            ref={listRef}
             style={{
-              width: '100%', boxSizing: 'border-box', background: '#0d1520',
-              border: '1px solid #2a3a5a', borderRadius: 3, padding: '3px 6px',
-              color: '#ddd', fontSize: 11, marginBottom: 4,
+              maxHeight: ITEM_HEIGHT * MAX_VISIBLE,
+              overflowY: 'auto',
+              overflowX: 'hidden',
             }}
-          />
-          {filteredPeople.map(p => (
-            <div
-              key={p.id}
-              onClick={() => !saving && confirmTag(p)}
-              style={{
-                padding: '3px 6px', fontSize: 11, color: '#bbb',
-                borderRadius: 2, cursor: saving ? 'wait' : 'pointer',
-              }}
-              onMouseEnter={e => (e.currentTarget.style.background = '#2a3a5a')}
-              onMouseLeave={e => (e.currentTarget.style.background = '')}
-            >
-              {p.name}
-            </div>
-          ))}
-          {canAddNew && (
-            <div
-              onClick={() => !saving && createAndTag()}
-              style={{
-                padding: '3px 6px', fontSize: 11, color: '#7ecfa0',
-                borderRadius: 2, cursor: saving ? 'wait' : 'pointer',
-                borderTop: filteredPeople.length > 0 ? '1px solid #2a3a5a' : 'none',
-                marginTop: filteredPeople.length > 0 ? 4 : 0,
-                paddingTop: filteredPeople.length > 0 ? 6 : 3,
-              }}
-              onMouseEnter={e => (e.currentTarget.style.background = '#1a3a2a')}
-              onMouseLeave={e => (e.currentTarget.style.background = '')}
-            >
-              + Add "{trimmed}"
-            </div>
-          )}
-          {filteredPeople.length === 0 && !canAddNew && (
-            <div style={{ fontSize: 11, color: '#666', padding: '3px 6px' }}>No people found</div>
-          )}
+          >
+            {filteredPeople.length === 0 && !canAddNew && (
+              <div style={{
+                padding: '10px 12px',
+                fontSize: 11, color: '#3a4a6a',
+                fontStyle: 'italic', letterSpacing: '0.02em',
+              }}>
+                No people found
+              </div>
+            )}
+
+            {filteredPeople.map((p, i) => {
+              const isActive = i === activeIdx;
+              // Highlight matching characters
+              const query = nameQuery.toLowerCase();
+              const nameL = p.name.toLowerCase();
+              const matchIdx = nameL.indexOf(query);
+
+              return (
+                <div
+                  key={p.id}
+                  onClick={() => !saving && confirmTag(p)}
+                  onMouseEnter={() => setActiveIdx(i)}
+                  style={{
+                    height: ITEM_HEIGHT,
+                    display: 'flex', alignItems: 'center',
+                    padding: '0 12px',
+                    fontSize: 12,
+                    color: isActive ? '#d0dff8' : '#7a90b8',
+                    background: isActive ? 'rgba(74,112,192,.18)' : 'transparent',
+                    cursor: saving ? 'wait' : 'pointer',
+                    transition: 'background 0.08s, color 0.08s',
+                    borderLeft: `2px solid ${isActive ? '#4a70c0' : 'transparent'}`,
+                    letterSpacing: '0.01em',
+                    userSelect: 'none',
+                    position: 'relative',
+                  }}
+                >
+                  {query && matchIdx >= 0 ? (
+                    <span>
+                      {p.name.slice(0, matchIdx)}
+                      <mark style={{ background: 'rgba(155,184,245,.25)', color: '#c8d8f8', borderRadius: 2, padding: '0 1px' }}>
+                        {p.name.slice(matchIdx, matchIdx + query.length)}
+                      </mark>
+                      {p.name.slice(matchIdx + query.length)}
+                    </span>
+                  ) : p.name}
+                </div>
+              );
+            })}
+
+            {canAddNew && (
+              <div
+                onClick={() => !saving && createAndTag()}
+                onMouseEnter={() => setActiveIdx(filteredPeople.length)}
+                style={{
+                  height: ITEM_HEIGHT,
+                  display: 'flex', alignItems: 'center', gap: 7,
+                  padding: '0 12px',
+                  fontSize: 12,
+                  color: activeIdx === filteredPeople.length ? '#7ecfa0' : '#3a6a4a',
+                  background: activeIdx === filteredPeople.length ? 'rgba(126,207,160,.1)' : 'transparent',
+                  borderTop: filteredPeople.length > 0 ? '1px solid rgba(255,255,255,.05)' : 'none',
+                  borderLeft: `2px solid ${activeIdx === filteredPeople.length ? '#7ecfa0' : 'transparent'}`,
+                  cursor: saving ? 'wait' : 'pointer',
+                  transition: 'background 0.08s, color 0.08s',
+                  userSelect: 'none',
+                }}
+              >
+                <span style={{ fontSize: 14, lineHeight: 1, opacity: 0.8 }}>+</span>
+                <span>
+                  Add <span style={{ color: activeIdx === filteredPeople.length ? '#a0e8bc' : '#4a8a5a', fontStyle: 'italic' }}>"{trimmed}"</span>
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Footer hint */}
+          <div style={{
+            padding: '5px 12px',
+            borderTop: '1px solid rgba(255,255,255,.04)',
+            display: 'flex', gap: 10,
+          }}>
+            <span style={{ fontSize: 9, color: '#2a3a5a', letterSpacing: '0.06em', textTransform: 'uppercase' }}>↑↓ navigate</span>
+            <span style={{ fontSize: 9, color: '#2a3a5a', letterSpacing: '0.06em', textTransform: 'uppercase' }}>↵ select</span>
+            <span style={{ fontSize: 9, color: '#2a3a5a', letterSpacing: '0.06em', textTransform: 'uppercase' }}>esc cancel</span>
+          </div>
         </div>
       )}
+
+      <style>{`
+        @keyframes facePulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.4; }
+        }
+      `}</style>
     </div>
   );
 }
