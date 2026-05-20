@@ -6,6 +6,11 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
+// Override Bootstrap's light body background
+document.body.style.background = '#09090f';
+document.body.style.color = '#ddd';
+document.body.style.margin = '0';
+
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );

@@ -107,15 +107,17 @@ function AppShell() {
   }
 
   return (
-    <div style={{ boxSizing: 'border-box', height: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ boxSizing: 'border-box', height: '100vh', display: 'flex', flexDirection: 'column', background: '#09090f' }}>
       <AppNav />
-      <Routes>
-        <Route path="/" element={<h1 style={{ padding: 24 }}>Home</h1>} />
-        <Route path="/photos" element={<Photos />} />
-        <Route path="/documents" element={<DocumentsRoute />} />
-        <Route path="/people/*" element={<PeopleRoute />} />
-        <Route path="/tree" element={<h1 style={{ padding: 24 }}>Tree</h1>} />
-      </Routes>
+      <div style={{ flex: 1, overflow: 'auto', background: '#09090f', color: '#ddd' }}>
+        <Routes>
+          <Route path="/" element={<h1 style={{ padding: 24, color: '#ddd' }}>Home</h1>} />
+          <Route path="/photos" element={<Photos />} />
+          <Route path="/documents" element={<DocumentsRoute />} />
+          <Route path="/people/*" element={<PeopleRoute />} />
+          <Route path="/tree" element={<h1 style={{ padding: 24, color: '#ddd' }}>Tree</h1>} />
+        </Routes>
+      </div>
     </div>
   );
 }
