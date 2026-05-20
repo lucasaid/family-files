@@ -4,15 +4,11 @@ import Navbar from 'react-bootstrap/Navbar';
 import { HashRouter, Route, Routes } from 'react-router-dom';
 import { LinkContainer } from 'react-router-bootstrap';
 import { AppProvider, useAppContext } from './context/AppContext';
-import { readMetadata } from './utils/exiftool';
 import { readPeopleJson } from './utils/people';
 import { readDocumentsJson } from './utils/documents';
 import Photos from './Photos';
 import PeopleRoute from './People';
 import DocumentsRoute from './Documents';
-
-const path = (window as any).require('path') as typeof import('path');
-const DIR_PATH = path.join(process.cwd(), 'public', 'images');
 
 function AppShell() {
   const { dispatch } = useAppContext();
@@ -21,8 +17,6 @@ function AppShell() {
     async function load() {
       const people = await readPeopleJson();
       dispatch({ type: 'SET_PEOPLE', people });
-      const photos = await readMetadata(DIR_PATH, people);
-      dispatch({ type: 'SET_PHOTOS', photos });
       const documents = await readDocumentsJson();
       dispatch({ type: 'SET_DOCUMENTS', documents });
     }
