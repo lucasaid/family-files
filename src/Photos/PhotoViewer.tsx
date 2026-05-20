@@ -20,7 +20,7 @@ function getRenderedImageBounds(
 }
 
 export default function PhotoViewer() {
-  const { state, dispatch } = useAppContext();
+  const { state } = useAppContext();
   const { activePhoto, isTaggingMode, showFaces } = state;
   const containerRef = useRef<HTMLDivElement>(null);
   const [imgDims, setImgDims] = useState<{ w: number; h: number } | null>(null);
@@ -102,34 +102,20 @@ export default function PhotoViewer() {
         </div>
       )}
 
-      <div style={{ position: 'absolute', top: 8, right: 8, display: 'flex', gap: 4 }}>
-        <button
-          onClick={() => dispatch({ type: 'TOGGLE_FACES' })}
-          title={showFaces ? 'Hide face tags' : 'Show face tags'}
-          style={{
-            background: showFaces ? 'rgba(240,176,96,.25)' : 'rgba(0,0,0,.6)',
-            border: `1px solid ${showFaces ? 'rgba(240,176,96,.6)' : '#444'}`,
-            borderRadius: 3, padding: '3px 8px',
-            color: showFaces ? '#f0b060' : '#aaa',
-            fontSize: 11, cursor: 'pointer',
-          }}
-        >
-          👤 Faces
-        </button>
-        <button
-          onClick={handleFullscreen}
-          title={isFullscreen ? 'Exit full screen' : 'Full screen'}
-          style={{
-            background: isFullscreen ? 'rgba(155,184,245,.15)' : 'rgba(0,0,0,.6)',
-            border: `1px solid ${isFullscreen ? 'rgba(155,184,245,.5)' : '#444'}`,
-            borderRadius: 3, padding: '3px 8px',
-            color: isFullscreen ? '#9bb8f5' : '#aaa',
-            fontSize: 11, cursor: 'pointer',
-          }}
-        >
-          {isFullscreen ? '⛶ Exit' : '⛶ Full screen'}
-        </button>
-      </div>
+      <button
+        onClick={handleFullscreen}
+        title={isFullscreen ? 'Exit full screen' : 'Full screen'}
+        style={{
+          position: 'absolute', top: 8, right: 8,
+          background: isFullscreen ? 'rgba(155,184,245,.15)' : 'rgba(0,0,0,.6)',
+          border: `1px solid ${isFullscreen ? 'rgba(155,184,245,.5)' : '#444'}`,
+          borderRadius: 3, padding: '3px 8px',
+          color: isFullscreen ? '#9bb8f5' : '#aaa',
+          fontSize: 11, cursor: 'pointer',
+        }}
+      >
+        {isFullscreen ? '⛶ Exit' : '⛶ Full screen'}
+      </button>
     </div>
   );
 }

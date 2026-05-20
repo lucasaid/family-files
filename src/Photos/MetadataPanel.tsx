@@ -6,7 +6,7 @@ import PeopleList from './PeopleList';
 
 export default function MetadataPanel() {
   const { state, dispatch } = useAppContext();
-  const { activePhoto, isTaggingMode } = state;
+  const { activePhoto, isTaggingMode, showFaces } = state;
 
   useEffect(() => {
     function handleEsc(e: KeyboardEvent) {
@@ -29,7 +29,18 @@ export default function MetadataPanel() {
         <PeopleList />
       </div>
 
-      <div style={{ padding: '8px 12px', borderTop: '1px solid #252535' }}>
+      <div style={{ padding: '8px 12px', borderTop: '1px solid #252535', display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <button
+          onClick={() => dispatch({ type: 'TOGGLE_FACES' })}
+          style={{
+            width: '100%', background: showFaces ? 'rgba(240,176,96,.15)' : '#1a1a2a',
+            border: `1px solid ${showFaces ? 'rgba(240,176,96,.5)' : '#2a2a3a'}`,
+            borderRadius: 4, padding: '6px 0', color: showFaces ? '#f0b060' : '#666',
+            fontSize: 12, cursor: 'pointer',
+          }}
+        >
+          👤 {showFaces ? 'Hide faces' : 'Show faces'}
+        </button>
         <button
           onClick={() => dispatch({ type: 'SET_TAGGING_MODE', enabled: !isTaggingMode })}
           style={{
