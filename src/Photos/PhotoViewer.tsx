@@ -25,6 +25,7 @@ export default function PhotoViewer() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [imgDims, setImgDims] = useState<{ w: number; h: number } | null>(null);
   const [containerSize, setContainerSize] = useState<{ w: number; h: number } | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -44,8 +45,18 @@ export default function PhotoViewer() {
     setImgDims({ w: img.naturalWidth, h: img.naturalHeight });
   };
 
+  useEffect(() => {
+    const onChange = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', onChange);
+    return () => document.removeEventListener('fullscreenchange', onChange);
+  }, []);
+
   const handleFullscreen = () => {
-    containerRef.current?.requestFullscreen();
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+    } else {
+      containerRef.current?.requestFullscreen();
+    }
   };
 
   return (
@@ -107,12 +118,16 @@ export default function PhotoViewer() {
         </button>
         <button
           onClick={handleFullscreen}
+          title={isFullscreen ? 'Exit full screen' : 'Full screen'}
           style={{
-            background: 'rgba(0,0,0,.6)', border: '1px solid #444',
-            borderRadius: 3, padding: '3px 8px', color: '#aaa', fontSize: 11, cursor: 'pointer',
+            background: isFullscreen ? 'rgba(155,184,245,.15)' : 'rgba(0,0,0,.6)',
+            border: `1px solid ${isFullscreen ? 'rgba(155,184,245,.5)' : '#444'}`,
+            borderRadius: 3, padding: '3px 8px',
+            color: isFullscreen ? '#9bb8f5' : '#aaa',
+            fontSize: 11, cursor: 'pointer',
           }}
         >
-          ⛶ Full screen
+          {isFullscreen ? '⛶ Exit' : '⛶ Full screen'}
         </button>
       </div>
     </div>
