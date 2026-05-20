@@ -45,7 +45,7 @@ export async function readMetadata(dirPath: string, people: Person[]): Promise<P
   const items: any[] = JSON.parse(stdout);
   return items.map(item => ({
     file: item.FileName,
-    path: `${dirPath}/${item.FileName}`,
+    path: `/images/${item.FileName}`,
     date: parseDate(item.DateTimeOriginal),
     location: parseLocation(item),
     camera: [item.Make, item.Model].filter(Boolean).join(' ') || null,

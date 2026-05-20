@@ -21,23 +21,24 @@ export default function DocumentViewer({ doc }: Props) {
 
   if (!doc.filePath) return <div style={{ padding: 16, color: '#666' }}>No file attached.</div>;
 
-  const path = (window as any).require('path') as typeof import('path');
   const { shell } = (window as any).require('electron');
-  const docsDir = path.join(process.cwd(), 'public', 'documents');
-  const fullPath = path.join(docsDir, doc.filePath);
+  const path = (window as any).require('path') as typeof import('path');
   const ext = getExt(doc.filePath);
+  // URL path served by dev server; filesystem path only needed for shell.openPath
+  const urlPath = `/documents/${doc.filePath}`;
+  const fullPath = path.join(process.cwd(), 'public', 'documents', doc.filePath);
 
   if (IMAGE_EXTS.includes(ext)) {
     return (
       <div style={{ padding: 16, textAlign: 'center' }}>
-        <img src={fullPath} alt={doc.title} style={{ maxWidth: '100%', maxHeight: 500, objectFit: 'contain', borderRadius: 4 }} />
+        <img src={urlPath} alt={doc.title} style={{ maxWidth: '100%', maxHeight: 500, objectFit: 'contain', borderRadius: 4 }} />
       </div>
     );
   }
 
   if (ext === 'pdf') {
     return (
-      <embed src={fullPath} type="application/pdf" style={{ width: '100%', height: 500, border: 'none' }} />
+      <embed src={urlPath} type="application/pdf" style={{ width: '100%', height: 500, border: 'none' }} />
     );
   }
 
