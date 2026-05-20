@@ -26,8 +26,16 @@ export default function FaceTagger({ filePath, fileName }: Props) {
     setNameQuery('');
   }, [fileName]);
 
-  function pctFromEvent(e: React.MouseEvent): { x: number; y: number } {
-    const rect = containerRef.current!.getBoundingClientRect();
+  useEffect(() => {
+    if (!dragging) return;
+    const stop = () => setDragging(false);
+    window.addEventListener('mouseup', stop);
+    return () => window.removeEventListener('mouseup', stop);
+  }, [dragging]);
+
+  function pctFromEvent(e: React.MouseEvent): { x: number; y: number } | null {
+    if (!containerRef.current) return null;
+    const rect = containerRef.current.getBoundingClientRect();
     return {
       x: (e.clientX - rect.left) / rect.width,
       y: (e.clientY - rect.top) / rect.height,
@@ -36,6 +44,7 @@ export default function FaceTagger({ filePath, fileName }: Props) {
 
   const onMouseDown = (e: React.MouseEvent) => {
     const pct = pctFromEvent(e);
+    if (!pct) return;
     setStartPct(pct);
     setDragging(true);
     setBox(null);
@@ -45,6 +54,7 @@ export default function FaceTagger({ filePath, fileName }: Props) {
   const onMouseMove = (e: React.MouseEvent) => {
     if (!dragging || !startPct) return;
     const cur = pctFromEvent(e);
+    if (!cur) return;
     setBox({
       x: Math.min(startPct.x, cur.x),
       y: Math.min(startPct.y, cur.y),
@@ -101,7 +111,7 @@ export default function FaceTagger({ filePath, fileName }: Props) {
         <div style={{
           position: 'absolute',
           left: `${box.x * 100}%`,
-          top: `${Math.max(0, box.y * 100 - 8)}%`,
+          top: `${box.y * 100}%`,
           transform: 'translateY(-100%)',
           background: '#1e2535', border: '1px solid #4a70c0',
           borderRadius: 4, padding: 8, minWidth: 140, zIndex: 100,
@@ -111,6 +121,9 @@ export default function FaceTagger({ filePath, fileName }: Props) {
             autoFocus
             value={nameQuery}
             onChange={e => setNameQuery(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === 'Enter' && filteredPeople.length > 0) confirmTag(filteredPeople[0].name);
+            }}
             placeholder="Search people…"
             style={{
               width: '100%', boxSizing: 'border-box', background: '#0d1520',
