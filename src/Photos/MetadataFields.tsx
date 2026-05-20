@@ -172,6 +172,7 @@ export default function MetadataFields({ readOnly }: { readOnly: boolean }) {
   const { activePhoto } = state;
   const [draft, setDraft] = useState<Draft | null>(null);
   const [saving, setSaving] = useState(false);
+  const [ratingSaving, setRatingSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -222,13 +223,30 @@ export default function MetadataFields({ readOnly }: { readOnly: boolean }) {
   const cancel = () => { setDraft(photoDraft(activePhoto)); setError(null); };
   const set = (patch: Partial<Draft>) => setDraft(d => d ? { ...d, ...patch } : d);
 
+  const saveRating = async (rating: number | null) => {
+    set({ rating });
+    setRatingSaving(true);
+    try {
+      await writeMeta(activePhoto.fsPath, { rating });
+      dispatch({ type: 'UPDATE_PHOTO_META', file: activePhoto.file, meta: { rating } });
+    } catch (err) {
+      set({ rating: activePhoto.rating });
+      setError((err as Error).message);
+    } finally {
+      setRatingSaving(false);
+    }
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
 
       {/* Rating */}
       <div>
-        <div style={label}>Rating</div>
-        <StarRating value={draft.rating} onChange={r => set({ rating: r })} readOnly={readOnly} />
+        <div style={{ ...label, display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span>Rating</span>
+          {ratingSaving && <span style={{ color: '#555', fontSize: 9, letterSpacing: '.06em' }}>saving…</span>}
+        </div>
+        <StarRating value={draft.rating} onChange={saveRating} readOnly={readOnly} />
       </div>
 
       {/* Date */}
