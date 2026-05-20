@@ -30,13 +30,17 @@ function parseFaces(data: any, people: Person[]): FaceRegion[] {
       const name: string = r.RegionName ?? r.Name ?? '';
       const area = r.RegionArea ?? r.Area ?? {};
       const personId = people.find(p => p.name === name)?.id ?? null;
+      const cx = Number(area.X ?? 0);
+      const cy = Number(area.Y ?? 0);
+      const w = Number(area.W ?? 0);
+      const h = Number(area.H ?? 0);
       return {
         personId,
         name,
-        x: Number(area.X ?? 0),
-        y: Number(area.Y ?? 0),
-        w: Number(area.W ?? 0),
-        h: Number(area.H ?? 0),
+        x: cx - w / 2,
+        y: cy - h / 2,
+        w,
+        h,
       };
     });
 }
@@ -87,7 +91,7 @@ export async function writeFaceRegions(filePath: string, faces: FaceRegion[]): P
     args.push('-XMP-mwg-rs:RegionInfo=');
   } else {
     const regionStructs = faces.map(f =>
-      `{Type=Face,Name=${f.name},Area={X=${f.x},Y=${f.y},W=${f.w},H=${f.h},Unit=normalized}}`
+      `{Type=Face,Name=${f.name},Area={X=${f.x + f.w / 2},Y=${f.y + f.h / 2},W=${f.w},H=${f.h},Unit=normalized}}`
     ).join(',');
     args.push(`-XMP-mwg-rs:RegionInfo={AppliedToDimensions={W=${w},H=${h},Unit=pixel},RegionList=[${regionStructs}]}`);
   }
