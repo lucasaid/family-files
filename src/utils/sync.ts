@@ -65,7 +65,7 @@ export async function syncAndLoad(
   const addedPeople: string[] = [];
   const updatedPeople = [...people];
 
-  for (const name of namesInImages) {
+  for (const name of Array.from(namesInImages)) {
     if (!existingNames.has(name.toLowerCase())) {
       const newPerson: Person = { id: crypto.randomUUID(), name };
       updatedPeople.push(newPerson);
