@@ -124,15 +124,17 @@ export default function FaceTagger({ filePath, fileName }: Props) {
         }} />
       )}
       {box && !dragging && (
-        <div style={{
-          position: 'absolute',
-          left: `${box.x * 100}%`,
-          top: `${box.y * 100}%`,
-          transform: 'translateY(-100%)',
-          background: '#1e2535', border: '1px solid #4a70c0',
-          borderRadius: 4, padding: 8, minWidth: 140, zIndex: 100,
-          boxShadow: '0 4px 12px rgba(0,0,0,.5)',
-        }}>
+        <div
+          onMouseDown={e => e.stopPropagation()}
+          style={{
+            position: 'absolute',
+            left: `${box.x * 100}%`,
+            top: `${box.y * 100}%`,
+            transform: 'translateY(-100%)',
+            background: '#1e2535', border: '1px solid #4a70c0',
+            borderRadius: 4, padding: 8, minWidth: 140, zIndex: 100,
+            boxShadow: '0 4px 12px rgba(0,0,0,.5)',
+          }}>
           <input
             autoFocus
             value={nameQuery}
