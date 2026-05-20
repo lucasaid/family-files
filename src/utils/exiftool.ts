@@ -22,7 +22,8 @@ function parseLocation(data: any): Photo['location'] {
 }
 
 function parseFaces(data: any, people: Person[]): FaceRegion[] {
-  const regions = data['RegionList'] ?? data['XMP-mwg-rs:RegionList'] ?? [];
+  const regionInfo = data['RegionInfo'] ?? data['XMP-mwg-rs:RegionInfo'] ?? {};
+  const regions = regionInfo['RegionList'] ?? data['RegionList'] ?? data['XMP-mwg-rs:RegionList'] ?? [];
   return regions
     .filter((r: any) => r.RegionType === 'Face' || r.Type === 'Face')
     .map((r: any) => {
@@ -83,13 +84,12 @@ export async function writeFaceRegions(filePath: string, faces: FaceRegion[]): P
   const args = ['-overwrite_original', '-struct'];
 
   if (faces.length === 0) {
-    args.push('-XMP-mwg-rs:RegionList=');
+    args.push('-XMP-mwg-rs:RegionInfo=');
   } else {
     const regionStructs = faces.map(f =>
       `{Type=Face,Name=${f.name},Area={X=${f.x},Y=${f.y},W=${f.w},H=${f.h},Unit=normalized}}`
     ).join(',');
-    args.push(`-XMP-mwg-rs:AppliedToDimensions={W=${w},H=${h},Unit=pixel}`);
-    args.push(`-XMP-mwg-rs:RegionList=[${regionStructs}]`);
+    args.push(`-XMP-mwg-rs:RegionInfo={AppliedToDimensions={W=${w},H=${h},Unit=pixel},RegionList=[${regionStructs}]}`);
   }
   args.push(filePath);
   await run(args);
