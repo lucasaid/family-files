@@ -45,7 +45,6 @@ function draftDirty(draft: Draft, photo: Photo): boolean {
     draft.city !== (photo.city ?? '') ||
     draft.state !== (photo.state ?? '') ||
     draft.country !== (photo.country ?? '') ||
-    draft.rating !== (photo.rating ?? null) ||
     JSON.stringify(draft.keywords) !== JSON.stringify(photo.keywords ?? [])
   );
 }
