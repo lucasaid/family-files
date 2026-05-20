@@ -11,6 +11,10 @@
 # production
 /build
 
+# photo library — lives alongside the app, not in the repo
+/images/
+/public/images/
+
 # misc
 .DS_Store
 .env.local
