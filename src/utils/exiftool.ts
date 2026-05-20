@@ -47,9 +47,10 @@ function parseFaces(data: any, people: Person[]): FaceRegion[] {
 
 function parseKeywords(data: any): string[] {
   const raw = data.Keywords ?? data.Subject ?? data['XMP:Subject'] ?? [];
-  if (Array.isArray(raw)) return raw.map(String);
-  if (typeof raw === 'string') return raw.split(',').map((s: string) => s.trim()).filter(Boolean);
-  return [];
+  const list: string[] = Array.isArray(raw)
+    ? raw.map(String)
+    : typeof raw === 'string' ? raw.split(',').map((s: string) => s.trim()).filter(Boolean) : [];
+  return Array.from(new Set(list));
 }
 
 export async function readMetadata(dirPath: string, people: Person[]): Promise<Photo[]> {
@@ -102,13 +103,20 @@ export async function writeMeta(
   if (meta.rating !== undefined) {
     args.push(meta.rating != null ? `-Rating=${meta.rating}` : '-Rating=');
   }
-  if (meta.keywords !== undefined) {
-    // Clear existing then write new list
-    args.push('-Keywords=');
-    for (const kw of meta.keywords) args.push(`-Keywords+=${kw}`);
-  }
   args.push(filePath);
   await run(args);
+
+  // Keywords must be written in two separate exiftool passes:
+  // clear+add in the same invocation doesn't reliably replace list tags.
+  if (meta.keywords !== undefined) {
+    await run(['-overwrite_original', '-IPTC:Keywords=', filePath]);
+    if (meta.keywords.length > 0) {
+      const kwArgs = ['-overwrite_original'];
+      for (const kw of meta.keywords) kwArgs.push(`-IPTC:Keywords+=${kw}`);
+      kwArgs.push(filePath);
+      await run(kwArgs);
+    }
+  }
 }
 
 export async function writeFaceRegions(filePath: string, faces: FaceRegion[]): Promise<void> {
