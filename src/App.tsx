@@ -1,34 +1,47 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Container, Nav } from 'react-bootstrap';
 import Navbar from 'react-bootstrap/Navbar';
 import { HashRouter, Route, Routes } from 'react-router-dom';
 import { LinkContainer } from 'react-router-bootstrap';
 import { AppProvider, useAppContext } from './context/AppContext';
-import { readMetadata } from './utils/exiftool';
-import { readPeopleJson } from './utils/people';
-import { readDocumentsJson } from './utils/documents';
+import { syncAndLoad, SyncStatus } from './utils/sync';
 import Photos from './Photos';
 import PeopleRoute from './People';
 import DocumentsRoute from './Documents';
+import LoadingScreen from './LoadingScreen';
 
-const path = (window as any).require('path') as typeof import('path');
-// In dev: <project>/images/  In production: <dir containing .app or .exe>/images/
-const DIR_PATH = path.join(process.cwd(), 'images');
+interface LoadState {
+  status: SyncStatus;
+  addedPeople: string[];
+  error: string | null;
+  done: boolean;
+}
 
 function AppShell() {
   const { dispatch } = useAppContext();
+  const [load, setLoad] = useState<LoadState>({
+    status: 'reading-people',
+    addedPeople: [],
+    error: null,
+    done: false,
+  });
 
   useEffect(() => {
-    async function load() {
-      const people = await readPeopleJson();
-      dispatch({ type: 'SET_PEOPLE', people });
-      const photos = await readMetadata(DIR_PATH, people);
-      dispatch({ type: 'SET_PHOTOS', photos });
-      const documents = await readDocumentsJson();
-      dispatch({ type: 'SET_DOCUMENTS', documents });
-    }
-    load();
+    syncAndLoad(status => setLoad(prev => ({ ...prev, status })))
+      .then(result => {
+        dispatch({ type: 'SET_PEOPLE', people: result.people });
+        dispatch({ type: 'SET_PHOTOS', photos: result.photos });
+        dispatch({ type: 'SET_DOCUMENTS', documents: result.documents });
+        setLoad(prev => ({ ...prev, addedPeople: result.addedPeople, done: true }));
+      })
+      .catch(err => {
+        setLoad(prev => ({ ...prev, error: String(err), done: true }));
+      });
   }, [dispatch]);
+
+  if (!load.done) {
+    return <LoadingScreen status={load.status} addedPeople={load.addedPeople} error={load.error} />;
+  }
 
   return (
     <div style={{ boxSizing: 'border-box', height: '100vh', display: 'flex', flexDirection: 'column' }}>
