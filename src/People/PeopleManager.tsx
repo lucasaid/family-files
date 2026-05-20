@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 import { writePeopleJson } from '../utils/people';
+import { writeFaceRegions } from '../utils/exiftool';
 import { Person } from '../context/types';
 
 function generateId() { return crypto.randomUUID(); }
@@ -38,17 +39,30 @@ export default function PeopleManager() {
 
   const saveName = async (person: Person) => {
     if (!editName.trim()) return;
-    if (editName.trim() === person.name) {
+    const newName = editName.trim();
+    if (newName === person.name) {
       setEditingId(null);
       return;
     }
-    const updated = people.map(p => p.id === person.id ? { ...p, name: editName.trim() } : p);
+    const updatedPeople = people.map(p => p.id === person.id ? { ...p, name: newName } : p);
     try {
-      dispatch({ type: 'UPDATE_PERSON', person: { ...person, name: editName.trim() } });
-      await writePeopleJson(updated);
+      dispatch({ type: 'UPDATE_PERSON', person: { ...person, name: newName } });
+      dispatch({ type: 'RENAME_PERSON_IN_FACES', personId: person.id, newName });
+      await writePeopleJson(updatedPeople);
+
+      // Update face name in every photo that references this person
+      const affectedPhotos = photos.filter(p => p.faces.some(f => f.personId === person.id));
+      await Promise.all(affectedPhotos.map(photo => {
+        const updatedFaces = photo.faces.map(f =>
+          f.personId === person.id ? { ...f, name: newName } : f
+        );
+        return writeFaceRegions(photo.fsPath, updatedFaces);
+      }));
+
       setEditingId(null);
     } catch (err) {
       dispatch({ type: 'UPDATE_PERSON', person });
+      dispatch({ type: 'RENAME_PERSON_IN_FACES', personId: person.id, newName: person.name });
       alert(`Failed to save: ${(err as Error).message}`);
     }
   };

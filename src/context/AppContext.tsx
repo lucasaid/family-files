@@ -49,6 +49,17 @@ export function appReducer(state: AppState, action: AppAction): AppState {
       return { ...state, isTaggingMode: action.enabled };
     case 'TOGGLE_FACES':
       return { ...state, showFaces: !state.showFaces };
+    case 'RENAME_PERSON_IN_FACES': {
+      const renameFace = (p: Photo) => ({
+        ...p,
+        faces: p.faces.map(f =>
+          f.personId === action.personId ? { ...f, name: action.newName } : f
+        ),
+      });
+      const photos = state.photos.map(renameFace);
+      const activePhoto = state.activePhoto ? renameFace(state.activePhoto) : null;
+      return { ...state, photos, activePhoto };
+    }
     case 'SET_DOCUMENTS':
       return { ...state, documents: action.documents };
     case 'SET_ACTIVE_DOCUMENT':
