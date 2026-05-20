@@ -14,9 +14,14 @@ export interface Photo {
   path: string;   // display URL (e.g. /images/foo.jpg)
   fsPath: string; // absolute filesystem path for exiftool
   date: string | null;
-  location: { lat: number; lng: number; placeName?: string } | null;
+  location: { lat: number; lng: number } | null;
+  city: string | null;
+  state: string | null;
+  country: string | null;
   camera: string | null;
   caption: string | null;
+  rating: number | null;   // 1–5
+  keywords: string[];
   faces: FaceRegion[];
 }
 
@@ -49,7 +54,7 @@ export interface AppState {
 export type AppAction =
   | { type: 'SET_PHOTOS'; photos: Photo[] }
   | { type: 'SET_ACTIVE_PHOTO'; photo: Photo }
-  | { type: 'UPDATE_PHOTO_META'; file: string; meta: Partial<Pick<Photo, 'date' | 'location' | 'caption'>> }
+  | { type: 'UPDATE_PHOTO_META'; file: string; meta: Partial<Pick<Photo, 'date' | 'location' | 'city' | 'state' | 'country' | 'caption' | 'rating' | 'keywords'>> }
   | { type: 'ADD_FACE_REGION'; file: string; region: FaceRegion }
   | { type: 'REMOVE_FACE_REGION'; file: string; regionName: string }
   | { type: 'SET_TAGGING_MODE'; enabled: boolean }

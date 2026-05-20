@@ -1,16 +1,30 @@
 // src/Photos/MetadataFields.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { writeMeta } from '../utils/exiftool';
 import { Photo } from '../context/types';
 
-type Draft = Pick<Photo, 'date' | 'caption'> & { locationStr: string };
+type Draft = {
+  date: string;
+  caption: string;
+  locationStr: string;
+  city: string;
+  state: string;
+  country: string;
+  rating: number | null;
+  keywords: string[];
+};
 
 function photoDraft(p: Photo): Draft {
   return {
     date: p.date ?? '',
     caption: p.caption ?? '',
     locationStr: p.location ? `${p.location.lat}, ${p.location.lng}` : '',
+    city: p.city ?? '',
+    state: p.state ?? '',
+    country: p.country ?? '',
+    rating: p.rating ?? null,
+    keywords: p.keywords ?? [],
   };
 }
 
@@ -22,6 +36,136 @@ function parseLocation(str: string): { lat: number; lng: number } | null {
   if (isNaN(lat) || isNaN(lng)) return null;
   return { lat, lng };
 }
+
+function draftDirty(draft: Draft, photo: Photo): boolean {
+  return (
+    draft.date !== (photo.date ?? '') ||
+    draft.caption !== (photo.caption ?? '') ||
+    draft.locationStr !== (photo.location ? `${photo.location.lat}, ${photo.location.lng}` : '') ||
+    draft.city !== (photo.city ?? '') ||
+    draft.state !== (photo.state ?? '') ||
+    draft.country !== (photo.country ?? '') ||
+    draft.rating !== (photo.rating ?? null) ||
+    JSON.stringify(draft.keywords) !== JSON.stringify(photo.keywords ?? [])
+  );
+}
+
+const label: React.CSSProperties = {
+  fontSize: 9, textTransform: 'uppercase', letterSpacing: '.08em', color: '#555', marginBottom: 3,
+};
+
+const fieldBase: React.CSSProperties = {
+  width: '100%', background: '#1e1e30', border: '1px solid #2a2a40',
+  borderRadius: 3, padding: '3px 6px', color: '#ddd', fontSize: 12,
+  boxSizing: 'border-box', fontFamily: 'inherit',
+};
+
+const readOnlyField: React.CSSProperties = { ...fieldBase, color: '#666' };
+
+// ── Star rating ────────────────────────────────────────────────────────────────
+
+function StarRating({ value, onChange, readOnly }: {
+  value: number | null;
+  onChange: (v: number | null) => void;
+  readOnly: boolean;
+}) {
+  const [hovered, setHovered] = useState<number | null>(null);
+
+  return (
+    <div style={{ display: 'flex', gap: 3, alignItems: 'center' }}>
+      {[1, 2, 3, 4, 5].map(star => {
+        const filled = (hovered ?? value ?? 0) >= star;
+        return (
+          <span
+            key={star}
+            onMouseEnter={() => !readOnly && setHovered(star)}
+            onMouseLeave={() => !readOnly && setHovered(null)}
+            onClick={() => {
+              if (readOnly) return;
+              onChange(value === star ? null : star);
+            }}
+            style={{
+              fontSize: 16, lineHeight: 1,
+              color: filled ? '#f0b060' : '#333',
+              cursor: readOnly ? 'default' : 'pointer',
+              transition: 'color 0.1s',
+              userSelect: 'none',
+            }}
+          >
+            ★
+          </span>
+        );
+      })}
+      {value != null && !readOnly && (
+        <button
+          onClick={() => onChange(null)}
+          style={{ background: 'none', border: 'none', color: '#444', fontSize: 10, cursor: 'pointer', padding: '0 2px', marginLeft: 2 }}
+          title="Clear rating"
+        >
+          ×
+        </button>
+      )}
+    </div>
+  );
+}
+
+// ── Keyword tags ───────────────────────────────────────────────────────────────
+
+function KeywordInput({ keywords, onChange, readOnly }: {
+  keywords: string[];
+  onChange: (kw: string[]) => void;
+  readOnly: boolean;
+}) {
+  const [input, setInput] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const add = (raw: string) => {
+    const trimmed = raw.trim();
+    if (!trimmed || keywords.includes(trimmed)) { setInput(''); return; }
+    onChange([...keywords, trimmed]);
+    setInput('');
+  };
+
+  const remove = (kw: string) => onChange(keywords.filter(k => k !== kw));
+
+  return (
+    <div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: keywords.length ? 5 : 0 }}>
+        {keywords.map(kw => (
+          <span key={kw} style={{
+            display: 'inline-flex', alignItems: 'center', gap: 3,
+            background: '#1a2230', border: '1px solid #2a3a50',
+            borderRadius: 10, padding: '1px 7px', fontSize: 11, color: '#9bb8f5',
+          }}>
+            {kw}
+            {!readOnly && (
+              <button onClick={() => remove(kw)}
+                style={{ background: 'none', border: 'none', color: '#555', cursor: 'pointer', padding: 0, fontSize: 11, lineHeight: 1 }}>
+                ×
+              </button>
+            )}
+          </span>
+        ))}
+      </div>
+      {!readOnly && (
+        <input
+          ref={inputRef}
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          onKeyDown={e => {
+            if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); add(input); }
+            if (e.key === 'Backspace' && !input && keywords.length) remove(keywords[keywords.length - 1]);
+          }}
+          onBlur={() => { if (input.trim()) add(input); }}
+          placeholder={keywords.length === 0 ? 'Add keywords…' : ''}
+          style={{ ...fieldBase, width: '100%' }}
+        />
+      )}
+    </div>
+  );
+}
+
+// ── Main component ─────────────────────────────────────────────────────────────
 
 export default function MetadataFields({ readOnly }: { readOnly: boolean }) {
   const { state, dispatch } = useAppContext();
@@ -37,10 +181,7 @@ export default function MetadataFields({ readOnly }: { readOnly: boolean }) {
 
   if (!activePhoto || !draft) return null;
 
-  const isDirty =
-    draft.date !== (activePhoto.date ?? '') ||
-    draft.caption !== (activePhoto.caption ?? '') ||
-    draft.locationStr !== (activePhoto.location ? `${activePhoto.location.lat}, ${activePhoto.location.lng}` : '');
+  const isDirty = draftDirty(draft, activePhoto);
 
   const save = async () => {
     setSaving(true);
@@ -49,13 +190,27 @@ export default function MetadataFields({ readOnly }: { readOnly: boolean }) {
       const location = draft.locationStr ? parseLocation(draft.locationStr) : null;
       await writeMeta(activePhoto.fsPath, {
         date: draft.date || undefined,
-        caption: draft.caption ?? undefined,
-        location: location ?? undefined,
+        caption: draft.caption,
+        location,
+        city: draft.city,
+        state: draft.state,
+        country: draft.country,
+        rating: draft.rating,
+        keywords: draft.keywords,
       });
       dispatch({
         type: 'UPDATE_PHOTO_META',
         file: activePhoto.file,
-        meta: { date: draft.date || null, caption: draft.caption || null, location },
+        meta: {
+          date: draft.date || null,
+          caption: draft.caption || null,
+          location,
+          city: draft.city || null,
+          state: draft.state || null,
+          country: draft.country || null,
+          rating: draft.rating,
+          keywords: draft.keywords,
+        },
       });
     } catch (err) {
       setError((err as Error).message);
@@ -64,37 +219,65 @@ export default function MetadataFields({ readOnly }: { readOnly: boolean }) {
     }
   };
 
-  const cancel = () => setDraft(photoDraft(activePhoto));
-
-  const fieldStyle: React.CSSProperties = {
-    width: '100%', background: '#1e1e30', border: '1px solid #2a2a40',
-    borderRadius: 3, padding: '3px 6px', color: readOnly ? '#666' : '#ddd', fontSize: 12,
-    boxSizing: 'border-box',
-  };
+  const cancel = () => { setDraft(photoDraft(activePhoto)); setError(null); };
+  const set = (patch: Partial<Draft>) => setDraft(d => d ? { ...d, ...patch } : d);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+
+      {/* Rating */}
       <div>
-        <div style={{ fontSize: 9, textTransform: 'uppercase', letterSpacing: '.08em', color: '#555', marginBottom: 3 }}>Date taken</div>
-        <input style={fieldStyle} value={draft.date ?? ''} readOnly={readOnly}
-          onChange={e => setDraft(d => d && ({ ...d, date: e.target.value }))} />
+        <div style={label}>Rating</div>
+        <StarRating value={draft.rating} onChange={r => set({ rating: r })} readOnly={readOnly} />
       </div>
+
+      {/* Date */}
       <div>
-        <div style={{ fontSize: 9, textTransform: 'uppercase', letterSpacing: '.08em', color: '#555', marginBottom: 3 }}>Location (lat, lng)</div>
-        <input style={fieldStyle} value={draft.locationStr} readOnly={readOnly}
-          onChange={e => setDraft(d => d && ({ ...d, locationStr: e.target.value }))} />
+        <div style={label}>Date taken</div>
+        <input style={readOnly ? readOnlyField : fieldBase} value={draft.date} readOnly={readOnly}
+          onChange={e => set({ date: e.target.value })} />
       </div>
+
+      {/* Caption */}
       <div>
-        <div style={{ fontSize: 9, textTransform: 'uppercase', letterSpacing: '.08em', color: '#555', marginBottom: 3 }}>Camera</div>
-        <input style={{ ...fieldStyle, color: '#555' }} value={activePhoto.camera ?? ''} readOnly />
+        <div style={label}>Caption</div>
+        <textarea style={{ ...(readOnly ? readOnlyField : fieldBase), minHeight: 52, resize: 'vertical' }}
+          value={draft.caption} readOnly={readOnly}
+          onChange={e => set({ caption: e.target.value })} />
       </div>
+
+      {/* Keywords */}
       <div>
-        <div style={{ fontSize: 9, textTransform: 'uppercase', letterSpacing: '.08em', color: '#555', marginBottom: 3 }}>Caption</div>
-        <textarea style={{ ...fieldStyle, minHeight: 56, resize: 'vertical', fontFamily: 'inherit' }}
-          value={draft.caption ?? ''} readOnly={readOnly}
-          onChange={e => setDraft(d => d && ({ ...d, caption: e.target.value }))} />
+        <div style={label}>Keywords</div>
+        <KeywordInput keywords={draft.keywords} onChange={kw => set({ keywords: kw })} readOnly={readOnly} />
       </div>
+
+      {/* Location coords */}
+      <div>
+        <div style={label}>GPS (lat, lng)</div>
+        <input style={readOnly ? readOnlyField : fieldBase} value={draft.locationStr} readOnly={readOnly}
+          onChange={e => set({ locationStr: e.target.value })} />
+      </div>
+
+      {/* Structured location */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+        <div style={label}>Location</div>
+        <input style={readOnly ? readOnlyField : fieldBase} value={draft.city} readOnly={readOnly}
+          placeholder="City" onChange={e => set({ city: e.target.value })} />
+        <input style={readOnly ? readOnlyField : fieldBase} value={draft.state} readOnly={readOnly}
+          placeholder="State / Province" onChange={e => set({ state: e.target.value })} />
+        <input style={readOnly ? readOnlyField : fieldBase} value={draft.country} readOnly={readOnly}
+          placeholder="Country" onChange={e => set({ country: e.target.value })} />
+      </div>
+
+      {/* Camera (read-only) */}
+      <div>
+        <div style={label}>Camera</div>
+        <input style={readOnlyField} value={activePhoto.camera ?? ''} readOnly />
+      </div>
+
       {error && <div style={{ color: '#e88', fontSize: 11 }}>{error}</div>}
+
       {isDirty && !readOnly && (
         <div style={{ display: 'flex', gap: 6 }}>
           <button onClick={save} disabled={saving}

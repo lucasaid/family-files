@@ -45,6 +45,13 @@ function parseFaces(data: any, people: Person[]): FaceRegion[] {
     });
 }
 
+function parseKeywords(data: any): string[] {
+  const raw = data.Keywords ?? data.Subject ?? data['XMP:Subject'] ?? [];
+  if (Array.isArray(raw)) return raw.map(String);
+  if (typeof raw === 'string') return raw.split(',').map((s: string) => s.trim()).filter(Boolean);
+  return [];
+}
+
 export async function readMetadata(dirPath: string, people: Person[]): Promise<Photo[]> {
   const stdout = await run(['-j', '-n', '-struct', dirPath]);
   const items: any[] = JSON.parse(stdout);
@@ -54,15 +61,29 @@ export async function readMetadata(dirPath: string, people: Person[]): Promise<P
     fsPath: `${dirPath}/${item.FileName}`,
     date: parseDate(item.DateTimeOriginal),
     location: parseLocation(item),
+    city: item.City ?? item['IPTC:City'] ?? null,
+    state: item.Province_State ?? item['IPTC:Province-State'] ?? null,
+    country: item.Country_PrimaryLocationName ?? item['IPTC:Country-PrimaryLocationName'] ?? null,
     camera: [item.Make, item.Model].filter(Boolean).join(' ') || null,
     caption: item.ImageDescription ?? null,
+    rating: item.Rating != null ? Number(item.Rating) : null,
+    keywords: parseKeywords(item),
     faces: parseFaces(item, people),
   }));
 }
 
 export async function writeMeta(
   filePath: string,
-  meta: { date?: string; caption?: string; location?: { lat: number; lng: number } }
+  meta: {
+    date?: string;
+    caption?: string;
+    location?: { lat: number; lng: number } | null;
+    city?: string;
+    state?: string;
+    country?: string;
+    rating?: number | null;
+    keywords?: string[];
+  }
 ): Promise<void> {
   const args = ['-overwrite_original'];
   if (meta.date) args.push(`-DateTimeOriginal=${meta.date}`);
@@ -72,6 +93,19 @@ export async function writeMeta(
     args.push(`-GPSLatitudeRef=${meta.location.lat >= 0 ? 'N' : 'S'}`);
     args.push(`-GPSLongitude=${Math.abs(meta.location.lng)}`);
     args.push(`-GPSLongitudeRef=${meta.location.lng >= 0 ? 'E' : 'W'}`);
+  } else if (meta.location === null) {
+    args.push('-GPSLatitude=', '-GPSLongitude=');
+  }
+  if (meta.city !== undefined) args.push(`-IPTC:City=${meta.city}`);
+  if (meta.state !== undefined) args.push(`-IPTC:Province-State=${meta.state}`);
+  if (meta.country !== undefined) args.push(`-IPTC:Country-PrimaryLocationName=${meta.country}`);
+  if (meta.rating !== undefined) {
+    args.push(meta.rating != null ? `-Rating=${meta.rating}` : '-Rating=');
+  }
+  if (meta.keywords !== undefined) {
+    // Clear existing then write new list
+    args.push('-Keywords=');
+    for (const kw of meta.keywords) args.push(`-Keywords+=${kw}`);
   }
   args.push(filePath);
   await run(args);
