@@ -37,7 +37,7 @@ export default function DocumentFields() {
       title: draft.title,
       date: draft.date || null,
       description: draft.description,
-      content: draft.content,
+      ...(activeDocument.type === 'note' ? { content: draft.content } : {}),
     };
     const all = documents.map(d => d.id === updated.id ? updated : d);
     dispatch({ type: 'UPDATE_DOCUMENT', document: updated });
@@ -90,7 +90,7 @@ export default function DocumentFields() {
             style={{ background: '#2d5a2d', border: '1px solid #3a7a3a', borderRadius: 3, padding: '4px 12px', color: '#7ecfa0', fontSize: 12, cursor: 'pointer' }}>
             {saving ? 'Saving…' : 'Save'}
           </button>
-          <button onClick={cancel}
+          <button onClick={cancel} disabled={saving}
             style={{ background: '#2a2a3a', border: '1px solid #3a3a4a', borderRadius: 3, padding: '4px 12px', color: '#888', fontSize: 12, cursor: 'pointer' }}>
             Cancel
           </button>

@@ -20,10 +20,10 @@ export default function DocumentPeople() {
     const updated = { ...activeDocument, personIds: [...activeDocument.personIds, personId] };
     const all = documents.map(d => d.id === updated.id ? updated : d);
     dispatch({ type: 'UPDATE_DOCUMENT', document: updated });
-    setShowPicker(false);
-    setQuery('');
     try {
       await writeDocumentsJson(all);
+      setShowPicker(false);
+      setQuery('');
     } catch (err) {
       dispatch({ type: 'UPDATE_DOCUMENT', document: activeDocument });
       alert(`Failed to save: ${(err as Error).message}`);

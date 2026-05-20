@@ -2,9 +2,6 @@
 import React from 'react';
 import { FamilyDocument } from '../context/types';
 
-const path = (window as any).require('path') as typeof import('path');
-const { shell } = (window as any).require('electron');
-
 const IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'];
 
 function getExt(filePath: string) {
@@ -24,6 +21,8 @@ export default function DocumentViewer({ doc }: Props) {
 
   if (!doc.filePath) return <div style={{ padding: 16, color: '#666' }}>No file attached.</div>;
 
+  const path = (window as any).require('path') as typeof import('path');
+  const { shell } = (window as any).require('electron');
   const docsDir = path.join(process.cwd(), 'public', 'documents');
   const fullPath = path.join(docsDir, doc.filePath);
   const ext = getExt(doc.filePath);

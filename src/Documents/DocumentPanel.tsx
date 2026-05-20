@@ -22,6 +22,7 @@ export default function DocumentPanel() {
       await writeDocumentsJson(all);
     } catch (err) {
       dispatch({ type: 'ADD_DOCUMENT', document: activeDocument });
+      dispatch({ type: 'SET_ACTIVE_DOCUMENT', document: activeDocument });
       alert(`Failed to delete: ${(err as Error).message}`);
     }
   };
