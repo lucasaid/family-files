@@ -20,7 +20,7 @@ Add full photo metadata display, metadata editing, face tagging with bounding bo
 | Metadata storage | Write back to image file (EXIF/XMP) |
 | Face region format | XMP `mwg-rs:Regions` (Apple Photos / Lightroom compatible) |
 | Face coordinates | Stored as percentage of photo dimensions |
-| People roster storage | `people.json` next to the app, read at startup |
+| People roster storage | `people.json` at `process.cwd()/people.json`, read at startup |
 | Face tagging trigger | Explicit "Tag faces" mode toggle |
 
 ---
@@ -61,8 +61,8 @@ interface Photo {
 }
 
 interface FaceRegion {
-  personId: string;
-  name: string;
+  personId: string | null; // matched from people[] by name on read; null if no roster match
+  name: string;            // source of truth — stored in XMP, always populated
   // all values as percentage of photo dimensions (0–1)
   x: number; y: number; w: number; h: number;
 }
@@ -102,10 +102,11 @@ REMOVE_PERSON       — delete (does not remove from existing face tags)
 
 ### 1 — Startup
 
-1. `fs.readdir(dirPath)` lists image files from the configured directory
-2. Single `exiftool -j -n <dir>/*.jpg` batch call returns JSON array with all metadata
-3. Parse into `Photo[]`, dispatch `SET_PHOTOS`; first photo becomes `activePhoto`
-4. Read `people.json` via `fs.readFile`, dispatch `SET_PEOPLE`
+1. `dirPath` defaults to `${process.cwd()}/public/images/`; making it user-configurable is a future enhancement
+2. `fs.readdir(dirPath)` lists image files
+3. Single `exiftool -j -n <dir>/*.jpg` batch call returns JSON array with all metadata
+4. Parse into `Photo[]`; for each face region, match name against `people[]` to populate `personId` (null if unmatched); dispatch `SET_PHOTOS`; first photo becomes `activePhoto`
+5. Read `people.json` at `process.cwd()/people.json` via `fs.readFile` (empty array if file absent), dispatch `SET_PEOPLE`
 
 ### 2 — Photo Selection
 
@@ -137,7 +138,13 @@ REMOVE_PERSON       — delete (does not remove from existing face tags)
 5. On success: dispatch `ADD_FACE_REGION`; new box appears in `FaceOverlay`
 6. `Esc` or "Exit tagging mode" button → `SET_TAGGING_MODE false`
 
-### 5 — People Roster
+### 5 — Remove a face tag
+
+- `PeopleList` chip `×` → `REMOVE_FACE_REGION` dispatched with `{ file, regionName }`
+- Shell out to `exiftool` to delete that specific region from the XMP struct
+- On success: context updates `activePhoto.faces[]`
+
+### 6 — People Roster
 
 - `/people` route renders `PeopleManager`
 - Add / rename / remove dispatches to context immediately
@@ -151,7 +158,7 @@ REMOVE_PERSON       — delete (does not remove from existing face tags)
 ### `PhotoViewer`
 - Renders the active photo at full height of the left pane
 - Hosts `FaceOverlay` (always) and `FaceTagger` (tagging mode only)
-- Contains fullscreen button — opens Electron `BrowserWindow` or CSS fullscreen overlay
+- Contains fullscreen button — calls `element.requestFullscreen()` (CSS fullscreen); metadata panel is hidden while fullscreen is active
 - Passes photo dimensions to children so face coordinates can be converted from % to px
 
 ### `FaceOverlay`
