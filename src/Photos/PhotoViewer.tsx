@@ -20,8 +20,8 @@ function getRenderedImageBounds(
 }
 
 export default function PhotoViewer() {
-  const { state } = useAppContext();
-  const { activePhoto, isTaggingMode } = state;
+  const { state, dispatch } = useAppContext();
+  const { activePhoto, isTaggingMode, showFaces } = state;
   const containerRef = useRef<HTMLDivElement>(null);
   const [imgDims, setImgDims] = useState<{ w: number; h: number } | null>(null);
   const [containerSize, setContainerSize] = useState<{ w: number; h: number } | null>(null);
@@ -73,7 +73,7 @@ export default function PhotoViewer() {
             transform: 'translate(-50%, -50%)',
             pointerEvents: isTaggingMode ? 'auto' : 'none',
           }}>
-            <FaceOverlay faces={activePhoto.faces} dimmed={isTaggingMode} />
+            {showFaces && <FaceOverlay faces={activePhoto.faces} dimmed={isTaggingMode} />}
             {isTaggingMode && (
               <FaceTagger filePath={activePhoto.fsPath} fileName={activePhoto.file} />
             )}
@@ -91,16 +91,30 @@ export default function PhotoViewer() {
         </div>
       )}
 
-      <button
-        onClick={handleFullscreen}
-        style={{
-          position: 'absolute', top: 8, right: 8,
-          background: 'rgba(0,0,0,.6)', border: '1px solid #444',
-          borderRadius: 3, padding: '3px 8px', color: '#aaa', fontSize: 11, cursor: 'pointer',
-        }}
-      >
-        ⛶ Full screen
-      </button>
+      <div style={{ position: 'absolute', top: 8, right: 8, display: 'flex', gap: 4 }}>
+        <button
+          onClick={() => dispatch({ type: 'TOGGLE_FACES' })}
+          title={showFaces ? 'Hide face tags' : 'Show face tags'}
+          style={{
+            background: showFaces ? 'rgba(240,176,96,.25)' : 'rgba(0,0,0,.6)',
+            border: `1px solid ${showFaces ? 'rgba(240,176,96,.6)' : '#444'}`,
+            borderRadius: 3, padding: '3px 8px',
+            color: showFaces ? '#f0b060' : '#aaa',
+            fontSize: 11, cursor: 'pointer',
+          }}
+        >
+          👤 Faces
+        </button>
+        <button
+          onClick={handleFullscreen}
+          style={{
+            background: 'rgba(0,0,0,.6)', border: '1px solid #444',
+            borderRadius: 3, padding: '3px 8px', color: '#aaa', fontSize: 11, cursor: 'pointer',
+          }}
+        >
+          ⛶ Full screen
+        </button>
+      </div>
     </div>
   );
 }

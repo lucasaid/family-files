@@ -43,6 +43,7 @@ export interface AppState {
   activeDocument: FamilyDocument | null;
   people: Person[];
   isTaggingMode: boolean;
+  showFaces: boolean;
 }
 
 export type AppAction =
@@ -52,6 +53,7 @@ export type AppAction =
   | { type: 'ADD_FACE_REGION'; file: string; region: FaceRegion }
   | { type: 'REMOVE_FACE_REGION'; file: string; regionName: string }
   | { type: 'SET_TAGGING_MODE'; enabled: boolean }
+  | { type: 'TOGGLE_FACES' }
   | { type: 'SET_DOCUMENTS'; documents: FamilyDocument[] }
   | { type: 'SET_ACTIVE_DOCUMENT'; document: FamilyDocument | null }
   | { type: 'ADD_DOCUMENT'; document: FamilyDocument }

@@ -8,6 +8,7 @@ export const initialState: AppState = {
   activeDocument: null,
   people: [],
   isTaggingMode: false,
+  showFaces: true,
 };
 
 function updatePhoto(photos: Photo[], file: string, updater: (p: Photo) => Photo): Photo[] {
@@ -46,6 +47,8 @@ export function appReducer(state: AppState, action: AppAction): AppState {
     }
     case 'SET_TAGGING_MODE':
       return { ...state, isTaggingMode: action.enabled };
+    case 'TOGGLE_FACES':
+      return { ...state, showFaces: !state.showFaces };
     case 'SET_DOCUMENTS':
       return { ...state, documents: action.documents };
     case 'SET_ACTIVE_DOCUMENT':
