@@ -1,5 +1,5 @@
 // src/Documents/DocumentList.tsx
-import React from 'react';
+import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { FamilyDocument } from '../context/types';
 import { writeDocumentsJson, copyToDocumentsDir } from '../utils/documents';
@@ -17,23 +17,36 @@ function docIcon(doc: FamilyDocument) {
 export default function DocumentList() {
   const { state, dispatch } = useAppContext();
   const { documents, activeDocument, people } = state;
+  const [loading, setLoading] = useState(false);
 
   const addFile = async () => {
+    if (loading) return;
     const result = await ipcRenderer.invoke('show-open-dialog', {
       properties: ['openFile'],
       filters: [{ name: 'All Files', extensions: ['*'] }],
     });
     if (result.canceled || !result.filePaths[0]) return;
-    const sourcePath = result.filePaths[0];
-    const filePath = await copyToDocumentsDir(sourcePath);
-    const doc: FamilyDocument = {
-      id: crypto.randomUUID(), title: filePath, date: null, description: '',
-      personIds: [], type: 'file', filePath,
-    };
-    const updated = [...documents, doc];
-    dispatch({ type: 'ADD_DOCUMENT', document: doc });
-    dispatch({ type: 'SET_ACTIVE_DOCUMENT', document: doc });
-    await writeDocumentsJson(updated);
+    setLoading(true);
+    try {
+      const filePath = await copyToDocumentsDir(result.filePaths[0]);
+      const nameWithoutExt = filePath.replace(/\.[^.]+$/, '');
+      const doc: FamilyDocument = {
+        id: crypto.randomUUID(), title: nameWithoutExt, date: null, description: '',
+        personIds: [], type: 'file', filePath,
+      };
+      dispatch({ type: 'ADD_DOCUMENT', document: doc });
+      dispatch({ type: 'SET_ACTIVE_DOCUMENT', document: doc });
+      try {
+        await writeDocumentsJson([...documents, doc]);
+      } catch (writeErr) {
+        dispatch({ type: 'REMOVE_DOCUMENT', id: doc.id });
+        alert(`Failed to save document: ${(writeErr as Error).message}`);
+      }
+    } catch (copyErr) {
+      alert(`Failed to copy file: ${(copyErr as Error).message}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const addNote = async () => {
@@ -41,18 +54,22 @@ export default function DocumentList() {
       id: crypto.randomUUID(), title: 'New note', date: null, description: '',
       personIds: [], type: 'note', content: '',
     };
-    const updated = [...documents, doc];
     dispatch({ type: 'ADD_DOCUMENT', document: doc });
     dispatch({ type: 'SET_ACTIVE_DOCUMENT', document: doc });
-    await writeDocumentsJson(updated);
+    try {
+      await writeDocumentsJson([...documents, doc]);
+    } catch (err) {
+      dispatch({ type: 'REMOVE_DOCUMENT', id: doc.id });
+      alert(`Failed to save note: ${(err as Error).message}`);
+    }
   };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#111' }}>
       <div style={{ padding: '10px 12px', borderBottom: '1px solid #222', display: 'flex', gap: 6 }}>
-        <button onClick={addFile}
-          style={{ flex: 1, background: '#2d3a5a', border: '1px solid #3a4a7a', borderRadius: 4, padding: '5px 0', color: '#9bb8f5', cursor: 'pointer', fontSize: 12 }}>
-          + Add file
+        <button onClick={addFile} disabled={loading}
+          style={{ flex: 1, background: '#2d3a5a', border: '1px solid #3a4a7a', borderRadius: 4, padding: '5px 0', color: '#9bb8f5', cursor: loading ? 'wait' : 'pointer', opacity: loading ? 0.6 : 1, fontSize: 12 }}>
+          {loading ? 'Importing…' : '+ Add file'}
         </button>
         <button onClick={addNote}
           style={{ flex: 1, background: '#2a2a3a', border: '1px solid #3a3a5a', borderRadius: 4, padding: '5px 0', color: '#aaa', cursor: 'pointer', fontSize: 12 }}>
