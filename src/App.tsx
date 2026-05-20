@@ -8,6 +8,7 @@ import { readMetadata } from './utils/exiftool';
 import { readPeopleJson } from './utils/people';
 import { readDocumentsJson } from './utils/documents';
 import Photos from './Photos';
+import PeopleRoute from './People';
 
 const path = (window as any).require('path') as typeof import('path');
 const DIR_PATH = path.join(process.cwd(), 'public', 'images');
@@ -47,7 +48,7 @@ function AppShell() {
         <Route path="/" element={<h1 style={{ padding: 24 }}>Home</h1>} />
         <Route path="/photos" element={<Photos />} />
         <Route path="/documents" element={<div>Documents</div>} />
-        <Route path="/people/*" element={<div>People</div>} />
+        <Route path="/people/*" element={<PeopleRoute />} />
         <Route path="/tree" element={<h1 style={{ padding: 24 }}>Tree</h1>} />
       </Routes>
     </div>
