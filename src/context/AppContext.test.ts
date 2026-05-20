@@ -2,7 +2,7 @@ import { appReducer, initialState } from './AppContext';
 import { Photo, Person, FamilyDocument, FaceRegion } from './types';
 
 const photo: Photo = {
-  file: 'IMG_001.jpg', path: '/images/IMG_001.jpg',
+  file: 'IMG_001.jpg', path: '/images/IMG_001.jpg', fsPath: '/data/images/IMG_001.jpg',
   date: '2020:01:01', location: null, camera: 'iPhone', caption: null, faces: [],
 };
 const person: Person = { id: 'p1', name: 'Alice' };

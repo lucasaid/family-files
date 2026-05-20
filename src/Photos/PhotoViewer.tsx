@@ -68,7 +68,7 @@ export default function PhotoViewer() {
           }}>
             <FaceOverlay faces={activePhoto.faces} dimmed={isTaggingMode} />
             {isTaggingMode && (
-              <FaceTagger filePath={activePhoto.path} fileName={activePhoto.file} />
+              <FaceTagger filePath={activePhoto.fsPath} fileName={activePhoto.file} />
             )}
           </div>
         );

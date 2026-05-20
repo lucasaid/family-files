@@ -46,6 +46,7 @@ export async function readMetadata(dirPath: string, people: Person[]): Promise<P
   return items.map(item => ({
     file: item.FileName,
     path: `/images/${item.FileName}`,
+    fsPath: `${dirPath}/${item.FileName}`,
     date: parseDate(item.DateTimeOriginal),
     location: parseLocation(item),
     camera: [item.Make, item.Model].filter(Boolean).join(' ') || null,

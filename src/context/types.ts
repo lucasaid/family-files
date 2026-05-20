@@ -11,7 +11,8 @@ export interface FaceRegion {
 
 export interface Photo {
   file: string;
-  path: string;
+  path: string;   // display URL (e.g. /images/foo.jpg)
+  fsPath: string; // absolute filesystem path for exiftool
   date: string | null;
   location: { lat: number; lng: number; placeName?: string } | null;
   camera: string | null;

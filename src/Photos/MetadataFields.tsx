@@ -47,7 +47,7 @@ export default function MetadataFields({ readOnly }: { readOnly: boolean }) {
     setError(null);
     try {
       const location = draft.locationStr ? parseLocation(draft.locationStr) : null;
-      await writeMeta(activePhoto.path, {
+      await writeMeta(activePhoto.fsPath, {
         date: draft.date || undefined,
         caption: draft.caption ?? undefined,
         location: location ?? undefined,

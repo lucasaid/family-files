@@ -11,7 +11,7 @@ export default function PeopleList() {
   const removeFace = async (name: string) => {
     const remaining = activePhoto.faces.filter(f => f.name !== name);
     try {
-      await writeFaceRegions(activePhoto.path, remaining);
+      await writeFaceRegions(activePhoto.fsPath, remaining);
       dispatch({ type: 'REMOVE_FACE_REGION', file: activePhoto.file, regionName: name });
     } catch (err) {
       alert(`Failed to remove face tag: ${(err as Error).message}`);
