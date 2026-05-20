@@ -1,5 +1,5 @@
 // src/Photos/PhotoViewer.tsx
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
 import FaceOverlay from './FaceOverlay';
 import FaceTagger from './FaceTagger';
@@ -26,15 +26,22 @@ export default function PhotoViewer() {
   const [imgDims, setImgDims] = useState<{ w: number; h: number } | null>(null);
   const [containerSize, setContainerSize] = useState<{ w: number; h: number } | null>(null);
 
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(entries => {
+      const { width, height } = entries[0].contentRect;
+      setContainerSize({ w: width, h: height });
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   if (!activePhoto) return null;
 
   const handleImgLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
     const img = e.currentTarget;
     setImgDims({ w: img.naturalWidth, h: img.naturalHeight });
-    if (containerRef.current) {
-      const rect = containerRef.current.getBoundingClientRect();
-      setContainerSize({ w: rect.width, h: rect.height });
-    }
   };
 
   const handleFullscreen = () => {
