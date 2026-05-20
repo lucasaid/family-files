@@ -2,7 +2,8 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { writeFaceRegions } from '../utils/exiftool';
-import { FaceRegion } from '../context/types';
+import { writePeopleJson } from '../utils/people';
+import { FaceRegion, Person } from '../context/types';
 
 interface Props {
   filePath: string;
@@ -68,13 +69,16 @@ export default function FaceTagger({ filePath, fileName }: Props) {
   const filteredPeople = people.filter(p =>
     p.name.toLowerCase().includes(nameQuery.toLowerCase())
   );
+  const trimmed = nameQuery.trim();
+  const exactMatch = people.find(p => p.name.toLowerCase() === trimmed.toLowerCase());
+  const canAddNew = trimmed.length > 0 && !exactMatch;
 
-  const confirmTag = async (name: string) => {
+  const confirmTag = async (person: Person) => {
     if (!box || !activePhoto) return;
     setSaving(true);
     const region: FaceRegion = {
-      personId: people.find(p => p.name === name)?.id ?? null,
-      name,
+      personId: person.id,
+      name: person.name,
       x: box.x, y: box.y, w: box.w, h: box.h,
     };
     try {
@@ -88,6 +92,18 @@ export default function FaceTagger({ filePath, fileName }: Props) {
       setSaving(false);
       setBox(null);
     }
+  };
+
+  const createAndTag = async () => {
+    if (!trimmed) return;
+    const person: Person = { id: crypto.randomUUID(), name: trimmed };
+    dispatch({ type: 'ADD_PERSON', person });
+    try {
+      await writePeopleJson([...people, person]);
+    } catch {
+      // person is in state; json write failure is non-fatal here
+    }
+    confirmTag(person);
   };
 
   return (
@@ -122,7 +138,10 @@ export default function FaceTagger({ filePath, fileName }: Props) {
             value={nameQuery}
             onChange={e => setNameQuery(e.target.value)}
             onKeyDown={e => {
-              if (e.key === 'Enter' && filteredPeople.length > 0) confirmTag(filteredPeople[0].name);
+              if (e.key === 'Enter') {
+                if (filteredPeople.length > 0) confirmTag(filteredPeople[0]);
+                else if (canAddNew) createAndTag();
+              }
             }}
             placeholder="Search people…"
             style={{
@@ -134,7 +153,7 @@ export default function FaceTagger({ filePath, fileName }: Props) {
           {filteredPeople.map(p => (
             <div
               key={p.id}
-              onClick={() => !saving && confirmTag(p.name)}
+              onClick={() => !saving && confirmTag(p)}
               style={{
                 padding: '3px 6px', fontSize: 11, color: '#bbb',
                 borderRadius: 2, cursor: saving ? 'wait' : 'pointer',
@@ -145,7 +164,23 @@ export default function FaceTagger({ filePath, fileName }: Props) {
               {p.name}
             </div>
           ))}
-          {filteredPeople.length === 0 && (
+          {canAddNew && (
+            <div
+              onClick={() => !saving && createAndTag()}
+              style={{
+                padding: '3px 6px', fontSize: 11, color: '#7ecfa0',
+                borderRadius: 2, cursor: saving ? 'wait' : 'pointer',
+                borderTop: filteredPeople.length > 0 ? '1px solid #2a3a5a' : 'none',
+                marginTop: filteredPeople.length > 0 ? 4 : 0,
+                paddingTop: filteredPeople.length > 0 ? 6 : 3,
+              }}
+              onMouseEnter={e => (e.currentTarget.style.background = '#1a3a2a')}
+              onMouseLeave={e => (e.currentTarget.style.background = '')}
+            >
+              + Add "{trimmed}"
+            </div>
+          )}
+          {filteredPeople.length === 0 && !canAddNew && (
             <div style={{ fontSize: 11, color: '#666', padding: '3px 6px' }}>No people found</div>
           )}
         </div>
