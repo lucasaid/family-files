@@ -18,7 +18,9 @@ function createWindow () {
   win.loadURL('http://localhost:3000');
 
   // Open the DevTools.
-  win.webContents.openDevTools()
+  if (process.env.NODE_ENV === 'development') {
+    win.webContents.openDevTools();
+  }
 }
 
 // This method will be called when Electron has finished
@@ -48,5 +50,9 @@ app.on('activate', () => {
 // code. You can also put them in separate files and require them here.
 
 ipcMain.handle('show-open-dialog', async (event, options) => {
-  return dialog.showOpenDialog(options);
+  const safeOptions = {
+    properties: options.properties || [],
+    filters: options.filters || undefined,
+  };
+  return dialog.showOpenDialog(safeOptions);
 });
