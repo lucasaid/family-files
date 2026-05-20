@@ -6,9 +6,11 @@ import PersonPhotoGrid from './PersonPhotoGrid';
 import PersonDocList from './PersonDocList';
 
 export default function PersonDetail() {
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams<{ id?: string }>();
   const { state } = useAppContext();
   const navigate = useNavigate();
+
+  if (!id) return <div style={{ padding: 24, color: '#888' }}>Invalid URL.</div>;
   const person = state.people.find(p => p.id === id);
 
   if (!person) return <div style={{ padding: 24, color: '#888' }}>Person not found.</div>;

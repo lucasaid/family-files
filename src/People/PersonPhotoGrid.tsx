@@ -22,7 +22,7 @@ export default function PersonPhotoGrid({ personId }: Props) {
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: 6 }}>
       {photos.map(photo => (
         <img
-          key={photo.file}
+          key={photo.path}
           src={photo.path}
           alt={photo.file}
           onClick={() => openPhoto(photo)}
