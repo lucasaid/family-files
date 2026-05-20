@@ -5,7 +5,7 @@ import { useAppContext } from '../context/AppContext';
 import { writePeopleJson } from '../utils/people';
 import { Person } from '../context/types';
 
-function generateId() { return Math.random().toString(36).slice(2, 10); }
+function generateId() { return crypto.randomUUID(); }
 
 export default function PeopleManager() {
   const { state, dispatch } = useAppContext();
@@ -23,20 +23,34 @@ export default function PeopleManager() {
     if (!newName.trim()) return;
     const person: Person = { id: generateId(), name: newName.trim() };
     const updated = [...people, person];
-    dispatch({ type: 'ADD_PERSON', person });
-    await writePeopleJson(updated);
-    setNewName('');
-    setAdding(false);
+    try {
+      dispatch({ type: 'ADD_PERSON', person });
+      await writePeopleJson(updated);
+      setNewName('');
+      setAdding(false);
+    } catch (err) {
+      dispatch({ type: 'REMOVE_PERSON', id: person.id });
+      alert(`Failed to save: ${(err as Error).message}`);
+    }
   };
 
   const startRename = (p: Person) => { setEditingId(p.id); setEditName(p.name); };
 
   const saveName = async (person: Person) => {
     if (!editName.trim()) return;
+    if (editName.trim() === person.name) {
+      setEditingId(null);
+      return;
+    }
     const updated = people.map(p => p.id === person.id ? { ...p, name: editName.trim() } : p);
-    dispatch({ type: 'UPDATE_PERSON', person: { ...person, name: editName.trim() } });
-    await writePeopleJson(updated);
-    setEditingId(null);
+    try {
+      dispatch({ type: 'UPDATE_PERSON', person: { ...person, name: editName.trim() } });
+      await writePeopleJson(updated);
+      setEditingId(null);
+    } catch (err) {
+      dispatch({ type: 'UPDATE_PERSON', person });
+      alert(`Failed to save: ${(err as Error).message}`);
+    }
   };
 
   const deletePerson = async (person: Person) => {
@@ -47,18 +61,25 @@ export default function PeopleManager() {
       : `Delete ${person.name}?`;
     if (!window.confirm(msg)) return;
     const updated = people.filter(p => p.id !== person.id);
-    dispatch({ type: 'REMOVE_PERSON', id: person.id });
-    await writePeopleJson(updated);
+    try {
+      dispatch({ type: 'REMOVE_PERSON', id: person.id });
+      await writePeopleJson(updated);
+    } catch (err) {
+      dispatch({ type: 'ADD_PERSON', person });
+      alert(`Failed to delete: ${(err as Error).message}`);
+    }
   };
 
   return (
     <div style={{ padding: 24, maxWidth: 600 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <h2 style={{ margin: 0, color: '#ddd' }}>People</h2>
-        <button onClick={() => setAdding(true)}
-          style={{ background: '#2d3a5a', border: '1px solid #3a4a7a', borderRadius: 4, padding: '5px 14px', color: '#9bb8f5', cursor: 'pointer', fontSize: 13 }}>
-          Add person
-        </button>
+        {!adding && (
+          <button onClick={() => setAdding(true)}
+            style={{ background: '#2d3a5a', border: '1px solid #3a4a7a', borderRadius: 4, padding: '5px 14px', color: '#9bb8f5', cursor: 'pointer', fontSize: 13 }}>
+            Add person
+          </button>
+        )}
       </div>
 
       {adding && (
