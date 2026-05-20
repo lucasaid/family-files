@@ -38,18 +38,18 @@ export default function PhotoViewer() {
     return () => ro.disconnect();
   }, []);
 
+  useEffect(() => {
+    const onChange = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', onChange);
+    return () => document.removeEventListener('fullscreenchange', onChange);
+  }, []);
+
   if (!activePhoto) return null;
 
   const handleImgLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
     const img = e.currentTarget;
     setImgDims({ w: img.naturalWidth, h: img.naturalHeight });
   };
-
-  useEffect(() => {
-    const onChange = () => setIsFullscreen(!!document.fullscreenElement);
-    document.addEventListener('fullscreenchange', onChange);
-    return () => document.removeEventListener('fullscreenchange', onChange);
-  }, []);
 
   const handleFullscreen = () => {
     if (document.fullscreenElement) {
