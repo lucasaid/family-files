@@ -4,13 +4,38 @@ import { useAppContext } from '../context/AppContext';
 import FaceOverlay from './FaceOverlay';
 import FaceTagger from './FaceTagger';
 
+function getRenderedImageBounds(
+  nat: { w: number; h: number },
+  container: { w: number; h: number }
+): { width: number; height: number } {
+  const natAspect = nat.w / nat.h;
+  const conAspect = container.w / container.h;
+  if (natAspect > conAspect) {
+    // constrained by width
+    return { width: container.w, height: container.w / natAspect };
+  } else {
+    // constrained by height
+    return { width: container.h * natAspect, height: container.h };
+  }
+}
+
 export default function PhotoViewer() {
   const { state } = useAppContext();
   const { activePhoto, isTaggingMode } = state;
   const containerRef = useRef<HTMLDivElement>(null);
-  const [imgDims, setImgDims] = useState<{ width: number; height: number } | null>(null);
+  const [imgDims, setImgDims] = useState<{ w: number; h: number } | null>(null);
+  const [containerSize, setContainerSize] = useState<{ w: number; h: number } | null>(null);
 
   if (!activePhoto) return null;
+
+  const handleImgLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const img = e.currentTarget;
+    setImgDims({ w: img.naturalWidth, h: img.naturalHeight });
+    if (containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      setContainerSize({ w: rect.width, h: rect.height });
+    }
+  };
 
   const handleFullscreen = () => {
     containerRef.current?.requestFullscreen();
@@ -19,25 +44,35 @@ export default function PhotoViewer() {
   return (
     <div
       ref={containerRef}
-      style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}
+      style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', background: '#000' }}
     >
       <img
         src={activePhoto.path}
         alt={activePhoto.file}
-        onLoad={e => {
-          const el = e.currentTarget;
-          setImgDims({ width: el.naturalWidth, height: el.naturalHeight });
-        }}
+        onLoad={handleImgLoad}
         style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', display: 'block' }}
       />
 
-      {/* Overlay container — sized to match the rendered image */}
-      <div style={{ position: 'absolute', inset: 0, pointerEvents: isTaggingMode ? 'auto' : 'none' }}>
-        <FaceOverlay faces={activePhoto.faces} dimmed={isTaggingMode} />
-        {isTaggingMode && imgDims && (
-          <FaceTagger filePath={activePhoto.path} fileName={activePhoto.file} />
-        )}
-      </div>
+      {/* Overlay container — sized to match the rendered image only, not the full container */}
+      {imgDims && containerSize && (() => {
+        const bounds = getRenderedImageBounds(imgDims, containerSize);
+        return (
+          <div style={{
+            position: 'absolute',
+            width: bounds.width,
+            height: bounds.height,
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            pointerEvents: isTaggingMode ? 'auto' : 'none',
+          }}>
+            <FaceOverlay faces={activePhoto.faces} dimmed={isTaggingMode} />
+            {isTaggingMode && (
+              <FaceTagger filePath={activePhoto.path} fileName={activePhoto.file} />
+            )}
+          </div>
+        );
+      })()}
 
       {isTaggingMode && (
         <div style={{

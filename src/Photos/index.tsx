@@ -15,6 +15,7 @@ export default function PhotosRoute() {
 
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
+      if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement).tagName)) return;
       if (!activePhoto || photos.length === 0) return;
       const idx = photos.findIndex(p => p.file === activePhoto.file);
       if (e.key === 'ArrowRight' && idx < photos.length - 1) selectPhoto(photos[idx + 1]);
