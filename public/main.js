@@ -1,26 +1,24 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron')
 
+// Fix GPU crashes on macOS Sequoia and other systems
+app.disableHardwareAcceleration()
+
 function createWindow () {
   // Create the browser window.
   const win = new BrowserWindow({
-    width: 800,
-    height: 600,
-    title:"Family Files",
+    width: 1200,
+    height: 800,
+    title: 'Family Files',
     webPreferences: {
       nodeIntegration: true,
-      enableRemoteModule: true,
       contextIsolation: false,
-      nodeIntegrationInWorker: true
     }
   })
 
-  //load the index.html from a url
   win.loadURL('http://localhost:3000');
 
-  // Open the DevTools.
-  if (process.env.NODE_ENV === 'development') {
-    win.webContents.openDevTools();
-  }
+  // Always open DevTools so you can see errors during development
+  win.webContents.openDevTools();
 }
 
 // This method will be called when Electron has finished
