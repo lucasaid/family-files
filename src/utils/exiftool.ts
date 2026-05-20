@@ -108,8 +108,16 @@ export async function writeMeta(
 
   // Keywords must be written in two separate exiftool passes:
   // clear+add in the same invocation doesn't reliably replace list tags.
+  // Clear all keyword namespaces (IPTC, XMP:Subject, XMP hierarchical).
   if (meta.keywords !== undefined) {
-    await run(['-overwrite_original', '-IPTC:Keywords=', filePath]);
+    await run([
+      '-overwrite_original',
+      '-IPTC:Keywords=',
+      '-XMP:Subject=',
+      '-XMP:HierarchicalSubject=',
+      '-XMP:LastKeywordXMP=',
+      filePath,
+    ]);
     if (meta.keywords.length > 0) {
       const kwArgs = ['-overwrite_original'];
       for (const kw of meta.keywords) kwArgs.push(`-IPTC:Keywords+=${kw}`);
