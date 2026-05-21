@@ -4,6 +4,7 @@ import { AppState, AppAction, Photo } from './types';
 export const initialState: AppState = {
   photos: [],
   activePhoto: null,
+  albums: [],
   documents: [],
   activeDocument: null,
   people: [],
@@ -86,6 +87,21 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         documents: state.documents.filter(d => d.id !== action.id),
         activeDocument: state.activeDocument?.id === action.id ? null : state.activeDocument,
       };
+    case 'SET_ALBUMS':
+      return { ...state, albums: action.albums };
+    case 'ADD_ALBUM':
+      return { ...state, albums: [...state.albums, action.name].sort() };
+    case 'MOVE_PHOTO_TO_ALBUM': {
+      const updatePhoto = (p: Photo) => p.file === action.file
+        ? { ...p, album: action.album, fsPath: action.newFsPath, path: action.newPath }
+        : p;
+      return {
+        ...state,
+        photos: state.photos.map(updatePhoto),
+        activePhoto: state.activePhoto?.file === action.file
+          ? updatePhoto(state.activePhoto) : state.activePhoto,
+      };
+    }
     case 'SET_PEOPLE':
       return { ...state, people: action.people };
     case 'ADD_PERSON':

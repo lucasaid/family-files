@@ -3,6 +3,7 @@ import { Photo, Person, FamilyDocument } from '../context/types';
 import { readMetadata } from './exiftool';
 import { readPeopleJson, writePeopleJson } from './people';
 import { readDocumentsJson } from './documents';
+import { listAlbums } from './albums';
 
 const path = (window as any).require('path') as typeof import('path');
 const fs = (window as any).require('fs') as typeof import('fs');
@@ -11,6 +12,7 @@ const IMAGES_DIR = path.join(process.cwd(), 'images');
 
 export interface SyncResult {
   photos: Photo[];
+  albums: string[];
   people: Person[];
   documents: FamilyDocument[];
   addedPeople: string[];   // names newly created in people.json
@@ -35,9 +37,22 @@ export async function syncAndLoad(
   // Check images dir exists before scanning
   onStatus('scanning-images');
   let photos: Photo[] = [];
+  let albums: string[] = [];
   try {
     await fs.promises.access(IMAGES_DIR);
-    photos = await readMetadata(IMAGES_DIR, people);
+    albums = await listAlbums();
+    const rootPhotos = (await readMetadata(IMAGES_DIR, people)).map(p => ({ ...p, album: null as null }));
+    const albumPhotoArrays = await Promise.all(
+      albums.map(async albumName => {
+        try {
+          const ap = await readMetadata(path.join(IMAGES_DIR, albumName), people);
+          return ap.map(p => ({ ...p, album: albumName }));
+        } catch {
+          return [] as Photo[];
+        }
+      })
+    );
+    photos = [...rootPhotos, ...albumPhotoArrays.flat()];
   } catch {
     // No images dir yet — start with empty
   }
@@ -91,5 +106,5 @@ export async function syncAndLoad(
 
   onStatus('done');
 
-  return { photos: resolvedPhotos, people: finalPeople, documents, addedPeople };
+  return { photos: resolvedPhotos, albums, people: finalPeople, documents, addedPeople };
 }

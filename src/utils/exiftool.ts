@@ -60,6 +60,7 @@ export async function readMetadata(dirPath: string, people: Person[]): Promise<P
     file: item.FileName,
     path: `file://${dirPath}/${item.FileName}`,
     fsPath: `${dirPath}/${item.FileName}`,
+    album: null as null,
     date: parseDate(item.DateTimeOriginal),
     location: parseLocation(item),
     city: item.City ?? null,

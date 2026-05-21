@@ -11,8 +11,9 @@ export interface FaceRegion {
 
 export interface Photo {
   file: string;
-  path: string;   // display URL (e.g. /images/foo.jpg)
+  path: string;   // display URL (e.g. file:///abs/path/images/foo.jpg)
   fsPath: string; // absolute filesystem path for exiftool
+  album: string | null; // subdirectory name within images/, null = root
   date: string | null;
   location: { lat: number; lng: number } | null;
   city: string | null;
@@ -44,6 +45,7 @@ export interface Person {
 export interface AppState {
   photos: Photo[];
   activePhoto: Photo | null;
+  albums: string[];
   documents: FamilyDocument[];
   activeDocument: FamilyDocument | null;
   people: Person[];
@@ -66,6 +68,9 @@ export type AppAction =
   | { type: 'ADD_DOCUMENT'; document: FamilyDocument }
   | { type: 'UPDATE_DOCUMENT'; document: FamilyDocument }
   | { type: 'REMOVE_DOCUMENT'; id: string }
+  | { type: 'SET_ALBUMS'; albums: string[] }
+  | { type: 'ADD_ALBUM'; name: string }
+  | { type: 'MOVE_PHOTO_TO_ALBUM'; file: string; album: string | null; newFsPath: string; newPath: string }
   | { type: 'SET_PEOPLE'; people: Person[] }
   | { type: 'ADD_PERSON'; person: Person }
   | { type: 'UPDATE_PERSON'; person: Person }

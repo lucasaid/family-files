@@ -7,6 +7,7 @@ import PeopleRoute from './People';
 import DocumentsRoute from './Documents';
 import LoadingScreen from './LoadingScreen';
 import Home from './Home';
+import AlbumsRoute from './Albums';
 
 interface LoadState {
   status: SyncStatus;
@@ -18,6 +19,7 @@ interface LoadState {
 const NAV_LINKS = [
   { to: '/', label: 'Home', end: true },
   { to: '/photos', label: 'Photos' },
+  { to: '/albums', label: 'Albums' },
   { to: '/documents', label: 'Documents' },
   { to: '/people', label: 'People' },
 ];
@@ -113,6 +115,7 @@ function AppShell() {
       .then(result => {
         dispatch({ type: 'SET_PEOPLE', people: result.people });
         dispatch({ type: 'SET_PHOTOS', photos: result.photos });
+        dispatch({ type: 'SET_ALBUMS', albums: result.albums });
         dispatch({ type: 'SET_DOCUMENTS', documents: result.documents });
         setLoad(prev => ({ ...prev, addedPeople: result.addedPeople, done: true }));
       })
@@ -132,6 +135,8 @@ function AppShell() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/photos" element={<Photos />} />
+          <Route path="/albums" element={<AlbumsRoute />} />
+          <Route path="/albums/:albumName" element={<AlbumsRoute />} />
           <Route path="/documents" element={<DocumentsRoute />} />
           <Route path="/people/*" element={<PeopleRoute />} />
           <Route path="/tree" element={<h1 style={{ padding: 24, color: '#ddd' }}>Tree</h1>} />

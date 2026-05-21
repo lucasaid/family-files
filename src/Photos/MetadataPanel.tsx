@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
 import MetadataFields from './MetadataFields';
 import PeopleList from './PeopleList';
+import AlbumPicker from './AlbumPicker';
 
 export default function MetadataPanel() {
   const { state, dispatch } = useAppContext();
@@ -27,6 +28,14 @@ export default function MetadataPanel() {
       <div style={{ flex: 1, overflow: 'auto', padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 14 }}>
         <MetadataFields readOnly={isTaggingMode} />
         <PeopleList />
+      </div>
+
+      {/* Album assignment */}
+      <div style={{ padding: '8px 12px', borderTop: '1px solid #252535' }}>
+        <div style={{ fontSize: 10, fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#444', marginBottom: 5 }}>
+          Album
+        </div>
+        <AlbumPicker />
       </div>
 
       <div style={{ padding: '8px 12px', borderTop: '1px solid #252535', display: 'flex', flexDirection: 'column', gap: 6 }}>
