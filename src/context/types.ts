@@ -60,6 +60,7 @@ export type AppAction =
   | { type: 'SET_TAGGING_MODE'; enabled: boolean }
   | { type: 'TOGGLE_FACES' }
   | { type: 'RENAME_PERSON_IN_FACES'; personId: string; newName: string }
+  | { type: 'UPDATE_FACE_REGION'; file: string; regionName: string; region: FaceRegion }
   | { type: 'SET_DOCUMENTS'; documents: FamilyDocument[] }
   | { type: 'SET_ACTIVE_DOCUMENT'; document: FamilyDocument | null }
   | { type: 'ADD_DOCUMENT'; document: FamilyDocument }

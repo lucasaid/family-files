@@ -50,7 +50,7 @@ export default function MetadataPanel() {
             fontSize: 12, cursor: 'pointer',
           }}
         >
-          {isTaggingMode ? '✕ Exit tagging mode' : '＋ Tag faces'}
+          {isTaggingMode ? '✕ Close face tag editor' : 'Face tag editor'}
         </button>
       </div>
     </div>

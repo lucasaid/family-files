@@ -1,6 +1,7 @@
 // src/Photos/PhotoViewer.tsx
 import React, { useRef, useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
+import { writeFaceRegions } from '../utils/exiftool';
 import FaceOverlay from './FaceOverlay';
 import FaceTagger from './FaceTagger';
 
@@ -84,7 +85,23 @@ export default function PhotoViewer() {
             transform: 'translate(-50%, -50%)',
             pointerEvents: isTaggingMode ? 'auto' : 'none',
           }}>
-            {showFaces && <FaceOverlay faces={activePhoto.faces} dimmed={isTaggingMode} />}
+            {showFaces && (
+              <FaceOverlay
+                faces={activePhoto.faces}
+                dimmed={isTaggingMode}
+                onMove={isTaggingMode ? async (regionName, newBox) => {
+                  const updatedFaces = activePhoto.faces.map(f =>
+                    f.name === regionName ? { ...f, ...newBox } : f
+                  );
+                  try {
+                    await writeFaceRegions(activePhoto.fsPath, updatedFaces);
+                    dispatch({ type: 'UPDATE_FACE_REGION', file: activePhoto.file, regionName, region: { ...activePhoto.faces.find(f => f.name === regionName)!, ...newBox } });
+                  } catch (err) {
+                    alert(`Failed to move face tag: ${(err as Error).message}`);
+                  }
+                } : undefined}
+              />
+            )}
             {isTaggingMode && (
               <FaceTagger filePath={activePhoto.fsPath} fileName={activePhoto.file} />
             )}
