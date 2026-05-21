@@ -5,7 +5,7 @@ const fs = (window as any).require('fs') as typeof import('fs');
 const path = (window as any).require('path') as typeof import('path');
 
 const DOCS_PATH = path.join(process.cwd(), 'documents.json');
-const DOCS_DIR = path.join(process.cwd(), 'public', 'documents');
+const DOCS_DIR = path.join(process.cwd(), 'documents');
 
 export async function readDocumentsJson(): Promise<FamilyDocument[]> {
   try {

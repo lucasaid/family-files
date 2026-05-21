@@ -24,7 +24,7 @@ export default function DocumentViewer({ doc }: Props) {
   const { shell } = (window as any).require('electron');
   const path = (window as any).require('path') as typeof import('path');
   const ext = getExt(doc.filePath);
-  const fullPath = path.join(process.cwd(), 'public', 'documents', doc.filePath);
+  const fullPath = path.join(process.cwd(), 'documents', doc.filePath);
   const fileUrl = `file://${fullPath}`;
 
   if (IMAGE_EXTS.includes(ext)) {
