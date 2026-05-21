@@ -21,7 +21,7 @@ function getRenderedImageBounds(
 }
 
 export default function PhotoViewer() {
-  const { state } = useAppContext();
+  const { state, dispatch } = useAppContext();
   const { activePhoto, isTaggingMode, showFaces } = state;
   const containerRef = useRef<HTMLDivElement>(null);
   const [imgDims, setImgDims] = useState<{ w: number; h: number } | null>(null);
