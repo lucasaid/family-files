@@ -5,10 +5,11 @@ import reportWebVitals from './reportWebVitals';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import './theme.css';
 
-// Override Bootstrap's light body background
-document.body.style.background = '#09090f';
-document.body.style.color = '#ddd';
+document.documentElement.setAttribute('data-theme',
+  (() => { try { return localStorage.getItem('theme') || 'dark'; } catch { return 'dark'; } })()
+);
 document.body.style.margin = '0';
 
 const root = ReactDOM.createRoot(

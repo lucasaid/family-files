@@ -10,8 +10,10 @@ interface Props {
 export default function Filmstrip({ photos, activePhoto, onSelect }: Props) {
   return (
     <div style={{
-      display: 'flex', gap: 4, padding: '4px 8px', background: '#0a0a0a',
-      overflowX: 'auto', flexShrink: 0, borderTop: '1px solid #222',
+      display: 'flex', gap: 4, padding: '4px 8px',
+      background: 'var(--bg-filmstrip)',
+      overflowX: 'auto', flexShrink: 0,
+      borderTop: '1px solid var(--border)',
     }}>
       {photos.map(photo => (
         <img
@@ -22,7 +24,9 @@ export default function Filmstrip({ photos, activePhoto, onSelect }: Props) {
           style={{
             width: 56, height: 44, objectFit: 'cover', flexShrink: 0,
             borderRadius: 2, cursor: 'pointer',
-            border: photo.file === activePhoto?.file ? '2px solid #4a90d9' : '2px solid transparent',
+            border: photo.file === activePhoto?.file
+              ? '2px solid var(--accent)'
+              : '2px solid transparent',
           }}
         />
       ))}

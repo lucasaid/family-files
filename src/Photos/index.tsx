@@ -42,7 +42,7 @@ export default function PhotosRoute() {
   }, [filteredPhotos, activePhoto, selectPhoto]);
 
   if (photos.length === 0) {
-    return <div style={{ padding: 24, color: '#888' }}>No photos found in images/</div>;
+    return <div style={{ padding: 24, color: 'var(--text-3)' }}>No photos found in images/</div>;
   }
 
   const backLabel = albumFilter !== null ? albumFilter : personName;
@@ -52,14 +52,13 @@ export default function PhotosRoute() {
 
   return (
     <div style={{ display: 'flex', flex: 1, overflow: 'hidden', height: '100%', flexDirection: 'column' }}>
-      {/* Breadcrumb — only shown when a filter is active */}
+      {/* Breadcrumb */}
       {backLabel && backPath && (
         <div style={{
           display: 'flex', alignItems: 'center', gap: 8,
-          padding: '0 16px',
-          height: 32, flexShrink: 0,
-          borderBottom: '1px solid #1e1e2e',
-          background: '#09090f',
+          padding: '0 16px', height: 32, flexShrink: 0,
+          borderBottom: '1px solid var(--border)',
+          background: 'var(--bg)',
         }}>
           <button
             onClick={() => navigate(backPath)}
@@ -67,15 +66,15 @@ export default function PhotosRoute() {
               background: 'none', border: 'none', padding: 0, cursor: 'pointer',
               display: 'flex', alignItems: 'center', gap: 6,
               fontSize: 11, fontWeight: 500, letterSpacing: '0.08em',
-              textTransform: 'uppercase', color: '#555',
+              textTransform: 'uppercase', color: 'var(--text-3)',
             }}
-            onMouseEnter={e => (e.currentTarget.style.color = '#9bb8f5')}
-            onMouseLeave={e => (e.currentTarget.style.color = '#555')}
+            onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent)')}
+            onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-3)')}
           >
             <span style={{ fontSize: 9 }}>←</span> {backLabel}
           </button>
-          <span style={{ color: '#2a2a3a', fontSize: 10 }}>·</span>
-          <span style={{ fontSize: 11, color: '#333', letterSpacing: '0.06em' }}>
+          <span style={{ color: 'var(--border-muted)', fontSize: 10 }}>·</span>
+          <span style={{ fontSize: 11, color: 'var(--text-4)', letterSpacing: '0.06em' }}>
             {filteredPhotos.length} {filteredPhotos.length === 1 ? 'photo' : 'photos'}
           </span>
         </div>
@@ -83,12 +82,12 @@ export default function PhotosRoute() {
 
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
         {/* Left pane */}
-        <div style={{ flex: 1.6, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: '#0d0d0d' }}>
+        <div style={{ flex: 1.6, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: 'var(--bg-viewer)' }}>
           <PhotoViewer />
           <Filmstrip photos={filteredPhotos} activePhoto={activePhoto} onSelect={selectPhoto} />
         </div>
         {/* Right pane */}
-        <div style={{ width: 260, flexShrink: 0, borderLeft: '1px solid #2a2a3a', overflow: 'auto', background: '#161622' }}>
+        <div style={{ width: 260, flexShrink: 0, borderLeft: '1px solid var(--border)', overflow: 'auto', background: 'var(--bg-panel)' }}>
           <MetadataPanel />
         </div>
       </div>

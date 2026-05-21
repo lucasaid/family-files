@@ -1,0 +1,95 @@
+/* src/theme.css — CSS custom properties for dark/light themes */
+
+:root[data-theme="dark"] {
+  --bg:            #09090f;
+  --bg-subtle:     #0d0d14;
+  --bg-panel:      #161622;
+  --bg-card:       #111111;
+  --bg-elevated:   #1a1a2a;
+  --bg-active:     #1e2535;
+  --bg-viewer:     #000000;
+  --bg-filmstrip:  #0a0a0a;
+
+  --border:        #1e1e2e;
+  --border-dim:    #252535;
+  --border-muted:  #2a2a3a;
+
+  --text-1:        #dddddd;
+  --text-2:        #aaaaaa;
+  --text-3:        #666666;
+  --text-4:        #444444;
+  --text-5:        #333333;
+  --text-heading:  #c8d8f8;
+
+  --accent:        #9bb8f5;
+  --amber:         #f0b060;
+  --green:         #7ecfa0;
+
+  --input-bg:      #0d0d14;
+  --input-border:  #2a2a3a;
+  --input-text:    #dddddd;
+
+  --btn-save-bg:        #2d5a2d;
+  --btn-save-border:    #3a7a3a;
+  --btn-save-text:      #7ecfa0;
+  --btn-cancel-bg:      #2a2a3a;
+  --btn-cancel-border:  #3a3a4a;
+  --btn-cancel-text:    #888888;
+  --btn-primary-bg:     #2d3a5a;
+  --btn-primary-border: #3a4a7a;
+  --btn-primary-text:   #9bb8f5;
+
+  --pill-bg:       #1e2a3a;
+  --pill-border:   #2a3a4a;
+  --pill-text:     #9bb8f5;
+
+  --tag-bg:        #1a2230;
+  --tag-border:    #2a3a50;
+}
+
+:root[data-theme="light"] {
+  --bg:            #f6f4ef;
+  --bg-subtle:     #ffffff;
+  --bg-panel:      #edebe4;
+  --bg-card:       #fafaf6;
+  --bg-elevated:   #e4e1da;
+  --bg-active:     #d8d5ce;
+  --bg-viewer:     #e8e5de;
+  --bg-filmstrip:  #dddad3;
+
+  --border:        #d5d2cb;
+  --border-dim:    #dedad3;
+  --border-muted:  #ccc9c2;
+
+  --text-1:        #1c1b18;
+  --text-2:        #4e4d49;
+  --text-3:        #79786f;
+  --text-4:        #9e9d94;
+  --text-5:        #bbbab1;
+  --text-heading:  #1a3562;
+
+  --accent:        #1d4db0;
+  --amber:         #a06010;
+  --green:         #2a7848;
+
+  --input-bg:      #ffffff;
+  --input-border:  #ccc9c2;
+  --input-text:    #1c1b18;
+
+  --btn-save-bg:        #d4edda;
+  --btn-save-border:    #7ecfa0;
+  --btn-save-text:      #1a5e35;
+  --btn-cancel-bg:      #e8e5de;
+  --btn-cancel-border:  #ccc9c2;
+  --btn-cancel-text:    #666;
+  --btn-primary-bg:     #dce5f5;
+  --btn-primary-border: #9bb8f5;
+  --btn-primary-text:   #1d4db0;
+
+  --pill-bg:       #dce5f5;
+  --pill-border:   #9bb8f5;
+  --pill-text:     #1d4db0;
+
+  --tag-bg:        #dce5f5;
+  --tag-border:    #9bb8f5;
+}

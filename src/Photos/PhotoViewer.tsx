@@ -63,7 +63,7 @@ export default function PhotoViewer() {
   return (
     <div
       ref={containerRef}
-      style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', background: '#000' }}
+      style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', background: 'var(--bg-viewer)' }}
     >
       <img
         src={activePhoto.path}
@@ -125,9 +125,9 @@ export default function PhotoViewer() {
         style={{
           position: 'absolute', top: 8, right: 8,
           background: isFullscreen ? 'rgba(155,184,245,.15)' : 'rgba(0,0,0,.6)',
-          border: `1px solid ${isFullscreen ? 'rgba(155,184,245,.5)' : '#444'}`,
+          border: `1px solid ${isFullscreen ? 'rgba(155,184,245,.5)' : 'var(--border)'}`,
           borderRadius: 3, padding: '3px 8px',
-          color: isFullscreen ? '#9bb8f5' : '#aaa',
+          color: isFullscreen ? 'var(--accent)' : 'var(--text-3)',
           fontSize: 11, cursor: 'pointer',
         }}
       >

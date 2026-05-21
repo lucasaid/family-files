@@ -50,16 +50,17 @@ function draftDirty(draft: Draft, photo: Photo): boolean {
 }
 
 const label: React.CSSProperties = {
-  fontSize: 9, textTransform: 'uppercase', letterSpacing: '.08em', color: '#555', marginBottom: 3,
+  fontSize: 9, textTransform: 'uppercase', letterSpacing: '.08em',
+  color: 'var(--text-4)', marginBottom: 3,
 };
 
 const fieldBase: React.CSSProperties = {
-  width: '100%', background: '#1e1e30', border: '1px solid #2a2a40',
-  borderRadius: 3, padding: '3px 6px', color: '#ddd', fontSize: 12,
+  width: '100%', background: 'var(--input-bg)', border: '1px solid var(--input-border)',
+  borderRadius: 3, padding: '3px 6px', color: 'var(--input-text)', fontSize: 12,
   boxSizing: 'border-box', fontFamily: 'inherit',
 };
 
-const readOnlyField: React.CSSProperties = { ...fieldBase, color: '#666' };
+const readOnlyField: React.CSSProperties = { ...fieldBase, color: 'var(--text-3)' };
 
 // ── Star rating ────────────────────────────────────────────────────────────────
 
@@ -85,7 +86,7 @@ function StarRating({ value, onChange, readOnly }: {
             }}
             style={{
               fontSize: 16, lineHeight: 1,
-              color: filled ? '#f0b060' : '#333',
+              color: filled ? 'var(--amber)' : 'var(--text-5)',
               cursor: readOnly ? 'default' : 'pointer',
               transition: 'color 0.1s',
               userSelect: 'none',
@@ -98,7 +99,7 @@ function StarRating({ value, onChange, readOnly }: {
       {value != null && !readOnly && (
         <button
           onClick={() => onChange(null)}
-          style={{ background: 'none', border: 'none', color: '#444', fontSize: 10, cursor: 'pointer', padding: '0 2px', marginLeft: 2 }}
+          style={{ background: 'none', border: 'none', color: 'var(--text-4)', fontSize: 10, cursor: 'pointer', padding: '0 2px', marginLeft: 2 }}
           title="Clear rating"
         >
           ×
@@ -133,13 +134,13 @@ function KeywordInput({ keywords, onChange, readOnly }: {
         {keywords.map(kw => (
           <span key={kw} style={{
             display: 'inline-flex', alignItems: 'center', gap: 3,
-            background: '#1a2230', border: '1px solid #2a3a50',
-            borderRadius: 10, padding: '1px 7px', fontSize: 11, color: '#9bb8f5',
+            background: 'var(--tag-bg)', border: '1px solid var(--tag-border)',
+            borderRadius: 10, padding: '1px 7px', fontSize: 11, color: 'var(--accent)',
           }}>
             {kw}
             {!readOnly && (
               <button onClick={() => remove(kw)}
-                style={{ background: 'none', border: 'none', color: '#555', cursor: 'pointer', padding: 0, fontSize: 11, lineHeight: 1 }}>
+                style={{ background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'pointer', padding: 0, fontSize: 11, lineHeight: 1 }}>
                 ×
               </button>
             )}
@@ -243,7 +244,7 @@ export default function MetadataFields({ readOnly }: { readOnly: boolean }) {
       <div>
         <div style={{ ...label, display: 'flex', alignItems: 'center', gap: 6 }}>
           <span>Rating</span>
-          {ratingSaving && <span style={{ color: '#555', fontSize: 9, letterSpacing: '.06em' }}>saving…</span>}
+          {ratingSaving && <span style={{ color: 'var(--text-4)', fontSize: 9, letterSpacing: '.06em' }}>saving…</span>}
         </div>
         <StarRating value={draft.rating} onChange={saveRating} readOnly={readOnly} />
       </div>
@@ -298,11 +299,11 @@ export default function MetadataFields({ readOnly }: { readOnly: boolean }) {
       {isDirty && !readOnly && (
         <div style={{ display: 'flex', gap: 6 }}>
           <button onClick={save} disabled={saving}
-            style={{ background: '#2d5a2d', border: '1px solid #3a7a3a', borderRadius: 3, padding: '4px 12px', color: '#7ecfa0', fontSize: 11, cursor: 'pointer' }}>
+            style={{ background: 'var(--btn-save-bg)', border: '1px solid var(--btn-save-border)', borderRadius: 3, padding: '4px 12px', color: 'var(--btn-save-text)', fontSize: 11, cursor: 'pointer' }}>
             {saving ? 'Saving…' : 'Save'}
           </button>
           <button onClick={cancel}
-            style={{ background: '#2a2a3a', border: '1px solid #3a3a4a', borderRadius: 3, padding: '4px 12px', color: '#888', fontSize: 11, cursor: 'pointer' }}>
+            style={{ background: 'var(--btn-cancel-bg)', border: '1px solid var(--btn-cancel-border)', borderRadius: 3, padding: '4px 12px', color: 'var(--btn-cancel-text)', fontSize: 11, cursor: 'pointer' }}>
             Cancel
           </button>
         </div>

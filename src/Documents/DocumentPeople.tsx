@@ -44,34 +44,34 @@ export default function DocumentPeople() {
 
   return (
     <div style={{ padding: '0 16px 16px' }}>
-      <div style={{ fontSize: 10, textTransform: 'uppercase', color: '#555', marginBottom: 6 }}>People</div>
+      <div style={{ fontSize: 10, textTransform: 'uppercase', color: 'var(--text-4)', marginBottom: 6 }}>People</div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 8 }}>
         {linkedPeople.map(p => (
-          <span key={p.id} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: '#1e2a3a', border: '1px solid #2a3a4a', borderRadius: 12, padding: '2px 8px', fontSize: 11, color: '#9bb8f5' }}>
+          <span key={p.id} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'var(--pill-bg)', border: '1px solid var(--pill-border)', borderRadius: 12, padding: '2px 8px', fontSize: 11, color: 'var(--pill-text)' }}>
             {p.name}
-            <button onClick={() => unlink(p.id)} style={{ background: 'none', border: 'none', color: '#666', cursor: 'pointer', padding: 0, lineHeight: 1 }}>×</button>
+            <button onClick={() => unlink(p.id)} style={{ background: 'none', border: 'none', color: 'var(--text-4)', cursor: 'pointer', padding: 0, lineHeight: 1 }}>×</button>
           </span>
         ))}
         <button onClick={() => setShowPicker(s => !s)}
-          style={{ background: '#1e2535', border: '1px dashed #3a4a5a', borderRadius: 12, padding: '2px 10px', fontSize: 11, color: '#667', cursor: 'pointer' }}>
+          style={{ background: 'var(--bg-elevated)', border: '1px dashed var(--border-muted)', borderRadius: 12, padding: '2px 10px', fontSize: 11, color: 'var(--text-4)', cursor: 'pointer' }}>
           + Link person
         </button>
       </div>
 
       {showPicker && (
-        <div style={{ background: '#1e2535', border: '1px solid #2a3a5a', borderRadius: 4, padding: 8, maxWidth: 200 }}>
+        <div style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-muted)', borderRadius: 4, padding: 8, maxWidth: 200 }}>
           <input autoFocus value={query} onChange={e => setQuery(e.target.value)}
             placeholder="Search…"
-            style={{ width: '100%', boxSizing: 'border-box', background: '#0d1520', border: '1px solid #2a3a5a', borderRadius: 3, padding: '3px 6px', color: '#ddd', fontSize: 11, marginBottom: 4 }} />
+            style={{ width: '100%', boxSizing: 'border-box', background: 'var(--input-bg)', border: '1px solid var(--input-border)', borderRadius: 3, padding: '3px 6px', color: 'var(--input-text)', fontSize: 11, marginBottom: 4 }} />
           {available.map(p => (
             <div key={p.id} onClick={() => link(p.id)}
-              style={{ padding: '3px 6px', fontSize: 11, color: '#bbb', borderRadius: 2, cursor: 'pointer' }}
-              onMouseEnter={e => (e.currentTarget.style.background = '#2a3a5a')}
+              style={{ padding: '3px 6px', fontSize: 11, color: 'var(--text-2)', borderRadius: 2, cursor: 'pointer' }}
+              onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-active)')}
               onMouseLeave={e => (e.currentTarget.style.background = '')}>
               {p.name}
             </div>
           ))}
-          {available.length === 0 && <div style={{ fontSize: 11, color: '#555', padding: '3px 6px' }}>No people found</div>}
+          {available.length === 0 && <div style={{ fontSize: 11, color: 'var(--text-5)', padding: '3px 6px' }}>No people found</div>}
         </div>
       )}
     </div>

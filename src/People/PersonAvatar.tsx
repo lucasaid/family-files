@@ -19,9 +19,9 @@ export default function PersonAvatar({ personId, size = 200 }: Props) {
     return (
       <div style={{
         width: size, height: size, borderRadius: 4,
-        background: '#111', border: '1px solid #1e1e2e',
+        background: 'var(--bg-card)', border: '1px solid var(--border)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        color: '#333', fontSize: size * 0.32, userSelect: 'none',
+        color: 'var(--text-5)', fontSize: size * 0.32, userSelect: 'none',
         flexShrink: 0,
       }}>
         ◻
@@ -60,7 +60,7 @@ export default function PersonAvatar({ personId, size = 200 }: Props) {
     <div style={{
       width: size, height: size, borderRadius: 4,
       overflow: 'hidden', position: 'relative',
-      background: '#111', border: '1px solid #1e1e2e',
+      background: 'var(--bg-card)', border: '1px solid var(--border)',
       flexShrink: 0,
     }}>
       <img
