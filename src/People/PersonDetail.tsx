@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 import PersonPhotoGrid from './PersonPhotoGrid';
 import PersonDocList from './PersonDocList';
+import PersonAvatar from './PersonAvatar';
 
 export default function PersonDetail() {
   const { id } = useParams<{ id?: string }>();
@@ -34,23 +35,26 @@ export default function PersonDetail() {
       </button>
 
       {/* Name + meta header */}
-      <div style={{ marginBottom: 36, paddingBottom: 24, borderBottom: '1px solid #1e1e2e' }}>
-        <h1 style={{
-          fontFamily: '"Georgia", "Times New Roman", serif',
-          fontWeight: 400, fontSize: 28, color: '#c8d8f8',
-          margin: '0 0 8px',
-          letterSpacing: '0.01em',
-        }}>
-          {person.name}
-        </h1>
-        <div style={{ display: 'flex', gap: 16 }}>
-          <span style={{ fontSize: 11, color: '#444', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-            {photoCount} {photoCount === 1 ? 'photo' : 'photos'}
-          </span>
-          <span style={{ fontSize: 11, color: '#2a2a3a' }}>·</span>
-          <span style={{ fontSize: 11, color: '#444', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-            {docCount} {docCount === 1 ? 'document' : 'documents'}
-          </span>
+      <div style={{ marginBottom: 36, paddingBottom: 24, borderBottom: '1px solid #1e1e2e', display: 'flex', gap: 24, alignItems: 'flex-start' }}>
+        <PersonAvatar personId={person.id} size={200} />
+        <div>
+          <h1 style={{
+            fontFamily: '"Georgia", "Times New Roman", serif',
+            fontWeight: 400, fontSize: 28, color: '#c8d8f8',
+            margin: '0 0 8px',
+            letterSpacing: '0.01em',
+          }}>
+            {person.name}
+          </h1>
+          <div style={{ display: 'flex', gap: 16 }}>
+            <span style={{ fontSize: 11, color: '#444', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+              {photoCount} {photoCount === 1 ? 'photo' : 'photos'}
+            </span>
+            <span style={{ fontSize: 11, color: '#2a2a3a' }}>·</span>
+            <span style={{ fontSize: 11, color: '#444', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+              {docCount} {docCount === 1 ? 'document' : 'documents'}
+            </span>
+          </div>
         </div>
       </div>
 

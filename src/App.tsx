@@ -6,6 +6,7 @@ import Photos from './Photos';
 import PeopleRoute from './People';
 import DocumentsRoute from './Documents';
 import LoadingScreen from './LoadingScreen';
+import Home from './Home';
 
 interface LoadState {
   status: SyncStatus;
@@ -111,7 +112,7 @@ function AppShell() {
       <AppNav />
       <div style={{ flex: 1, overflow: 'auto', background: '#09090f', color: '#ddd' }}>
         <Routes>
-          <Route path="/" element={<h1 style={{ padding: 24, color: '#ddd' }}>Home</h1>} />
+          <Route path="/" element={<Home />} />
           <Route path="/photos" element={<Photos />} />
           <Route path="/documents" element={<DocumentsRoute />} />
           <Route path="/people/*" element={<PeopleRoute />} />

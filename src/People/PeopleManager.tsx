@@ -5,6 +5,7 @@ import { useAppContext } from '../context/AppContext';
 import { writePeopleJson } from '../utils/people';
 import { writeFaceRegions } from '../utils/exiftool';
 import { Person } from '../context/types';
+import PersonAvatar from './PersonAvatar';
 
 function generateId() { return crypto.randomUUID(); }
 
@@ -217,7 +218,7 @@ export default function PeopleManager() {
                 display: 'flex',
                 alignItems: 'center',
                 gap: 12,
-                padding: '11px 0',
+                padding: '8px 0',
                 borderBottom: '1px solid #1a1a26',
                 transition: 'background 0.1s',
               }}
@@ -249,6 +250,9 @@ export default function PeopleManager() {
                   }}>
                     {String(i + 1).padStart(2, '0')}
                   </span>
+
+                  {/* Avatar */}
+                  <PersonAvatar personId={person.id} size={40} />
 
                   {/* Name */}
                   <span

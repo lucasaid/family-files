@@ -76,7 +76,6 @@ export default function FaceTagger({ filePath, fileName }: Props) {
     try {
       await writeFaceRegions(filePath, [...activePhoto.faces, region]);
       dispatch({ type: 'ADD_FACE_REGION', file: fileName, region });
-      dispatch({ type: 'SET_TAGGING_MODE', enabled: false });
     } catch (err) {
       alert(`Failed to save face tag: ${(err as Error).message}`);
     } finally {
