@@ -15,7 +15,7 @@ export default function AlbumView() {
 
   const openPhoto = (photo: Photo) => {
     dispatch({ type: 'SET_ACTIVE_PHOTO', photo });
-    navigate('/photos');
+    navigate(`/photos?album=${encodeURIComponent(albumName)}`);
   };
 
   return (

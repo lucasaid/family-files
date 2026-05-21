@@ -22,7 +22,7 @@ export default function PersonPhotoGrid({ personId }: Props) {
 
   const openPhoto = (photo: Photo) => {
     dispatch({ type: 'SET_ACTIVE_PHOTO', photo });
-    navigate('/photos');
+    navigate(`/photos?person=${encodeURIComponent(personId)}`);
   };
 
   return (
