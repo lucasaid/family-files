@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { HashRouter, Route, Routes, NavLink } from 'react-router-dom';
+import { HashRouter, Route, Routes, NavLink, useNavigate } from 'react-router-dom';
 import { AppProvider, useAppContext } from './context/AppContext';
 import { syncAndLoad, SyncStatus } from './utils/sync';
 import Photos from './Photos';
@@ -23,6 +23,7 @@ const NAV_LINKS = [
 ];
 
 function AppNav() {
+  const navigate = useNavigate();
   return (
     <nav style={{
       display: 'flex', alignItems: 'center', gap: 0,
@@ -32,6 +33,23 @@ function AppNav() {
       height: 44,
       flexShrink: 0,
     }}>
+      {/* Back button */}
+      <button
+        onClick={() => navigate(-1)}
+        title="Go back"
+        style={{
+          background: 'none', border: 'none', padding: '0 12px 0 0',
+          color: '#444', fontSize: 16, cursor: 'pointer',
+          display: 'flex', alignItems: 'center',
+          transition: 'color 0.15s',
+          lineHeight: 1,
+        }}
+        onMouseEnter={e => (e.currentTarget.style.color = '#9bb8f5')}
+        onMouseLeave={e => (e.currentTarget.style.color = '#444')}
+      >
+        ←
+      </button>
+
       {/* Wordmark */}
       <span style={{
         fontFamily: '"Georgia", "Times New Roman", serif',
