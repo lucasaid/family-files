@@ -8,7 +8,7 @@ export async function listAlbums(): Promise<string[]> {
   try {
     const entries = await fs.promises.readdir(IMAGES_DIR, { withFileTypes: true });
     return entries
-      .filter((e: any) => e.isDirectory())
+      .filter((e: any) => e.isDirectory() && !e.name.startsWith('.'))
       .map((e: any) => e.name as string)
       .sort();
   } catch {

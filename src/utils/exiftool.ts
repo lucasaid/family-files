@@ -1,5 +1,6 @@
 // src/utils/exiftool.ts
 import { Photo, FaceRegion, Person } from '../context/types';
+import { loadCache, saveCache, statImageFiles } from './metadata-cache';
 
 const { execFile } = (window as any).require('child_process') as typeof import('child_process');
 
@@ -53,13 +54,12 @@ function parseKeywords(data: any): string[] {
   return Array.from(new Set(list));
 }
 
-export async function readMetadata(dirPath: string, people: Person[]): Promise<Photo[]> {
-  const stdout = await run(['-j', '-n', '-struct', dirPath]);
-  const items: any[] = JSON.parse(stdout);
-  return items.map(item => ({
+function parsePhotoItem(item: any, people: Person[], dirPath: string): Photo {
+  return {
     file: item.FileName,
     path: `file://${dirPath}/${item.FileName}`,
     fsPath: `${dirPath}/${item.FileName}`,
+    thumbnailPath: null,
     album: null as null,
     date: parseDate(item.DateTimeOriginal),
     location: parseLocation(item),
@@ -71,7 +71,47 @@ export async function readMetadata(dirPath: string, people: Person[]): Promise<P
     rating: item.Rating != null ? Number(item.Rating) : null,
     keywords: parseKeywords(item),
     faces: parseFaces(item, people),
-  }));
+  };
+}
+
+export async function readMetadata(dirPath: string, people: Person[]): Promise<Photo[]> {
+  const files = statImageFiles(dirPath);
+  if (files.length === 0) return [];
+
+  const cache = loadCache(dirPath);
+
+  const hits: any[] = [];
+  const missPaths: string[] = [];
+
+  for (const file of files) {
+    const entry = cache.entries[file.name];
+    if (entry && entry.mtime === file.mtime && entry.size === file.size) {
+      hits.push(entry.data);
+    } else {
+      missPaths.push(`${dirPath}/${file.name}`);
+    }
+  }
+
+  let freshItems: any[] = [];
+  if (missPaths.length > 0) {
+    const stdout = await run(['-j', '-n', '-struct', ...missPaths]);
+    freshItems = JSON.parse(stdout);
+
+    for (const item of freshItems) {
+      const stat = files.find(f => f.name === item.FileName);
+      if (stat) {
+        cache.entries[item.FileName] = { mtime: stat.mtime, size: stat.size, data: item };
+      }
+    }
+    saveCache(dirPath, cache);
+  }
+
+  // Preserve filesystem order
+  const byName = new Map([...hits, ...freshItems].map(item => [item.FileName, item]));
+  return files
+    .map(f => byName.get(f.name))
+    .filter((item): item is any => item !== undefined)
+    .map(item => parsePhotoItem(item, people, dirPath));
 }
 
 export async function writeMeta(

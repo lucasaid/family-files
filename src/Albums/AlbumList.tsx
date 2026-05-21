@@ -1,8 +1,61 @@
 // src/Albums/AlbumList.tsx
-import React, { useState } from 'react';
+import React, { useState, useCallback, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
+import { Photo } from '../context/types';
 import { createAlbum } from '../utils/albums';
+
+interface AlbumCellProps {
+  name: string;
+  count: number;
+  coverPhoto: Photo | undefined;
+  onClick: (name: string) => void;
+}
+
+const AlbumCell = memo(function AlbumCell({ name, count, coverPhoto, onClick }: AlbumCellProps) {
+  const [isHovered, setIsHovered] = useState(false);
+  return (
+    <div
+      onClick={() => onClick(name)}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      style={{ position: 'relative', aspectRatio: '1', cursor: 'pointer', overflow: 'hidden', borderRadius: 2, background: 'var(--bg-card)' }}
+    >
+      {coverPhoto ? (
+        <img
+          src={coverPhoto.thumbnailPath ?? coverPhoto.path}
+          alt={name}
+          loading="lazy"
+          decoding="async"
+          style={{
+            width: '100%', height: '100%', objectFit: 'cover', display: 'block',
+            transform: isHovered ? 'scale(1.05)' : 'scale(1)',
+            transition: 'transform 0.25s ease',
+          }}
+        />
+      ) : (
+        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--border-muted)', fontSize: 32 }}>
+          ▦
+        </div>
+      )}
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: 'linear-gradient(to top, rgba(0,0,0,.85) 0%, rgba(0,0,0,.2) 50%, transparent 100%)',
+        opacity: coverPhoto ? (isHovered ? 1 : 0.7) : 1,
+        transition: 'opacity 0.2s ease',
+        display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
+        padding: '10px 10px 10px', pointerEvents: 'none',
+      }}>
+        <span style={{ fontFamily: '"Georgia", "Times New Roman", serif', fontSize: 13, color: 'rgba(255,255,255,.9)', letterSpacing: '0.01em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {name}
+        </span>
+        <span style={{ fontSize: 10, color: 'rgba(255,255,255,.4)', letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: 2 }}>
+          {count} {count === 1 ? 'photo' : 'photos'}
+        </span>
+      </div>
+    </div>
+  );
+});
 
 export default function AlbumList() {
   const { state, dispatch } = useAppContext();
@@ -10,10 +63,13 @@ export default function AlbumList() {
   const navigate = useNavigate();
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState('');
-  const [hoveredAlbum, setHoveredAlbum] = useState<string | null>(null);
 
   const albumPhotos = (name: string) => photos.filter(p => p.album === name);
   const cover = (name: string) => albumPhotos(name)[0];
+
+  const handleAlbumClick = useCallback((name: string) => {
+    navigate(`/albums/${encodeURIComponent(name)}`);
+  }, [navigate]);
 
   const handleCreate = async () => {
     const trimmed = newName.trim();
@@ -96,51 +152,15 @@ export default function AlbumList() {
 
       {/* Album grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 3 }}>
-        {albums.map(name => {
-          const isHovered = hoveredAlbum === name;
-          const coverPhoto = cover(name);
-          const count = albumPhotos(name).length;
-          return (
-            <div
-              key={name}
-              onClick={() => navigate(`/albums/${encodeURIComponent(name)}`)}
-              onMouseEnter={() => setHoveredAlbum(name)}
-              onMouseLeave={() => setHoveredAlbum(null)}
-              style={{ position: 'relative', aspectRatio: '1', cursor: 'pointer', overflow: 'hidden', borderRadius: 2, background: 'var(--bg-card)' }}
-            >
-              {coverPhoto ? (
-                <img
-                  src={coverPhoto.path}
-                  alt={name}
-                  style={{
-                    width: '100%', height: '100%', objectFit: 'cover', display: 'block',
-                    transform: isHovered ? 'scale(1.05)' : 'scale(1)',
-                    transition: 'transform 0.25s ease',
-                  }}
-                />
-              ) : (
-                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--border-muted)', fontSize: 32 }}>
-                  ▦
-                </div>
-              )}
-              <div style={{
-                position: 'absolute', inset: 0,
-                background: 'linear-gradient(to top, rgba(0,0,0,.85) 0%, rgba(0,0,0,.2) 50%, transparent 100%)',
-                opacity: coverPhoto ? (isHovered ? 1 : 0.7) : 1,
-                transition: 'opacity 0.2s ease',
-                display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
-                padding: '10px 10px 10px', pointerEvents: 'none',
-              }}>
-                <span style={{ fontFamily: '"Georgia", "Times New Roman", serif', fontSize: 13, color: 'rgba(255,255,255,.9)', letterSpacing: '0.01em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {name}
-                </span>
-                <span style={{ fontSize: 10, color: 'rgba(255,255,255,.4)', letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: 2 }}>
-                  {count} {count === 1 ? 'photo' : 'photos'}
-                </span>
-              </div>
-            </div>
-          );
-        })}
+        {albums.map(name => (
+          <AlbumCell
+            key={name}
+            name={name}
+            count={albumPhotos(name).length}
+            coverPhoto={cover(name)}
+            onClick={handleAlbumClick}
+          />
+        ))}
       </div>
     </div>
   );

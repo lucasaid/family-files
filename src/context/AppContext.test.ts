@@ -3,6 +3,7 @@ import { Photo, Person, FamilyDocument, FaceRegion } from './types';
 
 const photo: Photo = {
   file: 'IMG_001.jpg', path: '/images/IMG_001.jpg', fsPath: '/data/images/IMG_001.jpg',
+  thumbnailPath: null,
   album: null, date: '2020:01:01', location: null, city: null, state: null, country: null,
   camera: 'iPhone', caption: null, rating: null, keywords: [], faces: [],
 };

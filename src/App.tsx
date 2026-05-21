@@ -3,6 +3,7 @@ import { HashRouter, Route, Routes, NavLink, useNavigate } from 'react-router-do
 import { AppProvider, useAppContext } from './context/AppContext';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { syncAndLoad, SyncStatus } from './utils/sync';
+import { getThumbnailPath } from './utils/thumbnails';
 import Photos from './Photos';
 import PeopleRoute from './People';
 import DocumentsRoute from './Documents';
@@ -127,6 +128,15 @@ function AppShell() {
         dispatch({ type: 'SET_ALBUMS', albums: result.albums });
         dispatch({ type: 'SET_DOCUMENTS', documents: result.documents });
         setLoad(prev => ({ ...prev, addedPeople: result.addedPeople, done: true }));
+
+        // Generate thumbnails in background for photos that don't have a cached one yet
+        for (const photo of result.photos) {
+          if (!photo.thumbnailPath) {
+            getThumbnailPath(photo.fsPath).then(thumbPath => {
+              if (thumbPath) dispatch({ type: 'SET_PHOTO_THUMBNAIL', fsPath: photo.fsPath, thumbnailPath: thumbPath });
+            });
+          }
+        }
       })
       .catch(err => {
         setLoad(prev => ({ ...prev, error: String(err), done: true }));

@@ -1,5 +1,5 @@
 // src/Photos/PhotoViewer.tsx
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useLayoutEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { writeFaceRegions } from '../utils/exiftool';
 import FaceOverlay from './FaceOverlay';
@@ -27,6 +27,7 @@ export default function PhotoViewer() {
   const [imgDims, setImgDims] = useState<{ w: number; h: number } | null>(null);
   const [containerSize, setContainerSize] = useState<{ w: number; h: number } | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -45,11 +46,16 @@ export default function PhotoViewer() {
     return () => document.removeEventListener('fullscreenchange', onChange);
   }, []);
 
+  useLayoutEffect(() => {
+    if (activePhoto) setIsLoading(true);
+  }, [activePhoto?.path]);
+
   if (!activePhoto) return null;
 
   const handleImgLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
     const img = e.currentTarget;
     setImgDims({ w: img.naturalWidth, h: img.naturalHeight });
+    setIsLoading(false);
   };
 
   const handleFullscreen = () => {
@@ -116,6 +122,23 @@ export default function PhotoViewer() {
           borderRadius: 4, padding: '3px 12px', color: '#f0b060', fontSize: 11, pointerEvents: 'none',
         }}>
           Tagging mode — drag to mark a face · Press Esc to exit
+        </div>
+      )}
+
+      {isLoading && (
+        <div style={{
+          position: 'absolute', inset: 0,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: 'rgba(0,0,0,0.35)',
+          pointerEvents: 'none',
+        }}>
+          <div style={{
+            width: 28, height: 28, borderRadius: '50%',
+            border: '2px solid rgba(255,255,255,0.15)',
+            borderTopColor: 'rgba(255,255,255,0.7)',
+            animation: 'photo-spin 0.7s linear infinite',
+          }} />
+          <style>{`@keyframes photo-spin { to { transform: rotate(360deg); } }`}</style>
         </div>
       )}
 

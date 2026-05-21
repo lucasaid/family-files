@@ -11,9 +11,10 @@ export interface FaceRegion {
 
 export interface Photo {
   file: string;
-  path: string;   // display URL (e.g. file:///abs/path/images/foo.jpg)
-  fsPath: string; // absolute filesystem path for exiftool
-  album: string | null; // subdirectory name within images/, null = root
+  path: string;          // display URL for the original full-res image
+  fsPath: string;        // absolute filesystem path for exiftool
+  thumbnailPath: string | null; // cached resized version (~400px), null until generated
+  album: string | null;  // subdirectory name within images/, null = root
   date: string | null;
   location: { lat: number; lng: number } | null;
   city: string | null;
@@ -74,4 +75,5 @@ export type AppAction =
   | { type: 'SET_PEOPLE'; people: Person[] }
   | { type: 'ADD_PERSON'; person: Person }
   | { type: 'UPDATE_PERSON'; person: Person }
-  | { type: 'REMOVE_PERSON'; id: string };
+  | { type: 'REMOVE_PERSON'; id: string }
+  | { type: 'SET_PHOTO_THUMBNAIL'; fsPath: string; thumbnailPath: string };

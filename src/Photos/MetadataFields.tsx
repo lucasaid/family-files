@@ -1,5 +1,5 @@
 // src/Photos/MetadataFields.tsx
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useLayoutEffect, useState, useRef } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { writeMeta } from '../utils/exiftool';
 import { Photo } from '../context/types';
@@ -175,7 +175,7 @@ export default function MetadataFields({ readOnly }: { readOnly: boolean }) {
   const [ratingSaving, setRatingSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     setDraft(activePhoto ? photoDraft(activePhoto) : null);
     setError(null);
   }, [activePhoto?.file]);

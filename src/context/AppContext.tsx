@@ -110,6 +110,15 @@ export function appReducer(state: AppState, action: AppAction): AppState {
       return { ...state, people: state.people.map(p => p.id === action.person.id ? action.person : p) };
     case 'REMOVE_PERSON':
       return { ...state, people: state.people.filter(p => p.id !== action.id) };
+    case 'SET_PHOTO_THUMBNAIL': {
+      const photos = state.photos.map(p =>
+        p.fsPath === action.fsPath ? { ...p, thumbnailPath: action.thumbnailPath } : p
+      );
+      const activePhoto = state.activePhoto?.fsPath === action.fsPath
+        ? { ...state.activePhoto, thumbnailPath: action.thumbnailPath }
+        : state.activePhoto;
+      return { ...state, photos, activePhoto };
+    }
     default:
       return state;
   }

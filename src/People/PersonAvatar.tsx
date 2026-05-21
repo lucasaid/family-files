@@ -64,7 +64,7 @@ export default function PersonAvatar({ personId, size = 200 }: Props) {
       flexShrink: 0,
     }}>
       <img
-        src={photo.path}
+        src={photo.thumbnailPath ?? photo.path}
         alt=""
         onLoad={e => {
           const img = e.currentTarget;

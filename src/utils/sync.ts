@@ -4,6 +4,7 @@ import { readMetadata } from './exiftool';
 import { readPeopleJson, writePeopleJson } from './people';
 import { readDocumentsJson } from './documents';
 import { listAlbums } from './albums';
+import { checkThumbnailOnDisk } from './thumbnails';
 
 const path = (window as any).require('path') as typeof import('path');
 const fs = (window as any).require('fs') as typeof import('fs');
@@ -98,6 +99,7 @@ export async function syncAndLoad(
   const nameToId = new Map(finalPeople.map(p => [p.name.toLowerCase(), p.id]));
   const resolvedPhotos = photos.map(photo => ({
     ...photo,
+    thumbnailPath: checkThumbnailOnDisk(photo.fsPath),
     faces: photo.faces.map(face => ({
       ...face,
       personId: nameToId.get(face.name.toLowerCase()) ?? null,

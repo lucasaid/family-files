@@ -55,3 +55,4 @@ ipcMain.handle('show-open-dialog', async (event, options) => {
   };
   return dialog.showOpenDialog(safeOptions);
 });
+
