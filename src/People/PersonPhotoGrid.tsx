@@ -1,5 +1,5 @@
 // src/People/PersonPhotoGrid.tsx
-import React, { useState, useCallback, memo } from 'react';
+import React, { useState, useCallback, useMemo, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Photo } from '../context/types';
 import { useAppContext } from '../context/AppContext';
@@ -13,9 +13,13 @@ const PhotoCell = memo(function PhotoCell({ photo, onClick }: CellProps) {
   const [isHovered, setIsHovered] = useState(false);
   return (
     <div
+      role="button"
+      tabIndex={0}
       onClick={() => onClick(photo)}
+      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(photo); } }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      aria-label={`Open ${photo.file}`}
       style={{ position: 'relative', aspectRatio: '1', cursor: 'pointer', overflow: 'hidden', borderRadius: 2, border: `1px solid ${isHovered ? 'var(--border-muted)' : 'var(--border)'}`, transition: 'border-color 0.15s' }}
     >
       <img
@@ -23,7 +27,7 @@ const PhotoCell = memo(function PhotoCell({ photo, onClick }: CellProps) {
         alt={photo.file}
         loading="lazy"
         decoding="async"
-        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transform: isHovered ? 'scale(1.04)' : 'scale(1)', transition: 'transform 0.2s' }}
+        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transform: isHovered ? 'scale(1.04)' : 'scale(1)', transition: 'transform 0.2s ease-out' }}
       />
       {isHovered && (
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,.7) 0%, transparent 50%)', display: 'flex', alignItems: 'flex-end', padding: '6px 8px' }}>
@@ -41,7 +45,10 @@ interface Props { personId: string }
 export default function PersonPhotoGrid({ personId }: Props) {
   const { state, dispatch } = useAppContext();
   const navigate = useNavigate();
-  const photos = state.photos.filter(p => p.faces.some(f => f.personId === personId));
+  const photos = useMemo(
+    () => state.photos.filter(p => p.faces.some(f => f.personId === personId)),
+    [state.photos, personId]
+  );
 
   const openPhoto = useCallback((photo: Photo) => {
     dispatch({ type: 'SET_ACTIVE_PHOTO', photo });

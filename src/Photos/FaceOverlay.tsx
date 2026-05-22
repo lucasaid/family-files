@@ -1,5 +1,6 @@
 // src/Photos/FaceOverlay.tsx
 import React, { useRef, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FaceRegion } from '../context/types';
 
 interface DragState {
@@ -12,12 +13,14 @@ interface DragState {
 interface Props {
   faces: FaceRegion[];
   dimmed: boolean;
+  highlightPersonId?: string | null;
   onMove?: (regionName: string, newBox: { x: number; y: number; w: number; h: number }) => void;
 }
 
-export default function FaceOverlay({ faces, dimmed, onMove }: Props) {
+export default function FaceOverlay({ faces, dimmed, highlightPersonId, onMove }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [drag, setDrag] = useState<DragState | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!drag) return;
@@ -69,6 +72,7 @@ export default function FaceOverlay({ faces, dimmed, onMove }: Props) {
     <div ref={containerRef} style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
       {faces.map((face) => {
         const isDragging = drag?.name === face.name;
+        const isHighlighted = !!highlightPersonId && face.personId === highlightPersonId;
         const x = isDragging
           ? Math.max(0, Math.min(1 - face.w, face.x + drag!.offsetNorm.x))
           : face.x;
@@ -76,6 +80,9 @@ export default function FaceOverlay({ faces, dimmed, onMove }: Props) {
           ? Math.max(0, Math.min(1 - face.h, face.y + drag!.offsetNorm.y))
           : face.y;
         const draggable = !!onMove;
+
+        const baseColor = isHighlighted ? '#4caf50' : '#f0b060';
+        const baseDimColor = isHighlighted ? 'rgba(76,175,80,.4)' : 'rgba(240,176,96,.4)';
 
         return (
           <div
@@ -89,7 +96,7 @@ export default function FaceOverlay({ faces, dimmed, onMove }: Props) {
               height: `${face.h * 100}%`,
               border: isDragging
                 ? '2px solid rgba(155,184,245,.9)'
-                : `2px solid ${dimmed ? 'rgba(240,176,96,.4)' : '#f0b060'}`,
+                : `2px solid ${dimmed ? baseDimColor : baseColor}`,
               borderRadius: 2,
               boxShadow: isDragging ? '0 0 0 1px rgba(155,184,245,.3), 0 4px 16px rgba(0,0,0,.5)' : 'none',
               pointerEvents: draggable ? 'auto' : 'none',
@@ -98,21 +105,26 @@ export default function FaceOverlay({ faces, dimmed, onMove }: Props) {
               transition: isDragging ? 'none' : 'border-color 0.15s',
             }}
           >
-            <span style={{
-              position: 'absolute', bottom: '100%', left: 0,
-              background: isDragging ? '#9bb8f5' : '#f0b060',
-              color: '#000',
-              fontSize: 10, fontWeight: 600, padding: '1px 5px',
-              borderRadius: '2px 2px 0 0', whiteSpace: 'nowrap',
-              userSelect: 'none',
-              transition: 'background 0.15s',
-            }}>
+            <span
+              onClick={face.personId && !dimmed ? (e) => { e.stopPropagation(); navigate(`/people/${face.personId}`); } : undefined}
+              style={{
+                position: 'absolute', bottom: '100%', left: 0,
+                background: isDragging ? '#9bb8f5' : baseColor,
+                color: 'var(--text-on-accent)',
+                fontSize: 10, fontWeight: 600, padding: '1px 5px',
+                borderRadius: '2px 2px 0 0', whiteSpace: 'nowrap',
+                userSelect: 'none',
+                transition: 'background 0.15s',
+                pointerEvents: 'auto',
+                cursor: face.personId && !dimmed ? 'pointer' : 'default',
+              }}
+            >
               {face.name}
             </span>
             {draggable && !isDragging && (
               <span style={{
                 position: 'absolute', top: 2, right: 3,
-                fontSize: 8, color: 'rgba(240,176,96,.6)',
+                fontSize: 8, color: `${baseColor}99`,
                 userSelect: 'none', pointerEvents: 'none',
               }}>
                 ⠿

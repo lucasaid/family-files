@@ -49,7 +49,7 @@ export default function LoadingScreen({ status, addedPeople, error }: Props) {
                 border: `2px solid ${done ? 'var(--green)' : active ? 'var(--accent)' : 'var(--border)'}`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                {done && <span style={{ color: '#fff', fontSize: 9, lineHeight: 1 }}>✓</span>}
+                {done && <span style={{ color: 'var(--bg)', fontSize: 9, lineHeight: 1 }}>✓</span>}
                 {active && (
                   <div style={{
                     width: 6, height: 6, borderRadius: '50%',
@@ -85,8 +85,8 @@ export default function LoadingScreen({ status, addedPeople, error }: Props) {
       {error && (
         <div style={{
           marginTop: 24, padding: '10px 16px', background: 'var(--bg-card)',
-          border: '1px solid #4a2a2a', borderRadius: 6, maxWidth: 320, width: '100%',
-          fontSize: 12, color: '#e07070',
+          border: '1px solid var(--color-error-border)', borderRadius: 6, maxWidth: 320, width: '100%',
+          fontSize: 12, color: 'var(--color-error)',
         }}>
           {error}
         </div>

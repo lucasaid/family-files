@@ -52,7 +52,6 @@ export default function PhotosRoute() {
 
   return (
     <div style={{ display: 'flex', flex: 1, overflow: 'hidden', height: '100%', flexDirection: 'column' }}>
-      {/* Breadcrumb */}
       {backLabel && backPath && (
         <div style={{
           display: 'flex', alignItems: 'center', gap: 8,
@@ -62,14 +61,13 @@ export default function PhotosRoute() {
         }}>
           <button
             onClick={() => navigate(backPath)}
+            className="btn-ghost-hover"
             style={{
               background: 'none', border: 'none', padding: 0, cursor: 'pointer',
               display: 'flex', alignItems: 'center', gap: 6,
               fontSize: 11, fontWeight: 500, letterSpacing: '0.08em',
               textTransform: 'uppercase', color: 'var(--text-3)',
             }}
-            onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent)')}
-            onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-3)')}
           >
             <span style={{ fontSize: 9 }}>←</span> {backLabel}
           </button>
@@ -81,12 +79,10 @@ export default function PhotosRoute() {
       )}
 
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
-        {/* Left pane */}
         <div style={{ flex: 1.6, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: 'var(--bg-viewer)' }}>
           <PhotoViewer />
           <Filmstrip photos={filteredPhotos} activePhoto={activePhoto} onSelect={selectPhoto} />
         </div>
-        {/* Right pane */}
         <div style={{ width: 260, flexShrink: 0, borderLeft: '1px solid var(--border)', overflow: 'auto', background: 'var(--bg-panel)' }}>
           <MetadataPanel />
         </div>

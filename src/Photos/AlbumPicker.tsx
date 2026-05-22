@@ -112,10 +112,10 @@ export default function AlbumPicker() {
         onClick={() => !moving && setOpen(o => !o)}
         style={{
           width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          background: open ? 'rgba(74,112,192,.1)' : '#0d0d14',
-          border: `1px solid ${open ? 'rgba(74,112,192,.5)' : '#2a2a3a'}`,
+          background: open ? 'rgba(74,112,192,.1)' : 'var(--input-bg)',
+          border: `1px solid ${open ? 'var(--overlay-border)' : 'var(--input-border)'}`,
           borderRadius: 3, padding: '5px 10px',
-          color: currentAlbum ? '#c8d8f8' : '#555',
+          color: currentAlbum ? 'var(--text-1)' : 'var(--text-4)',
           fontSize: 12, fontFamily: 'system-ui, sans-serif',
           cursor: moving ? 'wait' : 'pointer',
           transition: 'border-color 0.15s, background 0.15s',
@@ -125,7 +125,7 @@ export default function AlbumPicker() {
         <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {moving ? 'Moving…' : currentLabel}
         </span>
-        <span style={{ fontSize: 9, color: '#444', marginLeft: 6, flexShrink: 0 }}>▾</span>
+        <span style={{ fontSize: 9, color: 'var(--text-4)', marginLeft: 6, flexShrink: 0 }}>▾</span>
       </button>
 
       {/* Palette */}
@@ -137,11 +137,11 @@ export default function AlbumPicker() {
             bottom: '100%',
             left: 0, right: 0,
             marginBottom: 4,
-            background: 'rgba(10, 13, 22, 0.97)',
-            border: '1px solid rgba(74,112,192,.5)',
+            background: 'var(--overlay-bg)',
+            border: '1px solid var(--overlay-border)',
             borderRadius: 6,
             zIndex: 300,
-            boxShadow: '0 8px 32px rgba(0,0,0,.7), 0 0 0 1px rgba(74,112,192,.15)',
+            boxShadow: 'var(--overlay-shadow)',
             overflow: 'hidden',
             backdropFilter: 'blur(8px)',
           }}
@@ -151,7 +151,7 @@ export default function AlbumPicker() {
             <div style={{ position: 'relative' }}>
               <span style={{
                 position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)',
-                fontSize: 11, color: '#3a5080', pointerEvents: 'none', userSelect: 'none',
+                fontSize: 11, color: 'var(--overlay-search-icon)', pointerEvents: 'none', userSelect: 'none',
               }}>
                 ⌕
               </span>
@@ -164,9 +164,9 @@ export default function AlbumPicker() {
                 style={{
                   width: '100%', boxSizing: 'border-box',
                   background: 'rgba(255,255,255,.04)',
-                  border: '1px solid rgba(74,112,192,.3)',
+                  border: '1px solid var(--overlay-input-border)',
                   borderRadius: 4, padding: '5px 8px 5px 24px',
-                  color: '#d0dff8', fontSize: 12,
+                  color: 'var(--overlay-text)', fontSize: 12,
                   fontFamily: 'system-ui, sans-serif',
                   outline: 'none', letterSpacing: '0.01em',
                 }}
@@ -180,7 +180,7 @@ export default function AlbumPicker() {
             style={{ maxHeight: ITEM_HEIGHT * MAX_VISIBLE, overflowY: 'auto', overflowX: 'hidden' }}
           >
             {filtered.length === 0 && !canAddNew && (
-              <div style={{ padding: '10px 12px', fontSize: 11, color: '#3a4a6a', fontStyle: 'italic' }}>
+              <div style={{ padding: '10px 12px', fontSize: 11, color: 'var(--overlay-text-dim)', fontStyle: 'italic' }}>
                 No albums found
               </div>
             )}
@@ -202,9 +202,9 @@ export default function AlbumPicker() {
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                     padding: '0 12px',
                     fontSize: 12,
-                    color: isActive ? '#d0dff8' : isCurrent ? '#9bb8f5' : '#7a90b8',
-                    background: isActive ? 'rgba(74,112,192,.18)' : 'transparent',
-                    borderLeft: `2px solid ${isActive ? '#4a70c0' : 'transparent'}`,
+                    color: isActive ? 'var(--overlay-text)' : isCurrent ? 'var(--accent)' : 'var(--overlay-text-muted)',
+                    background: isActive ? 'var(--overlay-active-bg)' : 'transparent',
+                    borderLeft: `2px solid ${isActive ? 'var(--overlay-active-border)' : 'transparent'}`,
                     cursor: 'pointer',
                     transition: 'background 0.08s, color 0.08s',
                     userSelect: 'none',
@@ -215,7 +215,7 @@ export default function AlbumPicker() {
                     {q && matchIdx >= 0 ? (
                       <>
                         {label.slice(0, matchIdx)}
-                        <mark style={{ background: 'rgba(155,184,245,.25)', color: '#c8d8f8', borderRadius: 2, padding: '0 1px' }}>
+                        <mark style={{ background: 'rgba(155,184,245,.25)', color: 'var(--overlay-text)', borderRadius: 2, padding: '0 1px' }}>
                           {label.slice(matchIdx, matchIdx + q.length)}
                         </mark>
                         {label.slice(matchIdx + q.length)}
@@ -223,7 +223,7 @@ export default function AlbumPicker() {
                     ) : label}
                   </span>
                   {isCurrent && (
-                    <span style={{ fontSize: 9, color: '#4a70c0', letterSpacing: '0.06em' }}>current</span>
+                    <span style={{ fontSize: 9, color: 'var(--overlay-active-border)', letterSpacing: '0.06em' }}>current</span>
                   )}
                 </div>
               );
@@ -238,10 +238,10 @@ export default function AlbumPicker() {
                   display: 'flex', alignItems: 'center', gap: 7,
                   padding: '0 12px',
                   fontSize: 12,
-                  color: activeIdx === filtered.length ? '#7ecfa0' : '#3a6a4a',
-                  background: activeIdx === filtered.length ? 'rgba(126,207,160,.1)' : 'transparent',
+                  color: activeIdx === filtered.length ? 'var(--overlay-new-text-active)' : 'var(--overlay-new-text)',
+                  background: activeIdx === filtered.length ? 'var(--overlay-new-bg-active)' : 'transparent',
                   borderTop: filtered.length > 0 ? '1px solid rgba(255,255,255,.05)' : 'none',
-                  borderLeft: `2px solid ${activeIdx === filtered.length ? '#7ecfa0' : 'transparent'}`,
+                  borderLeft: `2px solid ${activeIdx === filtered.length ? 'var(--overlay-new-text-active)' : 'transparent'}`,
                   cursor: 'pointer',
                   transition: 'background 0.08s, color 0.08s',
                   userSelect: 'none',
@@ -249,7 +249,7 @@ export default function AlbumPicker() {
               >
                 <span style={{ fontSize: 14, lineHeight: 1, opacity: 0.8 }}>+</span>
                 <span>
-                  Create <span style={{ color: activeIdx === filtered.length ? '#a0e8bc' : '#4a8a5a', fontStyle: 'italic' }}>"{trimmed}"</span>
+                  Create <span style={{ color: activeIdx === filtered.length ? 'var(--overlay-new-mark-active)' : 'var(--overlay-new-mark)', fontStyle: 'italic' }}>"{trimmed}"</span>
                 </span>
               </div>
             )}
@@ -257,9 +257,9 @@ export default function AlbumPicker() {
 
           {/* Footer */}
           <div style={{ padding: '5px 12px', borderTop: '1px solid rgba(255,255,255,.04)', display: 'flex', gap: 10 }}>
-            <span style={{ fontSize: 9, color: '#2a3a5a', letterSpacing: '0.06em', textTransform: 'uppercase' }}>↑↓ navigate</span>
-            <span style={{ fontSize: 9, color: '#2a3a5a', letterSpacing: '0.06em', textTransform: 'uppercase' }}>↵ move</span>
-            <span style={{ fontSize: 9, color: '#2a3a5a', letterSpacing: '0.06em', textTransform: 'uppercase' }}>esc cancel</span>
+            <span style={{ fontSize: 9, color: 'var(--overlay-text-hint)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>↑↓ navigate</span>
+            <span style={{ fontSize: 9, color: 'var(--overlay-text-hint)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>↵ move</span>
+            <span style={{ fontSize: 9, color: 'var(--overlay-text-hint)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>esc cancel</span>
           </div>
         </div>
       )}

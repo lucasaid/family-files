@@ -40,14 +40,8 @@ Show the following EXIF fields in the side panel when viewing a photo:
 
 
 
-# BUGS
+# Features to add/Bugs
 - nested albums??
-- light/dark theme switcher
-- A11y
-- Search people
-- Search Album
-- Search Photos
 - Generate family tree based on GED file
 - Link people to family tree?
-- order by file name in album
-- look at performance fixes (cache ect)
+- Add more data to people details page (notes, description ect, DOB)

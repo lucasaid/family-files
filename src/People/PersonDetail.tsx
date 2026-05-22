@@ -23,14 +23,13 @@ export default function PersonDetail() {
       {/* Breadcrumb */}
       <button
         onClick={() => navigate('/people')}
+        className="btn-ghost-hover"
         style={{
           background: 'none', border: 'none', padding: 0, cursor: 'pointer',
           display: 'flex', alignItems: 'center', gap: 6,
           fontSize: 11, fontWeight: 500, letterSpacing: '0.08em',
           textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 24,
         }}
-        onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent)')}
-        onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-3)')}
       >
         <span style={{ fontSize: 9 }}>←</span> People
       </button>

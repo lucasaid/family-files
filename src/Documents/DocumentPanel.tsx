@@ -32,7 +32,8 @@ export default function DocumentPanel() {
       <div style={{ borderBottom: '1px solid var(--border)', padding: '8px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span style={{ color: 'var(--text-1)', fontSize: 13, fontWeight: 'bold' }}>{activeDocument.title}</span>
         <button onClick={deleteDoc}
-          style={{ background: 'none', border: 'none', color: '#e55', cursor: 'pointer', fontSize: 12 }}>
+          aria-label={`Delete ${activeDocument.title}`}
+          style={{ background: 'none', border: 'none', color: 'var(--color-error)', cursor: 'pointer', fontSize: 12 }}>
           Delete
         </button>
       </div>

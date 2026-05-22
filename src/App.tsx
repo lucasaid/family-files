@@ -41,15 +41,13 @@ function AppNav() {
       {/* Back button */}
       <button
         onClick={() => navigate(-1)}
-        title="Go back"
+        aria-label="Go back"
+        className="btn-ghost-hover"
         style={{
           background: 'none', border: 'none', padding: '0 12px 0 0',
           color: 'var(--text-4)', fontSize: 16, cursor: 'pointer',
-          display: 'flex', alignItems: 'center',
-          transition: 'color 0.15s', lineHeight: 1,
+          display: 'flex', alignItems: 'center', lineHeight: 1,
         }}
-        onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent)')}
-        onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-4)')}
       >
         ←
       </button>
@@ -74,6 +72,7 @@ function AppNav() {
             key={to}
             to={to}
             end={end}
+            className="nav-link"
             style={({ isActive }) => ({
               display: 'flex', alignItems: 'center',
               padding: '0 12px', height: 44,
@@ -94,16 +93,14 @@ function AppNav() {
       {/* Theme toggle */}
       <button
         onClick={toggle}
-        title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+        aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+        className="btn-outline-hover"
         style={{
           background: 'none', border: '1px solid var(--border-muted)',
           borderRadius: 4, padding: '4px 10px',
           color: 'var(--text-3)', fontSize: 12, cursor: 'pointer',
-          transition: 'color 0.15s, border-color 0.15s',
           letterSpacing: '0.02em',
         }}
-        onMouseEnter={e => { e.currentTarget.style.color = 'var(--accent)'; e.currentTarget.style.borderColor = 'var(--accent)'; }}
-        onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-3)'; e.currentTarget.style.borderColor = 'var(--border-muted)'; }}
       >
         {theme === 'dark' ? '☀' : '☾'}
       </button>

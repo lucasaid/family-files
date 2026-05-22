@@ -294,7 +294,7 @@ export default function MetadataFields({ readOnly }: { readOnly: boolean }) {
         <input style={readOnlyField} value={activePhoto.camera ?? ''} readOnly />
       </div>
 
-      {error && <div style={{ color: '#e88', fontSize: 11 }}>{error}</div>}
+      {error && <div role="alert" style={{ color: 'var(--color-error)', fontSize: 11 }}>{error}</div>}
 
       {isDirty && !readOnly && (
         <div style={{ display: 'flex', gap: 6 }}>

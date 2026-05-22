@@ -41,6 +41,8 @@ export default function MetadataPanel() {
       <div style={{ padding: '8px 12px', borderTop: '1px solid var(--border-dim)', display: 'flex', flexDirection: 'column', gap: 6 }}>
         <button
           onClick={() => dispatch({ type: 'TOGGLE_FACES' })}
+          aria-label={showFaces ? 'Hide face tags' : 'Show face tags'}
+          aria-pressed={showFaces}
           style={{
             width: '100%', background: showFaces ? 'rgba(240,176,96,.15)' : 'var(--bg-elevated)',
             border: `1px solid ${showFaces ? 'rgba(240,176,96,.5)' : 'var(--border-muted)'}`,
@@ -52,10 +54,12 @@ export default function MetadataPanel() {
         </button>
         <button
           onClick={() => dispatch({ type: 'SET_TAGGING_MODE', enabled: !isTaggingMode })}
+          aria-label={isTaggingMode ? 'Close face tag editor' : 'Open face tag editor'}
+          aria-pressed={isTaggingMode}
           style={{
-            width: '100%', background: isTaggingMode ? '#1e3a6a' : 'var(--btn-primary-bg)',
-            border: `1px solid ${isTaggingMode ? '#4a70c0' : 'var(--btn-primary-border)'}`,
-            borderRadius: 4, padding: '6px 0', color: isTaggingMode ? '#6aaff5' : 'var(--btn-primary-text)',
+            width: '100%', background: isTaggingMode ? 'var(--btn-toggle-on-bg)' : 'var(--btn-primary-bg)',
+            border: `1px solid ${isTaggingMode ? 'var(--btn-toggle-on-border)' : 'var(--btn-primary-border)'}`,
+            borderRadius: 4, padding: '6px 0', color: isTaggingMode ? 'var(--btn-toggle-on-text)' : 'var(--btn-primary-text)',
             fontSize: 12, cursor: 'pointer',
           }}
         >

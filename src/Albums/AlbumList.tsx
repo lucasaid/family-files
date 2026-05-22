@@ -1,9 +1,46 @@
 // src/Albums/AlbumList.tsx
-import React, { useState, useCallback, memo } from 'react';
+import React, { useState, useCallback, useMemo, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 import { Photo } from '../context/types';
 import { createAlbum } from '../utils/albums';
+
+type SearchField = 'all' | 'title' | 'caption' | 'date' | 'location' | 'camera' | 'keywords' | 'people';
+
+const SEARCH_FIELDS: { value: SearchField; label: string }[] = [
+  { value: 'all',      label: 'All fields' },
+  { value: 'title',    label: 'Title' },
+  { value: 'caption',  label: 'Caption' },
+  { value: 'date',     label: 'Date' },
+  { value: 'location', label: 'Location' },
+  { value: 'camera',   label: 'Camera' },
+  { value: 'keywords', label: 'Keywords' },
+  { value: 'people',   label: 'People' },
+];
+
+function albumMatchesSearch(albumName: string, albumPhotos: Photo[], query: string, field: SearchField): boolean {
+  const q = query.toLowerCase();
+  const check = (v: string | null | undefined) => !!v && v.toLowerCase().includes(q);
+  const anyPhoto = (test: (p: Photo) => boolean) => albumPhotos.some(test);
+  switch (field) {
+    case 'title':    return check(albumName);
+    case 'caption':  return anyPhoto(p => check(p.caption));
+    case 'date':     return anyPhoto(p => check(p.date));
+    case 'location': return anyPhoto(p => check(p.city) || check(p.state) || check(p.country));
+    case 'camera':   return anyPhoto(p => check(p.camera));
+    case 'keywords': return anyPhoto(p => p.keywords.some(k => k.toLowerCase().includes(q)));
+    case 'people':   return anyPhoto(p => p.faces.some(f => f.name.toLowerCase().includes(q)));
+    case 'all':
+      return check(albumName) ||
+        anyPhoto(p =>
+          check(p.caption) || check(p.date) ||
+          check(p.city) || check(p.state) || check(p.country) ||
+          check(p.camera) ||
+          p.keywords.some(k => k.toLowerCase().includes(q)) ||
+          p.faces.some(f => f.name.toLowerCase().includes(q))
+        );
+  }
+}
 
 interface AlbumCellProps {
   name: string;
@@ -16,9 +53,13 @@ const AlbumCell = memo(function AlbumCell({ name, count, coverPhoto, onClick }: 
   const [isHovered, setIsHovered] = useState(false);
   return (
     <div
+      role="button"
+      tabIndex={0}
       onClick={() => onClick(name)}
+      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(name); } }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      aria-label={`Open album ${name}`}
       style={{ position: 'relative', aspectRatio: '1', cursor: 'pointer', overflow: 'hidden', borderRadius: 2, background: 'var(--bg-card)' }}
     >
       {coverPhoto ? (
@@ -30,7 +71,7 @@ const AlbumCell = memo(function AlbumCell({ name, count, coverPhoto, onClick }: 
           style={{
             width: '100%', height: '100%', objectFit: 'cover', display: 'block',
             transform: isHovered ? 'scale(1.05)' : 'scale(1)',
-            transition: 'transform 0.25s ease',
+            transition: 'transform 0.25s ease-out',
           }}
         />
       ) : (
@@ -42,7 +83,7 @@ const AlbumCell = memo(function AlbumCell({ name, count, coverPhoto, onClick }: 
         position: 'absolute', inset: 0,
         background: 'linear-gradient(to top, rgba(0,0,0,.85) 0%, rgba(0,0,0,.2) 50%, transparent 100%)',
         opacity: coverPhoto ? (isHovered ? 1 : 0.7) : 1,
-        transition: 'opacity 0.2s ease',
+        transition: 'opacity 0.2s ease-out',
         display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
         padding: '10px 10px 10px', pointerEvents: 'none',
       }}>
@@ -63,9 +104,43 @@ export default function AlbumList() {
   const navigate = useNavigate();
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState('');
+  const [search, setSearch] = useState('');
+  const [searchField, setSearchField] = useState<SearchField>('all');
+  const [sort, setSort] = useState<'title-asc' | 'title-desc' | 'count-desc' | 'count-asc'>('title-asc');
 
-  const albumPhotos = (name: string) => photos.filter(p => p.album === name);
-  const cover = (name: string) => albumPhotos(name)[0];
+  // Build album→photos map once — avoids rescanning all photos per album per render
+  const albumPhotoMap = useMemo(() => {
+    const map = new Map<string, Photo[]>();
+    for (const album of albums) map.set(album, []);
+    for (const photo of photos) {
+      if (photo.album) map.get(photo.album)?.push(photo);
+    }
+    return map;
+  }, [photos, albums]);
+
+  const albumPhotos = useCallback((name: string) => albumPhotoMap.get(name) ?? [], [albumPhotoMap]);
+  const cover = useCallback((name: string) => albumPhotoMap.get(name)?.[0], [albumPhotoMap]);
+
+  const filteredAlbums = useMemo(() => {
+    const ap = (name: string) => albumPhotoMap.get(name) ?? [];
+    return (search.trim()
+      ? albums.filter(name => albumMatchesSearch(name, ap(name), search.trim(), searchField))
+      : [...albums]
+    ).sort((a, b) => {
+      switch (sort) {
+        case 'title-asc':   return a.localeCompare(b);
+        case 'title-desc':  return b.localeCompare(a);
+        case 'count-desc':  return (albumPhotoMap.get(b)?.length ?? 0) - (albumPhotoMap.get(a)?.length ?? 0);
+        case 'count-asc':   return (albumPhotoMap.get(a)?.length ?? 0) - (albumPhotoMap.get(b)?.length ?? 0);
+      }
+    });
+  }, [albums, search, searchField, sort, albumPhotoMap]);
+
+  const inputStyle: React.CSSProperties = {
+    background: 'var(--input-bg)', border: '1px solid var(--input-border)',
+    borderRadius: 3, padding: '5px 10px', color: 'var(--input-text)',
+    fontSize: 12, fontFamily: 'system-ui, sans-serif', outline: 'none',
+  };
 
   const handleAlbumClick = useCallback((name: string) => {
     navigate(`/albums/${encodeURIComponent(name)}`);
@@ -89,10 +164,10 @@ export default function AlbumList() {
     <div style={{ padding: '24px 24px', background: 'var(--bg)', minHeight: '100%' }}>
       {/* Header */}
       <div style={{
-        display: 'flex', alignItems: 'baseline', justifyContent: 'space-between',
-        marginBottom: 20, paddingBottom: 16, borderBottom: '1px solid var(--border)',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        gap: 16, marginBottom: 20, paddingBottom: 16, borderBottom: '1px solid var(--border)',
       }}>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, flexShrink: 0 }}>
           <h1 style={{
             fontFamily: '"Georgia", "Times New Roman", serif',
             fontSize: 20, fontWeight: 400, color: 'var(--text-heading)',
@@ -102,16 +177,50 @@ export default function AlbumList() {
           </h1>
           {albums.length > 0 && (
             <span style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-4)' }}>
-              {albums.length} {albums.length === 1 ? 'album' : 'albums'}
+              {search.trim() && filteredAlbums.length !== albums.length
+                ? `${filteredAlbums.length} of ${albums.length}`
+                : `${albums.length} ${albums.length === 1 ? 'album' : 'albums'}`}
             </span>
           )}
         </div>
+
+        {albums.length > 0 && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
+            <input
+              type="search"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search albums…"
+              style={{ ...inputStyle, flex: 1 }}
+            />
+            <select
+              value={searchField}
+              onChange={e => setSearchField(e.target.value as SearchField)}
+              style={{ ...inputStyle, flexShrink: 0, cursor: 'pointer' }}
+            >
+              {SEARCH_FIELDS.map(f => (
+                <option key={f.value} value={f.value}>{f.label}</option>
+              ))}
+            </select>
+            <select
+              value={sort}
+              onChange={e => setSort(e.target.value as typeof sort)}
+              style={{ ...inputStyle, flexShrink: 0, cursor: 'pointer' }}
+            >
+              <option value="title-asc">Title A–Z</option>
+              <option value="title-desc">Title Z–A</option>
+              <option value="count-desc">Most photos</option>
+              <option value="count-asc">Fewest photos</option>
+            </select>
+          </div>
+        )}
+
         {!creating && (
           <button
             onClick={() => setCreating(true)}
             style={{
               background: 'none', border: '1px solid var(--border-muted)', borderRadius: 3,
-              padding: '4px 12px', color: 'var(--accent)', fontSize: 11,
+              padding: '4px 12px', color: 'var(--accent)', fontSize: 11, flexShrink: 0,
               fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer',
             }}
           >
@@ -149,10 +258,15 @@ export default function AlbumList() {
           No albums yet. Create one to organise your photos.
         </div>
       )}
+      {albums.length > 0 && filteredAlbums.length === 0 && (
+        <div style={{ padding: '32px 0', color: 'var(--text-4)', fontSize: 13, fontStyle: 'italic' }}>
+          No albums match "{search}".
+        </div>
+      )}
 
       {/* Album grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 3 }}>
-        {albums.map(name => (
+        {filteredAlbums.map(name => (
           <AlbumCell
             key={name}
             name={name}

@@ -143,11 +143,11 @@ export default function FaceTagger({ filePath, fileName }: Props) {
               ? { top: `${box.y * 100}%`, transform: 'translateY(-100%) translateY(-4px)' }
               : { top: `${(box.y + box.h) * 100}%`, transform: 'translateY(4px)' }),
             width: 210,
-            background: 'rgba(10, 13, 22, 0.97)',
-            border: '1px solid rgba(74, 112, 192, 0.5)',
+            background: 'var(--overlay-bg)',
+            border: '1px solid var(--overlay-border)',
             borderRadius: 6,
             zIndex: 200,
-            boxShadow: '0 8px 32px rgba(0,0,0,.7), 0 0 0 1px rgba(74,112,192,.15)',
+            boxShadow: 'var(--overlay-shadow)',
             overflow: 'hidden',
             backdropFilter: 'blur(8px)',
           }}
@@ -160,7 +160,7 @@ export default function FaceTagger({ filePath, fileName }: Props) {
             <div style={{ position: 'relative' }}>
               <span style={{
                 position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)',
-                fontSize: 11, color: '#3a5080', pointerEvents: 'none', userSelect: 'none',
+                fontSize: 11, color: 'var(--overlay-search-icon)', pointerEvents: 'none', userSelect: 'none',
               }}>
                 ⌕
               </span>
@@ -174,10 +174,10 @@ export default function FaceTagger({ filePath, fileName }: Props) {
                 style={{
                   width: '100%', boxSizing: 'border-box',
                   background: 'rgba(255,255,255,.04)',
-                  border: '1px solid rgba(74,112,192,.3)',
+                  border: '1px solid var(--overlay-input-border)',
                   borderRadius: 4,
                   padding: '5px 8px 5px 24px',
-                  color: '#d0dff8',
+                  color: 'var(--overlay-text)',
                   fontSize: 12,
                   fontFamily: 'system-ui, sans-serif',
                   outline: 'none',
@@ -187,7 +187,7 @@ export default function FaceTagger({ filePath, fileName }: Props) {
             </div>
             {saving && (
               <div style={{
-                fontSize: 10, color: '#9bb8f5', letterSpacing: '0.08em',
+                fontSize: 10, color: 'var(--accent)', letterSpacing: '0.08em',
                 textTransform: 'uppercase', marginTop: 5, textAlign: 'center',
                 animation: 'facePulse 1.2s ease-in-out infinite',
               }}>
@@ -208,7 +208,7 @@ export default function FaceTagger({ filePath, fileName }: Props) {
             {filteredPeople.length === 0 && !canAddNew && (
               <div style={{
                 padding: '10px 12px',
-                fontSize: 11, color: '#3a4a6a',
+                fontSize: 11, color: 'var(--overlay-text-dim)',
                 fontStyle: 'italic', letterSpacing: '0.02em',
               }}>
                 No people found
@@ -232,11 +232,11 @@ export default function FaceTagger({ filePath, fileName }: Props) {
                     display: 'flex', alignItems: 'center',
                     padding: '0 12px',
                     fontSize: 12,
-                    color: isActive ? '#d0dff8' : '#7a90b8',
-                    background: isActive ? 'rgba(74,112,192,.18)' : 'transparent',
+                    color: isActive ? 'var(--overlay-text)' : 'var(--overlay-text-muted)',
+                    background: isActive ? 'var(--overlay-active-bg)' : 'transparent',
                     cursor: saving ? 'wait' : 'pointer',
                     transition: 'background 0.08s, color 0.08s',
-                    borderLeft: `2px solid ${isActive ? '#4a70c0' : 'transparent'}`,
+                    borderLeft: `2px solid ${isActive ? 'var(--overlay-active-border)' : 'transparent'}`,
                     letterSpacing: '0.01em',
                     userSelect: 'none',
                     position: 'relative',
@@ -245,7 +245,7 @@ export default function FaceTagger({ filePath, fileName }: Props) {
                   {query && matchIdx >= 0 ? (
                     <span>
                       {p.name.slice(0, matchIdx)}
-                      <mark style={{ background: 'rgba(155,184,245,.25)', color: '#c8d8f8', borderRadius: 2, padding: '0 1px' }}>
+                      <mark style={{ background: 'rgba(155,184,245,.25)', color: 'var(--overlay-text)', borderRadius: 2, padding: '0 1px' }}>
                         {p.name.slice(matchIdx, matchIdx + query.length)}
                       </mark>
                       {p.name.slice(matchIdx + query.length)}
@@ -264,10 +264,10 @@ export default function FaceTagger({ filePath, fileName }: Props) {
                   display: 'flex', alignItems: 'center', gap: 7,
                   padding: '0 12px',
                   fontSize: 12,
-                  color: activeIdx === filteredPeople.length ? '#7ecfa0' : '#3a6a4a',
-                  background: activeIdx === filteredPeople.length ? 'rgba(126,207,160,.1)' : 'transparent',
+                  color: activeIdx === filteredPeople.length ? 'var(--overlay-new-text-active)' : 'var(--overlay-new-text)',
+                  background: activeIdx === filteredPeople.length ? 'var(--overlay-new-bg-active)' : 'transparent',
                   borderTop: filteredPeople.length > 0 ? '1px solid rgba(255,255,255,.05)' : 'none',
-                  borderLeft: `2px solid ${activeIdx === filteredPeople.length ? '#7ecfa0' : 'transparent'}`,
+                  borderLeft: `2px solid ${activeIdx === filteredPeople.length ? 'var(--overlay-new-text-active)' : 'transparent'}`,
                   cursor: saving ? 'wait' : 'pointer',
                   transition: 'background 0.08s, color 0.08s',
                   userSelect: 'none',
@@ -275,7 +275,7 @@ export default function FaceTagger({ filePath, fileName }: Props) {
               >
                 <span style={{ fontSize: 14, lineHeight: 1, opacity: 0.8 }}>+</span>
                 <span>
-                  Add <span style={{ color: activeIdx === filteredPeople.length ? '#a0e8bc' : '#4a8a5a', fontStyle: 'italic' }}>"{trimmed}"</span>
+                  Add <span style={{ color: activeIdx === filteredPeople.length ? 'var(--overlay-new-mark-active)' : 'var(--overlay-new-mark)', fontStyle: 'italic' }}>"{trimmed}"</span>
                 </span>
               </div>
             )}
@@ -287,9 +287,9 @@ export default function FaceTagger({ filePath, fileName }: Props) {
             borderTop: '1px solid rgba(255,255,255,.04)',
             display: 'flex', gap: 10,
           }}>
-            <span style={{ fontSize: 9, color: '#2a3a5a', letterSpacing: '0.06em', textTransform: 'uppercase' }}>↑↓ navigate</span>
-            <span style={{ fontSize: 9, color: '#2a3a5a', letterSpacing: '0.06em', textTransform: 'uppercase' }}>↵ select</span>
-            <span style={{ fontSize: 9, color: '#2a3a5a', letterSpacing: '0.06em', textTransform: 'uppercase' }}>esc cancel</span>
+            <span style={{ fontSize: 9, color: 'var(--overlay-text-hint)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>↑↓ navigate</span>
+            <span style={{ fontSize: 9, color: 'var(--overlay-text-hint)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>↵ select</span>
+            <span style={{ fontSize: 9, color: 'var(--overlay-text-hint)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>esc cancel</span>
           </div>
         </div>
       )}

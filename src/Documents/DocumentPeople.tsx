@@ -49,7 +49,7 @@ export default function DocumentPeople() {
         {linkedPeople.map(p => (
           <span key={p.id} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'var(--pill-bg)', border: '1px solid var(--pill-border)', borderRadius: 12, padding: '2px 8px', fontSize: 11, color: 'var(--pill-text)' }}>
             {p.name}
-            <button onClick={() => unlink(p.id)} style={{ background: 'none', border: 'none', color: 'var(--text-4)', cursor: 'pointer', padding: 0, lineHeight: 1 }}>×</button>
+            <button onClick={() => unlink(p.id)} aria-label={`Unlink ${p.name}`} style={{ background: 'none', border: 'none', color: 'var(--text-4)', cursor: 'pointer', padding: 0, lineHeight: 1 }}>×</button>
           </span>
         ))}
         <button onClick={() => setShowPicker(s => !s)}
@@ -64,12 +64,11 @@ export default function DocumentPeople() {
             placeholder="Search…"
             style={{ width: '100%', boxSizing: 'border-box', background: 'var(--input-bg)', border: '1px solid var(--input-border)', borderRadius: 3, padding: '3px 6px', color: 'var(--input-text)', fontSize: 11, marginBottom: 4 }} />
           {available.map(p => (
-            <div key={p.id} onClick={() => link(p.id)}
-              style={{ padding: '3px 6px', fontSize: 11, color: 'var(--text-2)', borderRadius: 2, cursor: 'pointer' }}
-              onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-active)')}
-              onMouseLeave={e => (e.currentTarget.style.background = '')}>
+            <button key={p.id} onClick={() => link(p.id)}
+              className="btn-row-hover"
+              style={{ width: '100%', textAlign: 'left', padding: '3px 6px', fontSize: 11, color: 'var(--text-2)', borderRadius: 2, cursor: 'pointer', background: 'none', border: 'none' }}>
               {p.name}
-            </div>
+            </button>
           ))}
           {available.length === 0 && <div style={{ fontSize: 11, color: 'var(--text-5)', padding: '3px 6px' }}>No people found</div>}
         </div>

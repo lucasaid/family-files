@@ -1,11 +1,13 @@
 // src/Photos/PeopleList.tsx
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 import { writeFaceRegions } from '../utils/exiftool';
 
 export default function PeopleList() {
   const { state, dispatch } = useAppContext();
-  const { activePhoto } = state;
+  const navigate = useNavigate();
+  const { activePhoto, isTaggingMode } = state;
   if (!activePhoto) return null;
 
   const removeFace = async (name: string) => {
@@ -36,11 +38,16 @@ export default function PeopleList() {
               borderRadius: 12, padding: '2px 8px', fontSize: 11, color: 'var(--pill-text)',
             }}
           >
-            👤 {face.name}
+            <span
+              onClick={face.personId && !isTaggingMode ? () => navigate(`/people/${face.personId}`) : undefined}
+              style={{ cursor: face.personId && !isTaggingMode ? 'pointer' : 'default' }}
+            >
+              👤 {face.name}
+            </span>
             <button
               onClick={() => removeFace(face.name)}
+              aria-label={`Remove ${face.name}`}
               style={{ background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'pointer', padding: 0, lineHeight: 1 }}
-              title="Remove face tag"
             >
               ×
             </button>
