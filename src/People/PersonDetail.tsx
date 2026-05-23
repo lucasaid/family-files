@@ -78,39 +78,129 @@ function RelGroup({ label, ids, chart, people }: {
 
 // ─── Family tree data display ────────────────────────────────────────────────
 
+function DataField({ label, value, sub }: { label: string; value: string; sub?: string }) {
+  return (
+    <div>
+      <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-4)', marginBottom: 3 }}>
+        {label}
+      </div>
+      <div style={{ fontSize: 14, color: 'var(--text-1)' }}>{value}</div>
+      {sub && <div style={{ fontSize: 12, color: 'var(--text-4)', marginTop: 1 }}>{sub}</div>}
+    </div>
+  );
+}
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 12, paddingBottom: 6, borderBottom: '1px solid var(--border-muted)' }}>
+      {children}
+    </div>
+  );
+}
+
 function FamilyTreeDetails({ fc }: { fc: FamilyChartPerson }) {
   const { state } = useAppContext();
   const chart = state.familyChart ?? [];
   const people = state.people;
+  const d = fc.data;
 
-  const genderLabel = fc.data.gender === 'M' ? 'Male' : fc.data.gender === 'F' ? 'Female' : null;
+  const genderLabel = d.gender === 'M' ? 'Male' : d.gender === 'F' ? 'Female' : null;
 
-  const vitals = [
-    fc.data.birthday && { label: 'Born', value: fc.data.birthday },
-    fc.data.death && { label: 'Died', value: fc.data.death },
-    genderLabel && { label: 'Gender', value: genderLabel },
+  // Build event rows: [label, date, place?, sub?]
+  type EventRow = { label: string; date?: string; place?: string; sub?: string };
+  const events: EventRow[] = [
+    (d.birthday || d.birthPlace)    && { label: 'Born',        date: d.birthday,       place: d.birthPlace },
+    (d.christeningDate || d.christeningPlace) && { label: 'Christened', date: d.christeningDate, place: d.christeningPlace },
+    (d.death || d.deathPlace)       && { label: 'Died',        date: d.death,          place: d.deathPlace,  sub: d.deathCause },
+    (d.burialDate || d.burialPlace) && { label: 'Buried',      date: d.burialDate,     place: d.burialPlace },
+    (d.emigrationDate || d.emigrationPlace) && { label: 'Emigrated',  date: d.emigrationDate,  place: d.emigrationPlace },
+    (d.immigrationDate || d.immigrationPlace) && { label: 'Immigrated', date: d.immigrationDate, place: d.immigrationPlace },
+  ].filter(Boolean) as EventRow[];
+
+  const attrs: { label: string; value: string }[] = [
+    genderLabel                && { label: 'Gender',      value: genderLabel },
+    d.title                    && { label: 'Title',        value: d.title },
+    d.occupation               && { label: 'Occupation',   value: d.occupation },
+    d.nationality              && { label: 'Nationality',  value: d.nationality },
+    d.religion                 && { label: 'Religion',     value: d.religion },
+    d.education                && { label: 'Education',    value: d.education },
+    d.residence                && { label: 'Residence',    value: d.residence },
+    (d.nickname || d.suffix || d.prefix) && {
+      label: 'Also known as',
+      value: [d.prefix, d.nickname, d.suffix].filter(Boolean).join(' · '),
+    },
   ].filter(Boolean) as { label: string; value: string }[];
 
+  const marriages = d.marriages ?? [];
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-      {/* Vitals */}
-      {vitals.length > 0 && (
-        <div style={{ display: 'flex', gap: 32 }}>
-          {vitals.map(({ label, value }) => (
-            <div key={label}>
-              <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-4)', marginBottom: 3 }}>
-                {label}
-              </div>
-              <div style={{ fontSize: 14, color: 'var(--text-1)' }}>{value}</div>
-            </div>
-          ))}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+
+      {/* Life events */}
+      {events.length > 0 && (
+        <div>
+          <SectionLabel>Life Events</SectionLabel>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px 40px' }}>
+            {events.map(({ label, date, place, sub }) => (
+              <DataField
+                key={label}
+                label={label}
+                value={[date, place].filter(Boolean).join(' · ')}
+                sub={sub}
+              />
+            ))}
+          </div>
         </div>
       )}
 
-      {/* Relationships */}
-      <RelGroup label="Parents" ids={fc.rels.parents ?? []} chart={chart} people={people} />
-      <RelGroup label={fc.rels.spouses && fc.rels.spouses.length > 1 ? 'Spouses' : 'Spouse'} ids={fc.rels.spouses ?? []} chart={chart} people={people} />
-      <RelGroup label="Children" ids={fc.rels.children ?? []} chart={chart} people={people} />
+      {/* Personal attributes */}
+      {attrs.length > 0 && (
+        <div>
+          <SectionLabel>Details</SectionLabel>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px 40px' }}>
+            {attrs.map(({ label, value }) => (
+              <DataField key={label} label={label} value={value} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Marriages */}
+      {marriages.length > 0 && (
+        <div>
+          <SectionLabel>{marriages.length === 1 ? 'Marriage' : 'Marriages'}</SectionLabel>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {marriages.map((m, i) => {
+              const spouse = chart.find(p => p.id === m.spouseId);
+              const linkedPerson = people.find(p => p.familyTreeId === m.spouseId) ?? null;
+              return (
+                <div key={i} style={{ display: 'flex', flexWrap: 'wrap', gap: '12px 32px', alignItems: 'flex-start' }}>
+                  {spouse && (
+                    <div>
+                      <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-4)', marginBottom: 4 }}>
+                        {m.divorceDate ? 'Former Spouse' : 'Spouse'}
+                      </div>
+                      <RelativeChip fc={spouse} linkedPerson={linkedPerson} />
+                    </div>
+                  )}
+                  {m.date && <DataField label="Married" value={m.date} sub={m.place} />}
+                  {m.divorceDate && <DataField label="Divorced" value={m.divorceDate} />}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Family relationships */}
+      <div>
+        <SectionLabel>Family</SectionLabel>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <RelGroup label="Parents"  ids={fc.rels.parents  ?? []} chart={chart} people={people} />
+          <RelGroup label={fc.rels.spouses && fc.rels.spouses.length > 1 ? 'Spouses' : 'Spouse'} ids={fc.rels.spouses ?? []} chart={chart} people={people} />
+          <RelGroup label="Children" ids={fc.rels.children ?? []} chart={chart} people={people} />
+        </div>
+      </div>
     </div>
   );
 }

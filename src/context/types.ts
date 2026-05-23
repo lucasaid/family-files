@@ -44,14 +44,49 @@ export interface Person {
   familyTreeId?: string; // id of linked FamilyChartPerson
 }
 
+export interface FamilyChartMarriage {
+  spouseId: string;
+  date?: string;
+  place?: string;
+  divorceDate?: string;
+}
+
 export interface FamilyChartPerson {
   id: string;
   data: {
     gender: 'M' | 'F' | '';
     'first name': string;
     'last name': string;
+    nickname?: string;
+    prefix?: string;
+    suffix?: string;
+    // birth
     birthday: string;
+    birthPlace?: string;
+    // death
     death: string;
+    deathPlace?: string;
+    deathCause?: string;
+    // burial
+    burialDate?: string;
+    burialPlace?: string;
+    // christening
+    christeningDate?: string;
+    christeningPlace?: string;
+    // personal attributes
+    occupation?: string;
+    nationality?: string;
+    religion?: string;
+    residence?: string;
+    education?: string;
+    title?: string;
+    // life events
+    emigrationDate?: string;
+    emigrationPlace?: string;
+    immigrationDate?: string;
+    immigrationPlace?: string;
+    // marriages (filled from FAM records)
+    marriages?: FamilyChartMarriage[];
   };
   rels: {
     spouses?: string[];
