@@ -103,6 +103,11 @@ export default function FamilyTree() {
       .setCardDisplay([['first name', 'last name'], ['birthday']]);
     if (hasPhotos) card.setCardImageField('avatar');
 
+    card.setOnCardClick((_e: MouseEvent, d: any) => {
+      chart.store.updateMainId(d.data.id);
+      chart.store.updateTree({ tree_position: 'main_to_middle', scale: 0.8, transition_time: 300 });
+    });
+
     const activeId = focusId ?? state.settings.familyTreeStartId;
     if (activeId && chartData.some((fc: any) => fc.id === activeId)) {
       chart.updateMainId(activeId);
