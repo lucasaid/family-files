@@ -11,7 +11,7 @@ function cropFaceToDataUrl(src: string, face: FaceRegion, outputSize: number): P
     img.onload = () => {
       const W = img.naturalWidth;
       const H = img.naturalHeight;
-      const PAD = 2.0;
+      const PAD = 1.4;
 
       const cx = (face.x + face.w / 2) * W;
       const cy = (face.y + face.h / 2) * H;
@@ -62,7 +62,10 @@ export default function FamilyTree() {
           const linkedPerson = state.people.find(p => p.familyTreeId === fc.id);
           if (!linkedPerson) return fc;
 
-          const photo = state.photos.find(p => p.faces.some(f => f.personId === linkedPerson.id));
+          const tagged = state.photos.filter(p => p.faces.some(f => f.personId === linkedPerson.id));
+          const photo = (linkedPerson.primaryPhotoFile
+            ? tagged.find(p => p.file === linkedPerson.primaryPhotoFile)
+            : undefined) ?? tagged[0];
           if (!photo) return fc;
 
           const face = photo.faces.find(f => f.personId === linkedPerson.id);

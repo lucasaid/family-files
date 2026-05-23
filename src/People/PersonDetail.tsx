@@ -402,7 +402,7 @@ function FamilyTreeLink({ personId }: { personId: string }) {
 
 export default function PersonDetail() {
   const { id } = useParams<{ id?: string }>();
-  const { state } = useAppContext();
+  const { state, dispatch } = useAppContext();
   const navigate = useNavigate();
 
   if (!id) return <div style={{ padding: 24, color: 'var(--text-3)' }}>Invalid URL.</div>;
@@ -459,7 +459,15 @@ export default function PersonDetail() {
         <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 14 }}>
           Photos
         </div>
-        <PersonPhotoGrid personId={person.id} />
+        <PersonPhotoGrid
+          personId={person.id}
+          primaryPhotoFile={person.primaryPhotoFile}
+          onSetPrimary={async file => {
+            const updated = { ...person, primaryPhotoFile: file };
+            dispatch({ type: 'UPDATE_PERSON', person: updated });
+            await writePeopleJson(state.people.map(p => p.id === id ? updated : p));
+          }}
+        />
       </div>
 
       {/* Documents section */}

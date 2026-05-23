@@ -42,6 +42,6 @@ Show the following EXIF fields in the side panel when viewing a photo:
 
 # Features to add/Bugs
 - nested albums??
-- Generate family tree based on GED file
-- Link people to family tree?
-- Add more data to people details page (notes, description ect, DOB)
+- data backups?
+- data resets?
+- add README data outside app so we can add settings that are easily changeable 

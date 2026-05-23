@@ -41,7 +41,8 @@ export interface FamilyDocument {
 export interface Person {
   id: string;
   name: string;
-  familyTreeId?: string; // id of linked FamilyChartPerson
+  familyTreeId?: string;    // id of linked FamilyChartPerson
+  primaryPhotoFile?: string; // photo.file of the chosen avatar photo
 }
 
 export interface FamilyChartMarriage {
