@@ -112,6 +112,39 @@
   --btn-toggle-on-text:   #0d3a90;
 }
 
+/* family-chart theme overrides — map library variables to our palette */
+:root[data-theme="dark"] .f3 {
+  --background-color: var(--bg);
+  --text-color: var(--text-1);
+  background-color: var(--bg);
+  color: var(--text-1);
+}
+
+:root[data-theme="light"] .f3 {
+  --background-color: var(--bg);
+  --text-color: #1c1b18;
+  background-color: var(--bg);
+  color: #1c1b18;
+}
+
+/* Override D3-set inline stroke attribute on connecting lines */
+:root[data-theme="light"] .f3 .link {
+  stroke: #1c1b18;
+}
+
+:root[data-theme="dark"] .f3 .link {
+  stroke: #dddddd;
+}
+
+/* Fix main-card and path-to-main outlines — library hardcodes white/light-grey which is invisible in light mode */
+:root[data-theme="light"] .f3 div.card-main .card-inner {
+  outline-color: rgba(28, 27, 24, 0.55);
+}
+
+:root[data-theme="light"] .f3 div.card-inner.f3-path-to-main {
+  outline-color: rgba(28, 27, 24, 0.4);
+}
+
 /* Reduced motion — disable animations and transitions for users who prefer it */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

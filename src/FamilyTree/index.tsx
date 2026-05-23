@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import * as f3 from 'family-chart';
 import 'family-chart/styles/family-chart.css';
 import { useAppContext } from '../context/AppContext';
@@ -34,7 +35,7 @@ function cropFaceToDataUrl(src: string, face: FaceRegion, outputSize: number): P
       const ctx = canvas.getContext('2d');
       if (!ctx) { reject(new Error('no canvas context')); return; }
       ctx.drawImage(img, sx, sy, sw, sh, 0, 0, outputSize, outputSize);
-      resolve(canvas.toDataURL('image/jpeg', 0.85));
+      resolve(canvas.toDataURL('image/jpeg', 0.92));
     };
     img.onerror = () => reject(new Error('failed to load image'));
     img.src = src;
@@ -43,6 +44,8 @@ function cropFaceToDataUrl(src: string, face: FaceRegion, outputSize: number): P
 
 export default function FamilyTree() {
   const { state } = useAppContext();
+  const location = useLocation();
+  const focusId = new URLSearchParams(location.search).get('focus') ?? undefined;
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<f3.Chart | null>(null);
   const [chartData, setChartData] = useState<any[] | null>(null);
@@ -72,7 +75,7 @@ export default function FamilyTree() {
           if (!face) return fc;
 
           try {
-            const avatar = await cropFaceToDataUrl(photo.thumbnailPath ?? photo.path, face, 120);
+            const avatar = await cropFaceToDataUrl(photo.path, face, 400);
             return { ...fc, data: { ...fc.data, avatar } };
           } catch {
             return fc;
@@ -100,18 +103,35 @@ export default function FamilyTree() {
       .setCardDisplay([['first name', 'last name'], ['birthday']]);
     if (hasPhotos) card.setCardImageField('avatar');
 
-    const startId = state.settings.familyTreeStartId;
-    if (startId && chartData.some((fc: any) => fc.id === startId)) {
-      chart.updateMainId(startId);
+    const activeId = focusId ?? state.settings.familyTreeStartId;
+    if (activeId && chartData.some((fc: any) => fc.id === activeId)) {
+      chart.updateMainId(activeId);
     }
-    chart.updateTree({ initial: true, tree_position: startId ? 'main_to_middle' : 'fit' });
+    chart.updateTree({ initial: true, tree_position: 'fit' });
+
+    if (activeId) {
+      // After fit renders, zoom in on the active person at a comfortable scale
+      requestAnimationFrame(() => {
+        try {
+          const datum = chart.store.getTreeMainDatum();
+          const rect = el.getBoundingClientRect();
+          f3.handlers.cardToMiddle({
+            datum,
+            svg: chart.svg,
+            svg_dim: { width: rect.width, height: rect.height },
+            scale: 0.8,
+            transition_time: 300,
+          });
+        } catch {}
+      });
+    }
     chartRef.current = chart;
 
     return () => {
       if (containerRef.current) containerRef.current.innerHTML = '';
       chartRef.current = null;
     };
-  }, [chartData, state.settings]);
+  }, [chartData, focusId, state.settings]);
 
   if (!state.familyChart || state.familyChart.length === 0) {
     return (

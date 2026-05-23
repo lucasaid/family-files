@@ -37,7 +37,7 @@ function AvatarImage({ photo, face, size }: { photo: Photo; face: FaceRegion; si
 
   return (
     <img
-      src={photo.thumbnailPath ?? photo.path}
+      src={photo.path}
       alt=""
       onLoad={e => {
         const img = e.currentTarget;

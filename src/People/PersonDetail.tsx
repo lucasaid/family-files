@@ -431,11 +431,11 @@ export default function PersonDetail() {
       {/* Name + meta header */}
       <div style={{ marginBottom: 36, paddingBottom: 24, borderBottom: '1px solid var(--border)', display: 'flex', gap: 24, alignItems: 'flex-start' }}>
         <PersonAvatar personId={person.id} size={200} />
-        <div>
+        <div style={{ flex: 1 }}>
           <h1 style={{ fontFamily: '"Georgia", "Times New Roman", serif', fontWeight: 400, fontSize: 28, color: 'var(--text-heading)', margin: '0 0 8px', letterSpacing: '0.01em' }}>
             {person.name}
           </h1>
-          <div style={{ display: 'flex', gap: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
             <span style={{ fontSize: 11, color: 'var(--text-4)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
               {photoCount} {photoCount === 1 ? 'photo' : 'photos'}
             </span>
@@ -444,6 +444,21 @@ export default function PersonDetail() {
               {docCount} {docCount === 1 ? 'document' : 'documents'}
             </span>
           </div>
+          {person.familyTreeId && (
+            <button
+              onClick={() => navigate(`/tree?focus=${encodeURIComponent(person.familyTreeId!)}`)}
+              className="btn-ghost-hover"
+              style={{
+                marginTop: 16,
+                background: 'none', border: '1px solid var(--border-muted)', borderRadius: 5,
+                padding: '6px 12px', cursor: 'pointer',
+                fontSize: 12, color: 'var(--text-3)', letterSpacing: '0.04em',
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+              }}
+            >
+              <span style={{ fontSize: 10 }}>🌳</span> Show in family tree
+            </button>
+          )}
         </div>
       </div>
 
