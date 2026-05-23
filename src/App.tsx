@@ -10,6 +10,7 @@ import DocumentsRoute from './Documents';
 import LoadingScreen from './LoadingScreen';
 import Home from './Home';
 import AlbumsRoute from './Albums';
+import FamilyTree from './FamilyTree';
 
 interface LoadState {
   status: SyncStatus;
@@ -18,17 +19,22 @@ interface LoadState {
   done: boolean;
 }
 
-const NAV_LINKS = [
+const BASE_NAV_LINKS = [
   { to: '/', label: 'Home', end: true },
   { to: '/photos', label: 'Photos' },
   { to: '/albums', label: 'Albums' },
   { to: '/documents', label: 'Documents' },
   { to: '/people', label: 'People' },
 ];
+const TREE_NAV_LINK = { to: '/tree', label: 'Family Tree', end: false };
 
 function AppNav() {
   const navigate = useNavigate();
   const { theme, toggle } = useTheme();
+  const { state } = useAppContext();
+  const navLinks = state.familyChart !== null
+    ? [...BASE_NAV_LINKS, TREE_NAV_LINK]
+    : BASE_NAV_LINKS;
   return (
     <nav style={{
       display: 'flex', alignItems: 'center', gap: 0,
@@ -67,7 +73,7 @@ function AppNav() {
 
       {/* Nav links */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 1 }}>
-        {NAV_LINKS.map(({ to, label, end }) => (
+        {navLinks.map(({ to, label, end }) => (
           <NavLink
             key={to}
             to={to}
@@ -111,7 +117,7 @@ function AppNav() {
 function AppShell() {
   const { dispatch } = useAppContext();
   const [load, setLoad] = useState<LoadState>({
-    status: 'reading-people',
+    status: 'reading-gedcom',
     addedPeople: [],
     error: null,
     done: false,
@@ -124,6 +130,7 @@ function AppShell() {
         dispatch({ type: 'SET_PHOTOS', photos: result.photos });
         dispatch({ type: 'SET_ALBUMS', albums: result.albums });
         dispatch({ type: 'SET_DOCUMENTS', documents: result.documents });
+        dispatch({ type: 'SET_FAMILY_CHART', data: result.familyChart });
         setLoad(prev => ({ ...prev, addedPeople: result.addedPeople, done: true }));
 
         // Generate thumbnails in background for photos that don't have a cached one yet
@@ -155,7 +162,7 @@ function AppShell() {
           <Route path="/albums/:albumName" element={<AlbumsRoute />} />
           <Route path="/documents" element={<DocumentsRoute />} />
           <Route path="/people/*" element={<PeopleRoute />} />
-          <Route path="/tree" element={<h1 style={{ padding: 24, color: 'var(--text-1)' }}>Tree</h1>} />
+          <Route path="/tree" element={<FamilyTree />} />
         </Routes>
       </div>
     </div>

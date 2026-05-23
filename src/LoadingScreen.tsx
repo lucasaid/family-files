@@ -3,6 +3,7 @@ import React from 'react';
 import { SyncStatus } from './utils/sync';
 
 const STATUS_LABELS: Record<SyncStatus, string> = {
+  'reading-gedcom': 'Loading family tree…',
   'reading-people': 'Reading people…',
   'reading-documents': 'Reading documents…',
   'scanning-images': 'Scanning images for face tags…',
@@ -11,6 +12,7 @@ const STATUS_LABELS: Record<SyncStatus, string> = {
 };
 
 const STATUS_ORDER: SyncStatus[] = [
+  'reading-gedcom',
   'reading-people',
   'reading-documents',
   'scanning-images',

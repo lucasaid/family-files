@@ -41,6 +41,23 @@ export interface FamilyDocument {
 export interface Person {
   id: string;
   name: string;
+  familyTreeId?: string; // id of linked FamilyChartPerson
+}
+
+export interface FamilyChartPerson {
+  id: string;
+  data: {
+    gender: 'M' | 'F' | '';
+    'first name': string;
+    'last name': string;
+    birthday: string;
+    death: string;
+  };
+  rels: {
+    spouses?: string[];
+    children?: string[];
+    parents?: string[];
+  };
 }
 
 export interface AppState {
@@ -52,6 +69,7 @@ export interface AppState {
   people: Person[];
   isTaggingMode: boolean;
   showFaces: boolean;
+  familyChart: FamilyChartPerson[] | null;
 }
 
 export type AppAction =
@@ -76,4 +94,5 @@ export type AppAction =
   | { type: 'ADD_PERSON'; person: Person }
   | { type: 'UPDATE_PERSON'; person: Person }
   | { type: 'REMOVE_PERSON'; id: string }
-  | { type: 'SET_PHOTO_THUMBNAIL'; fsPath: string; thumbnailPath: string };
+  | { type: 'SET_PHOTO_THUMBNAIL'; fsPath: string; thumbnailPath: string }
+  | { type: 'SET_FAMILY_CHART'; data: FamilyChartPerson[] | null };

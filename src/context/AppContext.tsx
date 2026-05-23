@@ -10,6 +10,7 @@ export const initialState: AppState = {
   people: [],
   isTaggingMode: false,
   showFaces: true,
+  familyChart: null,
 };
 
 function updatePhoto(photos: Photo[], file: string, updater: (p: Photo) => Photo): Photo[] {
@@ -119,6 +120,8 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         : state.activePhoto;
       return { ...state, photos, activePhoto };
     }
+    case 'SET_FAMILY_CHART':
+      return { ...state, familyChart: action.data };
     default:
       return state;
   }

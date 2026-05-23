@@ -1,10 +1,302 @@
 // src/People/PersonDetail.tsx
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
+import { writePeopleJson } from '../utils/people';
+import { FamilyChartPerson, Person } from '../context/types';
 import PersonPhotoGrid from './PersonPhotoGrid';
 import PersonDocList from './PersonDocList';
 import PersonAvatar from './PersonAvatar';
+
+// ─── helpers ────────────────────────────────────────────────────────────────
+
+function fcName(fc: FamilyChartPerson): string {
+  return [fc.data['first name'], fc.data['last name']].filter(Boolean).join(' ');
+}
+
+// Chip for a single relative — links to their person page if they're linked in app
+function RelativeChip({ fc, linkedPerson }: { fc: FamilyChartPerson; linkedPerson: Person | null }) {
+  const navigate = useNavigate();
+  const name = fcName(fc);
+  const birth = fc.data.birthday;
+
+  if (linkedPerson) {
+    return (
+      <button
+        onClick={() => navigate(`/people/${linkedPerson.id}`)}
+        className="btn-ghost-hover"
+        style={{
+          background: 'var(--bg-elevated)', border: '1px solid var(--border-muted)',
+          borderRadius: 5, padding: '6px 12px', cursor: 'pointer',
+          textAlign: 'left', display: 'flex', flexDirection: 'column', gap: 1,
+        }}
+      >
+        <span style={{ fontSize: 13, color: 'var(--accent)', fontWeight: 500 }}>{name}</span>
+        {birth && <span style={{ fontSize: 11, color: 'var(--text-4)' }}>b. {birth}</span>}
+      </button>
+    );
+  }
+
+  return (
+    <div style={{
+      background: 'var(--bg-elevated)', border: '1px solid var(--border-muted)',
+      borderRadius: 5, padding: '6px 12px',
+      display: 'flex', flexDirection: 'column', gap: 1,
+    }}>
+      <span style={{ fontSize: 13, color: 'var(--text-2)' }}>{name}</span>
+      {birth && <span style={{ fontSize: 11, color: 'var(--text-4)' }}>b. {birth}</span>}
+    </div>
+  );
+}
+
+function RelGroup({ label, ids, chart, people }: {
+  label: string;
+  ids: string[];
+  chart: FamilyChartPerson[];
+  people: Person[];
+}) {
+  const members = ids
+    .map(id => chart.find(fc => fc.id === id))
+    .filter((fc): fc is FamilyChartPerson => fc !== undefined);
+
+  if (members.length === 0) return null;
+
+  return (
+    <div>
+      <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-4)', marginBottom: 8 }}>
+        {label}
+      </div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+        {members.map(fc => {
+          const linked = people.find(p => p.familyTreeId === fc.id) ?? null;
+          return <RelativeChip key={fc.id} fc={fc} linkedPerson={linked} />;
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── Family tree data display ────────────────────────────────────────────────
+
+function FamilyTreeDetails({ fc }: { fc: FamilyChartPerson }) {
+  const { state } = useAppContext();
+  const chart = state.familyChart ?? [];
+  const people = state.people;
+
+  const genderLabel = fc.data.gender === 'M' ? 'Male' : fc.data.gender === 'F' ? 'Female' : null;
+
+  const vitals = [
+    fc.data.birthday && { label: 'Born', value: fc.data.birthday },
+    fc.data.death && { label: 'Died', value: fc.data.death },
+    genderLabel && { label: 'Gender', value: genderLabel },
+  ].filter(Boolean) as { label: string; value: string }[];
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      {/* Vitals */}
+      {vitals.length > 0 && (
+        <div style={{ display: 'flex', gap: 32 }}>
+          {vitals.map(({ label, value }) => (
+            <div key={label}>
+              <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-4)', marginBottom: 3 }}>
+                {label}
+              </div>
+              <div style={{ fontSize: 14, color: 'var(--text-1)' }}>{value}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Relationships */}
+      <RelGroup label="Parents" ids={fc.rels.parents ?? []} chart={chart} people={people} />
+      <RelGroup label={fc.rels.spouses && fc.rels.spouses.length > 1 ? 'Spouses' : 'Spouse'} ids={fc.rels.spouses ?? []} chart={chart} people={people} />
+      <RelGroup label="Children" ids={fc.rels.children ?? []} chart={chart} people={people} />
+    </div>
+  );
+}
+
+// ─── Link control ────────────────────────────────────────────────────────────
+
+type LinkMode = 'idle' | 'confirm' | 'search';
+
+function matchScore(fc: FamilyChartPerson, q: string): number {
+  const first = fc.data['first name'].toLowerCase();
+  const last = fc.data['last name'].toLowerCase();
+  const full = `${first} ${last}`.trim();
+  if (full === q) return 3;
+  if (first === q) return 2;
+  if (full.includes(q) || q.split(' ').every(w => full.includes(w))) return 1;
+  return 0;
+}
+
+function FamilyTreeLink({ personId }: { personId: string }) {
+  const { state, dispatch } = useAppContext();
+  const [mode, setMode] = useState<LinkMode>('idle');
+  const [autoMatch, setAutoMatch] = useState<FamilyChartPerson | null>(null);
+  const [query, setQuery] = useState('');
+
+  const person = state.people.find(p => p.id === personId)!;
+  const linked = person.familyTreeId
+    ? state.familyChart?.find(fc => fc.id === person.familyTreeId) ?? null
+    : null;
+
+  const candidates = useMemo<FamilyChartPerson[]>(() => {
+    if (!state.familyChart) return [];
+    const q = query.toLowerCase();
+    return state.familyChart
+      .filter(fc => matchScore(fc, q) > 0)
+      .sort((a, b) => {
+        const scoreDiff = matchScore(b, q) - matchScore(a, q);
+        if (scoreDiff !== 0) return scoreDiff;
+        return a.data['first name'].localeCompare(b.data['first name']);
+      });
+  }, [state.familyChart, query]);
+
+  function openLinking() {
+    if (!state.familyChart) return;
+    const q = person.name.toLowerCase();
+    const matches = state.familyChart.filter(fc => matchScore(fc, q) > 0);
+    if (matches.length === 1) {
+      setAutoMatch(matches[0]);
+      setMode('confirm');
+    } else {
+      setAutoMatch(null);
+      setQuery(person.name);
+      setMode('search');
+    }
+  }
+
+  function cancel() {
+    setMode('idle');
+    setAutoMatch(null);
+    setQuery('');
+  }
+
+  async function save(updated: typeof person) {
+    const updatedPeople = state.people.map(p => p.id === personId ? updated : p);
+    dispatch({ type: 'UPDATE_PERSON', person: updated });
+    await writePeopleJson(updatedPeople);
+  }
+
+  async function handleLink(fc: FamilyChartPerson) {
+    await save({ ...person, familyTreeId: fc.id });
+    cancel();
+  }
+
+  async function handleUnlink() {
+    const { familyTreeId: _, ...rest } = person;
+    await save(rest as typeof person);
+  }
+
+  if (!state.familyChart) return null;
+
+  return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+        <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-3)' }}>
+          Family Tree
+        </div>
+        {linked && mode === 'idle' && (
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button onClick={openLinking} className="btn-ghost-hover" style={{ background: 'none', border: '1px solid var(--border-muted)', borderRadius: 4, padding: '3px 9px', fontSize: 11, cursor: 'pointer', color: 'var(--text-4)' }}>
+              Change
+            </button>
+            <button onClick={handleUnlink} className="btn-ghost-hover" style={{ background: 'none', border: '1px solid var(--border-muted)', borderRadius: 4, padding: '3px 9px', fontSize: 11, cursor: 'pointer', color: 'var(--text-4)' }}>
+              Unlink
+            </button>
+          </div>
+        )}
+      </div>
+
+      {mode === 'idle' && linked && <FamilyTreeDetails fc={linked} />}
+
+      {mode === 'idle' && !linked && (
+        <button
+          onClick={openLinking}
+          className="btn-ghost-hover"
+          style={{ background: 'none', border: '1px dashed var(--border-muted)', borderRadius: 6, padding: '10px 16px', fontSize: 12, cursor: 'pointer', color: 'var(--text-4)', width: '100%', textAlign: 'left' }}
+        >
+          + Link to family tree record
+        </button>
+      )}
+
+      {mode === 'confirm' && autoMatch && (
+        <div style={{ border: '1px solid var(--border-muted)', borderRadius: 6, padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+          <div>
+            <div style={{ fontSize: 13, color: 'var(--text-2)', marginBottom: 4 }}>
+              Is this the right record?
+            </div>
+            <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-1)' }}>
+              {fcName(autoMatch)}
+            </div>
+            {autoMatch.data.birthday && (
+              <div style={{ fontSize: 12, color: 'var(--text-4)', marginTop: 2 }}>b. {autoMatch.data.birthday}</div>
+            )}
+          </div>
+          <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+            <button
+              onClick={() => handleLink(autoMatch)}
+              style={{ background: 'var(--accent)', border: 'none', borderRadius: 4, padding: '6px 14px', fontSize: 12, cursor: 'pointer', color: '#fff', fontWeight: 500 }}
+            >
+              Yes, link
+            </button>
+            <button
+              onClick={() => { setAutoMatch(null); setQuery(person.name); setMode('search'); }}
+              className="btn-ghost-hover"
+              style={{ background: 'none', border: '1px solid var(--border-muted)', borderRadius: 4, padding: '6px 12px', fontSize: 12, cursor: 'pointer', color: 'var(--text-4)' }}
+            >
+              Search
+            </button>
+            <button
+              onClick={cancel}
+              className="btn-ghost-hover"
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-4)', fontSize: 16, lineHeight: 1, padding: '0 4px' }}
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
+
+      {mode === 'search' && (
+        <div style={{ border: '1px solid var(--border-muted)', borderRadius: 6, overflow: 'hidden' }}>
+          <div style={{ padding: '10px 12px', borderBottom: '1px solid var(--border-muted)', display: 'flex', gap: 8, alignItems: 'center' }}>
+            <input
+              autoFocus
+              type="text"
+              placeholder="Search by name…"
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              style={{ flex: 1, background: 'none', border: 'none', outline: 'none', fontSize: 13, color: 'var(--text-1)' }}
+            />
+            <button onClick={cancel} className="btn-ghost-hover" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-4)', fontSize: 16, lineHeight: 1, padding: '0 4px' }}>
+              ×
+            </button>
+          </div>
+          <div style={{ maxHeight: 240, overflowY: 'auto' }}>
+            {candidates.length === 0 ? (
+              <div style={{ padding: '12px 16px', fontSize: 13, color: 'var(--text-4)' }}>No matches</div>
+            ) : (
+              candidates.map(fc => (
+                <button
+                  key={fc.id}
+                  onClick={() => handleLink(fc)}
+                  className="btn-ghost-hover"
+                  style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', borderBottom: '1px solid var(--border-muted)', padding: '10px 16px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                >
+                  <span style={{ fontSize: 13, color: 'var(--text-1)' }}>{fcName(fc)}</span>
+                  {fc.data.birthday && <span style={{ fontSize: 11, color: 'var(--text-4)' }}>b. {fc.data.birthday}</span>}
+                </button>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Page ────────────────────────────────────────────────────────────────────
 
 export default function PersonDetail() {
   const { id } = useParams<{ id?: string }>();
@@ -52,6 +344,13 @@ export default function PersonDetail() {
           </div>
         </div>
       </div>
+
+      {/* Family Tree section */}
+      {state.familyChart && (
+        <div style={{ marginBottom: 36, paddingBottom: 36, borderBottom: '1px solid var(--border)' }}>
+          <FamilyTreeLink personId={id} />
+        </div>
+      )}
 
       {/* Photos section */}
       <div style={{ marginBottom: 36 }}>

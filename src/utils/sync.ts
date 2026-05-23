@@ -1,10 +1,11 @@
 // src/utils/sync.ts
-import { Photo, Person, FamilyDocument } from '../context/types';
+import { Photo, Person, FamilyDocument, FamilyChartPerson } from '../context/types';
 import { readMetadata } from './exiftool';
 import { readPeopleJson, writePeopleJson } from './people';
 import { readDocumentsJson } from './documents';
 import { listAlbums } from './albums';
 import { checkThumbnailOnDisk } from './thumbnails';
+import { gedcomToFamilyChart } from './gedcom';
 
 const path = (window as any).require('path') as typeof import('path');
 const fs = (window as any).require('fs') as typeof import('fs');
@@ -16,19 +17,33 @@ export interface SyncResult {
   albums: string[];
   people: Person[];
   documents: FamilyDocument[];
-  addedPeople: string[];   // names newly created in people.json
+  addedPeople: string[];
+  familyChart: FamilyChartPerson[] | null;
 }
 
 export type SyncStatus =
+  | 'reading-gedcom'
   | 'reading-people'
   | 'reading-documents'
   | 'scanning-images'
   | 'syncing-people'
   | 'done';
 
+const GED_PATH = path.join(process.cwd(), 'family-tree.ged');
+
 export async function syncAndLoad(
   onStatus: (status: SyncStatus, detail?: string) => void
 ): Promise<SyncResult> {
+  onStatus('reading-gedcom');
+  let familyChart: FamilyChartPerson[] | null = null;
+  try {
+    await fs.promises.access(GED_PATH);
+    const buffer = await fs.promises.readFile(GED_PATH);
+    familyChart = await gedcomToFamilyChart(buffer);
+  } catch {
+    // No .ged file — family tree tab won't show
+  }
+
   onStatus('reading-people');
   const people = await readPeopleJson();
 
@@ -108,5 +123,5 @@ export async function syncAndLoad(
 
   onStatus('done');
 
-  return { photos: resolvedPhotos, albums, people: finalPeople, documents, addedPeople };
+  return { photos: resolvedPhotos, albums, people: finalPeople, documents, addedPeople, familyChart };
 }
