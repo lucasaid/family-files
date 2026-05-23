@@ -49,6 +49,17 @@ function RelativeChip({ fc, linkedPerson }: { fc: FamilyChartPerson; linkedPerso
   );
 }
 
+function siblingIds(fc: FamilyChartPerson, chart: FamilyChartPerson[]): string[] {
+  const seen = new Set<string>();
+  for (const parentId of fc.rels.parents ?? []) {
+    const parent = chart.find(p => p.id === parentId);
+    for (const childId of parent?.rels.children ?? []) {
+      if (childId !== fc.id) seen.add(childId);
+    }
+  }
+  return Array.from(seen);
+}
+
 function RelGroup({ label, ids, chart, people }: {
   label: string;
   ids: string[];
@@ -198,6 +209,7 @@ function FamilyTreeDetails({ fc }: { fc: FamilyChartPerson }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <RelGroup label="Parents"  ids={fc.rels.parents  ?? []} chart={chart} people={people} />
           <RelGroup label={fc.rels.spouses && fc.rels.spouses.length > 1 ? 'Spouses' : 'Spouse'} ids={fc.rels.spouses ?? []} chart={chart} people={people} />
+          <RelGroup label="Siblings" ids={siblingIds(fc, chart)} chart={chart} people={people} />
           <RelGroup label="Children" ids={fc.rels.children ?? []} chart={chart} people={people} />
         </div>
       </div>
