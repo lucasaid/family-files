@@ -1,11 +1,13 @@
 // src/utils/sync.ts
-import { Photo, Person, FamilyDocument, FamilyChartPerson } from '../context/types';
+import { Photo, Person, FamilyDocument, FamilyChartPerson, AppSettings } from '../context/types';
 import { readMetadata } from './exiftool';
 import { readPeopleJson, writePeopleJson } from './people';
 import { readDocumentsJson } from './documents';
 import { listAlbums } from './albums';
 import { checkThumbnailOnDisk } from './thumbnails';
 import { gedcomToFamilyChart } from './gedcom';
+import { readSettings } from './settings';
+
 
 const path = (window as any).require('path') as typeof import('path');
 const fs = (window as any).require('fs') as typeof import('fs');
@@ -19,6 +21,7 @@ export interface SyncResult {
   documents: FamilyDocument[];
   addedPeople: string[];
   familyChart: FamilyChartPerson[] | null;
+  settings: AppSettings;
 }
 
 export type SyncStatus =
@@ -34,6 +37,8 @@ const GED_PATH = path.join(process.cwd(), 'family-tree.ged');
 export async function syncAndLoad(
   onStatus: (status: SyncStatus, detail?: string) => void
 ): Promise<SyncResult> {
+  const settings = await readSettings();
+
   onStatus('reading-gedcom');
   let familyChart: FamilyChartPerson[] | null = null;
   try {
@@ -123,5 +128,5 @@ export async function syncAndLoad(
 
   onStatus('done');
 
-  return { photos: resolvedPhotos, albums, people: finalPeople, documents, addedPeople, familyChart };
+  return { photos: resolvedPhotos, albums, people: finalPeople, documents, addedPeople, familyChart, settings };
 }

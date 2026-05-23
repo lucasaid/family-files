@@ -11,6 +11,7 @@ import LoadingScreen from './LoadingScreen';
 import Home from './Home';
 import AlbumsRoute from './Albums';
 import FamilyTree from './FamilyTree';
+import SettingsModal from './Settings';
 
 interface LoadState {
   status: SyncStatus;
@@ -28,7 +29,7 @@ const BASE_NAV_LINKS = [
 ];
 const TREE_NAV_LINK = { to: '/tree', label: 'Family Tree', end: false };
 
-function AppNav() {
+function AppNav({ onOpenSettings }: { onOpenSettings: () => void }) {
   const navigate = useNavigate();
   const { theme, toggle } = useTheme();
   const { state } = useAppContext();
@@ -96,20 +97,25 @@ function AppNav() {
         ))}
       </div>
 
-      {/* Theme toggle */}
-      <button
-        onClick={toggle}
-        aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-        className="btn-outline-hover"
-        style={{
-          background: 'none', border: '1px solid var(--border-muted)',
-          borderRadius: 4, padding: '4px 10px',
-          color: 'var(--text-3)', fontSize: 12, cursor: 'pointer',
-          letterSpacing: '0.02em',
-        }}
-      >
-        {theme === 'dark' ? '☀' : '☾'}
-      </button>
+      {/* Right controls */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <button
+          onClick={toggle}
+          aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          className="btn-outline-hover"
+          style={{ background: 'none', border: '1px solid var(--border-muted)', borderRadius: 4, padding: '4px 10px', color: 'var(--text-3)', fontSize: 12, cursor: 'pointer', letterSpacing: '0.02em' }}
+        >
+          {theme === 'dark' ? '☀' : '☾'}
+        </button>
+        <button
+          onClick={onOpenSettings}
+          aria-label="Settings"
+          className="btn-outline-hover"
+          style={{ background: 'none', border: '1px solid var(--border-muted)', borderRadius: 4, padding: '4px 8px', color: 'var(--text-3)', fontSize: 14, cursor: 'pointer', lineHeight: 1 }}
+        >
+          ⚙
+        </button>
+      </div>
     </nav>
   );
 }
@@ -122,6 +128,7 @@ function AppShell() {
     error: null,
     done: false,
   });
+  const [showSettings, setShowSettings] = useState(false);
 
   useEffect(() => {
     syncAndLoad(status => setLoad(prev => ({ ...prev, status })))
@@ -131,6 +138,7 @@ function AppShell() {
         dispatch({ type: 'SET_ALBUMS', albums: result.albums });
         dispatch({ type: 'SET_DOCUMENTS', documents: result.documents });
         dispatch({ type: 'SET_FAMILY_CHART', data: result.familyChart });
+        dispatch({ type: 'SET_SETTINGS', settings: result.settings });
         setLoad(prev => ({ ...prev, addedPeople: result.addedPeople, done: true }));
 
         // Generate thumbnails in background for photos that don't have a cached one yet
@@ -153,7 +161,8 @@ function AppShell() {
 
   return (
     <div style={{ boxSizing: 'border-box', height: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
-      <AppNav />
+      <AppNav onOpenSettings={() => setShowSettings(true)} />
+      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
       <div style={{ flex: 1, overflow: 'auto', background: 'var(--bg)', color: 'var(--text-1)' }}>
         <Routes>
           <Route path="/" element={<Home />} />

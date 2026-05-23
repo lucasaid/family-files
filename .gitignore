@@ -18,6 +18,7 @@
 documents.json
 people.json
 family-tree.ged
+settings.json
 
 # misc
 .DS_Store

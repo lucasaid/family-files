@@ -96,6 +96,10 @@ export interface FamilyChartPerson {
   };
 }
 
+export interface AppSettings {
+  familyTreeStartId?: string; // FamilyChartPerson.id
+}
+
 export interface AppState {
   photos: Photo[];
   activePhoto: Photo | null;
@@ -106,6 +110,7 @@ export interface AppState {
   isTaggingMode: boolean;
   showFaces: boolean;
   familyChart: FamilyChartPerson[] | null;
+  settings: AppSettings;
 }
 
 export type AppAction =
@@ -131,4 +136,5 @@ export type AppAction =
   | { type: 'UPDATE_PERSON'; person: Person }
   | { type: 'REMOVE_PERSON'; id: string }
   | { type: 'SET_PHOTO_THUMBNAIL'; fsPath: string; thumbnailPath: string }
-  | { type: 'SET_FAMILY_CHART'; data: FamilyChartPerson[] | null };
+  | { type: 'SET_FAMILY_CHART'; data: FamilyChartPerson[] | null }
+  | { type: 'SET_SETTINGS'; settings: AppSettings };

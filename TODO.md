@@ -45,3 +45,5 @@ Show the following EXIF fields in the side panel when viewing a photo:
 - data backups?
 - data resets?
 - add README data outside app so we can add settings that are easily changeable 
+- set better zoom when 1. loading family tree and 2. clicking a person in the family tree
+- fix family tree to work with light theme

@@ -100,14 +100,18 @@ export default function FamilyTree() {
       .setCardDisplay([['first name', 'last name'], ['birthday']]);
     if (hasPhotos) card.setCardImageField('avatar');
 
-    chart.updateTree({ initial: true, tree_position: 'fit' });
+    const startId = state.settings.familyTreeStartId;
+    if (startId && chartData.some((fc: any) => fc.id === startId)) {
+      chart.updateMainId(startId);
+    }
+    chart.updateTree({ initial: true, tree_position: startId ? 'main_to_middle' : 'fit' });
     chartRef.current = chart;
 
     return () => {
       if (containerRef.current) containerRef.current.innerHTML = '';
       chartRef.current = null;
     };
-  }, [chartData]);
+  }, [chartData, state.settings]);
 
   if (!state.familyChart || state.familyChart.length === 0) {
     return (
