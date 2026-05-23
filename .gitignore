@@ -15,6 +15,9 @@
 /images/
 /public/images/
 /documents/
+documents.json
+people.json
+family-tree.ged
 
 # misc
 .DS_Store
