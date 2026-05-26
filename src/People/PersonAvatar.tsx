@@ -62,15 +62,20 @@ export default function PersonAvatar({ personId, size = 200 }: Props) {
   const face = photo?.faces.find(f => f.personId === personId);
 
   if (!photo || !face) {
+    const fc = person?.familyTreeId
+      ? state.familyChart?.find(f => f.id === person.familyTreeId)
+      : undefined;
+    const gender = fc?.data.gender;
+    const emoji = gender === 'M' ? '👨' : gender === 'F' ? '👩' : '👤';
     return (
       <div style={{
         width: size, height: size, borderRadius: 4,
         background: 'var(--bg-card)', border: '1px solid var(--border)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        color: 'var(--text-5)', fontSize: size * 0.32, userSelect: 'none',
+        fontSize: size * 0.42, userSelect: 'none',
         flexShrink: 0,
       }}>
-        ◻
+        {emoji}
       </div>
     );
   }
