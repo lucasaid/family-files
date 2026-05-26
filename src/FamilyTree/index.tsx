@@ -97,8 +97,23 @@ export default function FamilyTree() {
 
     el.innerHTML = '';
 
-    const hasPhotos = chartData.some(fc => fc.data.avatar);
-    const chart = f3.createChart(el, chartData);
+    // Deep-copy before handing to the library. family-chart mutates the objects
+    // in-place (createRelsToAdd pushes synthetic spouse IDs into rels.spouses and
+    // rels.parents). Without a copy those synthetic IDs bleed back into
+    // state.familyChart and cause "Cannot read properties of undefined" on the
+    // next chart creation because the synthetic persons no longer exist.
+    const safeData = chartData.map(fc => ({
+      ...fc,
+      data: { ...fc.data },
+      rels: {
+        ...(fc.rels.spouses  && { spouses:  [...fc.rels.spouses]  }),
+        ...(fc.rels.children && { children: [...fc.rels.children] }),
+        ...(fc.rels.parents  && { parents:  [...fc.rels.parents]  }),
+      },
+    }));
+
+    const hasPhotos = safeData.some(fc => fc.data.avatar);
+    const chart = f3.createChart(el, safeData);
     const card = chart.setCardHtml()
       .setCardDisplay([['first name', 'last name'], ['birthday']]);
     if (hasPhotos) card.setCardImageField('avatar');
@@ -109,10 +124,10 @@ export default function FamilyTree() {
     });
 
     const activeId = focusId ?? state.settings.familyTreeStartId;
-    if (activeId && chartData.some((fc: any) => fc.id === activeId)) {
+    if (activeId && safeData.some((fc: any) => fc.id === activeId)) {
       chart.updateMainId(activeId);
     }
-    chart.updateTree({ initial: true, tree_position: 'fit' });
+    chart.updateTree({ initial: true, tree_position: 'main_to_middle', scale: 0.8, transition_time: 300 });
 
     if (activeId) {
       // After fit renders, zoom in on the active person at a comfortable scale
