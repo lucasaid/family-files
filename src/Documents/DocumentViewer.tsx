@@ -1,5 +1,5 @@
 // src/Documents/DocumentViewer.tsx
-import React from 'react';
+import React, { useRef, useState, useCallback } from 'react';
 import { FamilyDocument } from '../context/types';
 
 const IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'];
@@ -7,6 +7,108 @@ const IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'];
 function getExt(filePath: string) {
   return filePath.split('.').pop()?.toLowerCase() ?? '';
 }
+
+const MIN_SCALE = 0.5;
+const MAX_SCALE = 10;
+const SCROLL_ZOOM_SPEED = 0.001;
+const PINCH_ZOOM_SPEED  = 0.02;   // pinch deltaY is ~10–50x smaller than scroll
+
+function ZoomableImage({ src, alt }: { src: string; alt: string }) {
+  const [scale, setScale] = useState(1);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const dragging = useRef(false);
+  const lastPos = useRef({ x: 0, y: 0 });
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const reset = useCallback(() => {
+    setScale(1);
+    setOffset({ x: 0, y: 0 });
+  }, []);
+
+  const onWheel = useCallback((e: React.WheelEvent) => {
+    e.preventDefault();
+    const speed = e.ctrlKey ? PINCH_ZOOM_SPEED : SCROLL_ZOOM_SPEED;
+    setScale(s => Math.min(MAX_SCALE, Math.max(MIN_SCALE, s - e.deltaY * speed * s)));
+  }, []);
+
+  const onMouseDown = useCallback((e: React.MouseEvent) => {
+    if (e.button !== 0) return;
+    dragging.current = true;
+    lastPos.current = { x: e.clientX, y: e.clientY };
+    e.preventDefault();
+  }, []);
+
+  const onMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!dragging.current) return;
+    const dx = e.clientX - lastPos.current.x;
+    const dy = e.clientY - lastPos.current.y;
+    lastPos.current = { x: e.clientX, y: e.clientY };
+    setOffset(o => ({ x: o.x + dx, y: o.y + dy }));
+  }, []);
+
+  const onMouseUp = useCallback(() => { dragging.current = false; }, []);
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      {/* toolbar */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderBottom: '1px solid var(--border-1)', flexShrink: 0 }}>
+        <button onClick={() => setScale(s => Math.min(MAX_SCALE, s * 1.25))} style={btnStyle} title="Zoom in">+</button>
+        <button onClick={() => setScale(s => Math.max(MIN_SCALE, s / 1.25))} style={btnStyle} title="Zoom out">−</button>
+        <span style={{ fontSize: 12, color: 'var(--text-3)', minWidth: 40, textAlign: 'center' }}>
+          {Math.round(scale * 100)}%
+        </span>
+        <button onClick={reset} style={{ ...btnStyle, marginLeft: 4 }} title="Reset">Reset</button>
+      </div>
+
+      {/* viewport */}
+      <div
+        ref={containerRef}
+        onWheel={onWheel}
+        onMouseDown={onMouseDown}
+        onMouseMove={onMouseMove}
+        onMouseUp={onMouseUp}
+        onMouseLeave={onMouseUp}
+        onDoubleClick={reset}
+        style={{
+          flex: 1,
+          overflow: 'hidden',
+          cursor: dragging.current ? 'grabbing' : 'grab',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'var(--bg-2)',
+          userSelect: 'none',
+        }}
+      >
+        <img
+          src={src}
+          alt={alt}
+          draggable={false}
+          style={{
+            transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale})`,
+            transformOrigin: 'center',
+            maxWidth: '100%',
+            maxHeight: '100%',
+            objectFit: 'contain',
+            transition: dragging.current ? 'none' : undefined,
+            pointerEvents: 'none',
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+const btnStyle: React.CSSProperties = {
+  background: 'var(--btn-secondary-bg, var(--bg-3))',
+  border: '1px solid var(--border-2)',
+  borderRadius: 4,
+  padding: '2px 10px',
+  color: 'var(--text-2)',
+  cursor: 'pointer',
+  fontSize: 16,
+  lineHeight: 1.4,
+};
 
 interface Props { doc: FamilyDocument }
 
@@ -29,8 +131,8 @@ export default function DocumentViewer({ doc }: Props) {
 
   if (IMAGE_EXTS.includes(ext)) {
     return (
-      <div style={{ padding: 16, textAlign: 'center' }}>
-        <img src={fileUrl} alt={doc.title} style={{ maxWidth: '100%', maxHeight: 500, objectFit: 'contain', borderRadius: 4 }} />
+      <div style={{ height: 520, display: 'flex', flexDirection: 'column' }}>
+        <ZoomableImage src={fileUrl} alt={doc.title} />
       </div>
     );
   }
