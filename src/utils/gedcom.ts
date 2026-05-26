@@ -197,5 +197,19 @@ export async function gedcomToFamilyChart(buffer: Buffer): Promise<FamilyChartPe
     }
   }
 
+  // ── Pass 3: sanitize ──────────────────────────────────────────────────────
+  // Remove any rel IDs that don't correspond to a real person in the map.
+  // GEDCOM files can reference pointers in FAM records that have no matching
+  // INDI record; leaving those dangling IDs causes the layout engine to crash.
+  const allIds = new Set<string>(Array.from(persons.keys()));
+  Array.from(persons.values()).forEach(p => {
+    if (p.rels.spouses)  p.rels.spouses  = p.rels.spouses.filter((id: string)  => allIds.has(id));
+    if (p.rels.children) p.rels.children = p.rels.children.filter((id: string) => allIds.has(id));
+    if (p.rels.parents)  p.rels.parents  = p.rels.parents.filter((id: string)  => allIds.has(id));
+    if (p.rels.spouses?.length  === 0) delete p.rels.spouses;
+    if (p.rels.children?.length === 0) delete p.rels.children;
+    if (p.rels.parents?.length  === 0) delete p.rels.parents;
+  });
+
   return Array.from(persons.values());
 }
