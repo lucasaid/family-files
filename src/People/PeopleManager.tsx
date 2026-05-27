@@ -3,6 +3,7 @@ import React, { useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 import { writePeopleJson } from '../utils/people';
+import { dataPath } from '../utils/paths';
 import { writeFaceRegions } from '../utils/exiftool';
 import { Person } from '../context/types';
 import PersonAvatar from './PersonAvatar';
@@ -22,6 +23,20 @@ export default function PeopleManager() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [sort, setSort] = useState<'name-asc' | 'name-desc' | 'photos-desc' | 'photos-asc'>('name-asc');
+
+  const profileIds = useMemo(() => {
+    const set = new Set<string>();
+    try {
+      const fs   = (window as any).require('fs')   as typeof import('fs');
+      const path = (window as any).require('path') as typeof import('path');
+      for (const person of people) {
+        if (fs.existsSync(path.join(dataPath, 'research', `${person.id}.json`))) {
+          set.add(person.id);
+        }
+      }
+    } catch { /* not in Electron */ }
+    return set;
+  }, [people]);
 
   // Build count maps once per photos/documents change — avoids O(n²) scans during sort
   const photoCountMap = useMemo(() => {
@@ -226,6 +241,9 @@ export default function PeopleManager() {
                   >
                     {person.name}
                   </span>
+                  {profileIds.has(person.id) && (
+                    <span title="Research profile available" style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--accent)', display: 'inline-block', flexShrink: 0, opacity: 0.85 }} />
+                  )}
                   <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                     {pc > 0 && <span style={{ fontSize: 10, color: 'var(--text-3)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>{pc} photo{pc !== 1 ? 's' : ''}</span>}
                     {dc > 0 && <span style={{ fontSize: 10, color: 'var(--text-3)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>{dc} doc{dc !== 1 ? 's' : ''}</span>}

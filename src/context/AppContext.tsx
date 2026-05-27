@@ -8,6 +8,7 @@ export const initialState: AppState = {
   documents: [],
   activeDocument: null,
   people: [],
+  categories: [],
   isTaggingMode: false,
   showFaces: true,
   familyChart: null,
@@ -125,6 +126,14 @@ export function appReducer(state: AppState, action: AppAction): AppState {
       return { ...state, familyChart: action.data };
     case 'SET_SETTINGS':
       return { ...state, settings: action.settings };
+    case 'SET_CATEGORIES':
+      return { ...state, categories: action.categories };
+    case 'ADD_CATEGORY':
+      return { ...state, categories: [...state.categories, action.category] };
+    case 'UPDATE_CATEGORY':
+      return { ...state, categories: state.categories.map(c => c.id === action.category.id ? action.category : c) };
+    case 'REMOVE_CATEGORY':
+      return { ...state, categories: state.categories.filter(c => c.id !== action.id) };
     default:
       return state;
   }

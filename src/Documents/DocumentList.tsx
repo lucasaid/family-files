@@ -1,7 +1,7 @@
 // src/Documents/DocumentList.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { FamilyDocument } from '../context/types';
+import { FamilyDocument, DocumentCategory } from '../context/types';
 import { writeDocumentsJson, copyToDocumentsDir } from '../utils/documents';
 
 const { ipcRenderer } = (window as any).require('electron');
@@ -24,14 +24,117 @@ function docIcon(doc: FamilyDocument) {
   return '📎';
 }
 
+function DocRow({ doc, active, onClick, depth = 0 }: { doc: FamilyDocument; active: boolean; onClick: () => void; depth?: number }) {
+  const { state } = useAppContext();
+  const firstPerson = doc.personIds[0] ? state.people.find(p => p.id === doc.personIds[0])?.name : null;
+  const paddingLeft = 12 + (depth + 1) * 12;
+  return (
+    <div
+      onClick={onClick}
+      style={{
+        padding: `7px 12px 7px ${paddingLeft}px`, cursor: 'pointer', borderBottom: '1px solid var(--border-dim)',
+        background: active ? 'var(--bg-active)' : 'transparent',
+      }}
+    >
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <span style={{ fontSize: 14, flexShrink: 0 }}>{docIcon(doc)}</span>
+        <div style={{ overflow: 'hidden' }}>
+          <div style={{ color: 'var(--text-1)', fontSize: 12, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{doc.title}</div>
+          <div style={{ color: 'var(--text-4)', fontSize: 11 }}>
+            {doc.date && <span>{doc.date}{firstPerson ? ' · ' : ''}</span>}
+            {firstPerson && <span>👤 {firstPerson}</span>}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CategorySection({
+  category, docs, allCategories, activeDocId, onSelect, depth,
+}: {
+  category: DocumentCategory;
+  docs: FamilyDocument[];
+  allCategories: DocumentCategory[];
+  activeDocId: string | null | undefined;
+  onSelect: (doc: FamilyDocument) => void;
+  depth: number;
+}) {
+  const children = allCategories.filter(c => c.parentId === category.id);
+  const directDocs = docs.filter(d => d.categoryId === category.id);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (!activeDocId) return;
+    const containsActiveDoc = (catId: string): boolean => {
+      if (docs.some(d => d.id === activeDocId && d.categoryId === catId)) return true;
+      return allCategories.filter(c => c.parentId === catId).some(c => containsActiveDoc(c.id));
+    };
+    if (containsActiveDoc(category.id)) setOpen(true);
+  }, [activeDocId, docs, allCategories, category.id]);
+
+  const totalCount = directDocs.length + children.reduce((n, child) => {
+    return n + docs.filter(d => {
+      const inChild = (catId: string): boolean => {
+        if (d.categoryId === catId) return true;
+        return allCategories.filter(c => c.parentId === catId).some(c => inChild(c.id));
+      };
+      return inChild(child.id);
+    }).length;
+  }, 0);
+
+  const indent = depth * 12;
+
+  return (
+    <div>
+      <div
+        onClick={() => setOpen(o => !o)}
+        style={{
+          display: 'flex', alignItems: 'center', gap: 4,
+          padding: `5px 12px 5px ${12 + indent}px`,
+          cursor: 'pointer', userSelect: 'none',
+          borderBottom: '1px solid var(--border-dim)',
+          background: 'var(--bg-card)',
+        }}
+      >
+        <span style={{ fontSize: 9, color: 'var(--text-4)', width: 10, flexShrink: 0 }}>{open ? '▾' : '▸'}</span>
+        <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-3)', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {category.name}
+        </span>
+        {totalCount > 0 && (
+          <span style={{ fontSize: 10, color: 'var(--text-5)', flexShrink: 0 }}>{totalCount}</span>
+        )}
+      </div>
+      {open && (
+        <>
+          {children.map(child => (
+            <CategorySection
+              key={child.id}
+              category={child}
+              docs={docs}
+              allCategories={allCategories}
+              activeDocId={activeDocId}
+              onSelect={onSelect}
+              depth={depth + 1}
+            />
+          ))}
+          {directDocs.map(doc => (
+            <DocRow key={doc.id} doc={doc} active={doc.id === activeDocId} onClick={() => onSelect(doc)} depth={depth} />
+          ))}
+        </>
+      )}
+    </div>
+  );
+}
+
 export default function DocumentList() {
   const { state, dispatch } = useAppContext();
-  const { documents, activeDocument, people } = state;
+  const { documents, activeDocument, categories } = state;
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
   const [searchField, setSearchField] = useState<SearchField>('all');
 
-  const personName = (id: string) => people.find(p => p.id === id)?.name ?? '';
+  const personName = (id: string) => state.people.find(p => p.id === id)?.name ?? '';
 
   const matchesSearch = (doc: FamilyDocument): boolean => {
     const q = search.trim().toLowerCase();
@@ -49,6 +152,7 @@ export default function DocumentList() {
   };
 
   const filteredDocs = documents.filter(matchesSearch);
+  const isSearching = search.trim().length > 0;
 
   const addFile = async () => {
     if (loading) return;
@@ -95,12 +199,17 @@ export default function DocumentList() {
     }
   };
 
+  const onSelect = (doc: FamilyDocument) => dispatch({ type: 'SET_ACTIVE_DOCUMENT', document: doc });
+
   const inputStyle: React.CSSProperties = {
     background: 'var(--input-bg)', border: '1px solid var(--input-border)',
     borderRadius: 3, padding: '4px 8px', color: 'var(--input-text)',
     fontSize: 11, fontFamily: 'system-ui, sans-serif', outline: 'none', width: '100%',
     boxSizing: 'border-box',
   };
+
+  const rootCategories = categories.filter(c => c.parentId === null);
+  const uncategorized = filteredDocs.filter(d => !d.categoryId);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'var(--bg-card)' }}>
@@ -118,8 +227,7 @@ export default function DocumentList() {
         {documents.length > 0 && (
           <div style={{ display: 'flex', gap: 6, minWidth: 0 }}>
             <input
-              type="search"
-              value={search}
+              type="search" value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Search…"
               style={{ ...inputStyle, flex: 1, minWidth: 0, width: 0 }}
@@ -141,34 +249,73 @@ export default function DocumentList() {
         {documents.length === 0 && (
           <div style={{ padding: 16, color: 'var(--text-4)', fontSize: 13 }}>No documents yet.</div>
         )}
-        {documents.length > 0 && filteredDocs.length === 0 && (
-          <div style={{ padding: 16, color: 'var(--text-4)', fontSize: 12, fontStyle: 'italic' }}>No documents match "{search}".</div>
+
+        {/* Search results — flat list */}
+        {isSearching && (
+          <>
+            {filteredDocs.length === 0 && (
+              <div style={{ padding: 16, color: 'var(--text-4)', fontSize: 12, fontStyle: 'italic' }}>No documents match "{search}".</div>
+            )}
+            {filteredDocs.map(doc => (
+              <DocRow key={doc.id} doc={doc} active={doc.id === activeDocument?.id} onClick={() => onSelect(doc)} />
+            ))}
+          </>
         )}
-        {filteredDocs.map(doc => {
-          const firstPerson = doc.personIds[0] ? people.find(p => p.id === doc.personIds[0])?.name : null;
-          return (
-            <div
-              key={doc.id}
-              onClick={() => dispatch({ type: 'SET_ACTIVE_DOCUMENT', document: doc })}
-              style={{
-                padding: '8px 12px', cursor: 'pointer', borderBottom: '1px solid var(--border-dim)',
-                background: activeDocument?.id === doc.id ? 'var(--bg-active)' : 'transparent',
-              }}
-            >
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                <span style={{ fontSize: 16, flexShrink: 0 }}>{docIcon(doc)}</span>
-                <div style={{ overflow: 'hidden' }}>
-                  <div style={{ color: 'var(--text-1)', fontSize: 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{doc.title}</div>
-                  <div style={{ color: 'var(--text-4)', fontSize: 11 }}>
-                    {doc.date && <span>{doc.date} · </span>}
-                    {firstPerson && <span>👤 {firstPerson}</span>}
-                  </div>
-                </div>
-              </div>
-            </div>
-          );
-        })}
+
+        {/* Category tree — shown when not searching */}
+        {!isSearching && documents.length > 0 && (
+          <>
+            {rootCategories.map(cat => (
+              <CategorySection
+                key={cat.id}
+                category={cat}
+                docs={filteredDocs}
+                allCategories={categories}
+                activeDocId={activeDocument?.id}
+                onSelect={onSelect}
+                depth={0}
+              />
+            ))}
+
+            {/* Uncategorized */}
+            {uncategorized.length > 0 && (
+              <UncategorizedSection
+                docs={uncategorized}
+                activeDocId={activeDocument?.id}
+                onSelect={onSelect}
+              />
+            )}
+          </>
+        )}
       </div>
+    </div>
+  );
+}
+
+function UncategorizedSection({ docs, activeDocId, onSelect }: {
+  docs: FamilyDocument[];
+  activeDocId: string | null | undefined;
+  onSelect: (doc: FamilyDocument) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div>
+      <div
+        onClick={() => setOpen(o => !o)}
+        style={{
+          display: 'flex', alignItems: 'center', gap: 4,
+          padding: '5px 12px', cursor: 'pointer', userSelect: 'none',
+          borderBottom: '1px solid var(--border-dim)',
+          background: 'var(--bg-card)',
+        }}
+      >
+        <span style={{ fontSize: 9, color: 'var(--text-4)', width: 10, flexShrink: 0 }}>{open ? '▾' : '▸'}</span>
+        <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-4)', flex: 1 }}>Uncategorized</span>
+        <span style={{ fontSize: 10, color: 'var(--text-5)' }}>{docs.length}</span>
+      </div>
+      {open && docs.map(doc => (
+        <DocRow key={doc.id} doc={doc} active={doc.id === activeDocId} onClick={() => onSelect(doc)} />
+      ))}
     </div>
   );
 }

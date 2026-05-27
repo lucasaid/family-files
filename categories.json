@@ -1,0 +1,15 @@
+[
+  {"id": "cat-birth-death", "name": "Birth & Death Records", "parentId": null},
+  {"id": "cat-birth-certs", "name": "Birth Certificates", "parentId": "cat-birth-death"},
+  {"id": "cat-death-certs", "name": "Death Certificates", "parentId": "cat-birth-death"},
+  {"id": "cat-probate", "name": "Probate & Wills", "parentId": "cat-birth-death"},
+  {"id": "cat-military", "name": "Military Records", "parentId": null},
+  {"id": "cat-wwi", "name": "WWI", "parentId": "cat-military"},
+  {"id": "cat-soldier-settlement", "name": "Discharged Soldiers Settlement", "parentId": "cat-military"},
+  {"id": "cat-land", "name": "Land & Property", "parentId": null},
+  {"id": "cat-letters", "name": "Letters & Correspondence", "parentId": null},
+  {"id": "cat-census", "name": "Census & Population Records", "parentId": null},
+  {"id": "cat-passenger-lists", "name": "Passenger Lists", "parentId": "cat-census"},
+  {"id": "cat-education", "name": "Education & Employment", "parentId": null},
+  {"id": "cat-education-records", "name": "Education Records", "parentId": "cat-education"}
+]

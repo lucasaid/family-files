@@ -44,5 +44,7 @@ Show the following EXIF fields in the side panel when viewing a photo:
 - nested albums??
 - data backups?
 - data resets?
-- set better zoom when 1. loading family tree and 2. clicking a person in the family tree
-- fix family tree to work with light theme
+- categories for documents
+- auto show faces when editing face tags
+- update information on side to have edit button to show info as text but swap to input fields when edit mode
+- have setting to toggle edit mode always on

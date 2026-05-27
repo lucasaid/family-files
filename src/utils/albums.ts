@@ -1,8 +1,10 @@
 // src/utils/albums.ts
+import { dataPath } from './paths';
+
 const fs = (window as any).require('fs') as typeof import('fs');
 const path = (window as any).require('path') as typeof import('path');
 
-const IMAGES_DIR = path.join(process.cwd(), 'images');
+const IMAGES_DIR = path.join(dataPath, 'images');
 
 export async function listAlbums(): Promise<string[]> {
   try {

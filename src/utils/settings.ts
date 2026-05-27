@@ -1,9 +1,10 @@
 import { AppSettings } from '../context/types';
+import { dataPath } from './paths';
 
 const fs   = (window as any).require('fs')   as typeof import('fs');
 const path = (window as any).require('path') as typeof import('path');
 
-const SETTINGS_PATH = path.join(process.cwd(), 'settings.json');
+const SETTINGS_PATH = path.join(dataPath, 'settings.json');
 
 export async function readSettings(): Promise<AppSettings> {
   try {

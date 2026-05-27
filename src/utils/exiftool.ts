@@ -4,9 +4,22 @@ import { loadCache, saveCache, statImageFiles } from './metadata-cache';
 
 const { execFile } = (window as any).require('child_process') as typeof import('child_process');
 
+// Packaged .app bundles don't inherit the shell PATH, so exiftool (installed via
+// Homebrew) won't be found without explicitly including the Homebrew bin paths.
+const EXEC_ENV = {
+  ...process.env,
+  PATH: [
+    process.env.PATH,
+    '/usr/local/bin',   // Homebrew on Intel Mac
+    '/opt/homebrew/bin', // Homebrew on Apple Silicon
+    '/usr/bin',
+    '/bin',
+  ].filter(Boolean).join(':'),
+};
+
 function run(args: string[]): Promise<string> {
   return new Promise((resolve, reject) => {
-    execFile('exiftool', args, { maxBuffer: 50 * 1024 * 1024 }, (err, stdout, stderr) => {
+    execFile('exiftool', args, { maxBuffer: 50 * 1024 * 1024, env: EXEC_ENV }, (err, stdout, stderr) => {
       if (err) reject(new Error(stderr || err.message));
       else resolve(stdout);
     });

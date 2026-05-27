@@ -1,24 +1,25 @@
 // src/utils/sync.ts
-import { Photo, Person, FamilyDocument, FamilyChartPerson, AppSettings } from '../context/types';
+import { Photo, Person, FamilyDocument, FamilyChartPerson, AppSettings, DocumentCategory } from '../context/types';
 import { readMetadata } from './exiftool';
 import { readPeopleJson, writePeopleJson } from './people';
-import { readDocumentsJson } from './documents';
+import { readDocumentsJson, readCategoriesJson } from './documents';
 import { listAlbums } from './albums';
 import { checkThumbnailOnDisk } from './thumbnails';
 import { gedcomToFamilyChart } from './gedcom';
 import { readSettings } from './settings';
-
+import { dataPath } from './paths';
 
 const path = (window as any).require('path') as typeof import('path');
 const fs = (window as any).require('fs') as typeof import('fs');
 
-const IMAGES_DIR = path.join(process.cwd(), 'images');
+const IMAGES_DIR = path.join(dataPath, 'images');
 
 export interface SyncResult {
   photos: Photo[];
   albums: string[];
   people: Person[];
   documents: FamilyDocument[];
+  categories: DocumentCategory[];
   addedPeople: string[];
   familyChart: FamilyChartPerson[] | null;
   settings: AppSettings;
@@ -32,7 +33,7 @@ export type SyncStatus =
   | 'syncing-people'
   | 'done';
 
-const GED_PATH = path.join(process.cwd(), 'family-tree.ged');
+const GED_PATH = path.join(dataPath, 'family-tree.ged');
 
 export async function syncAndLoad(
   onStatus: (status: SyncStatus, detail?: string) => void
@@ -54,6 +55,7 @@ export async function syncAndLoad(
 
   onStatus('reading-documents');
   const documents = await readDocumentsJson();
+  const categories = await readCategoriesJson();
 
   // Check images dir exists before scanning
   onStatus('scanning-images');
@@ -128,5 +130,5 @@ export async function syncAndLoad(
 
   onStatus('done');
 
-  return { photos: resolvedPhotos, albums, people: finalPeople, documents, addedPeople, familyChart, settings };
+  return { photos: resolvedPhotos, albums, people: finalPeople, documents, categories, addedPeople, familyChart, settings };
 }

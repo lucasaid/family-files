@@ -1,8 +1,9 @@
 // src/People/PersonDetail.tsx
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 import { writePeopleJson } from '../utils/people';
+import { dataPath } from '../utils/paths';
 import { FamilyChartPerson, Person } from '../context/types';
 import PersonPhotoGrid from './PersonPhotoGrid';
 import PersonDocList from './PersonDocList';
@@ -405,6 +406,16 @@ export default function PersonDetail() {
   const { state, dispatch } = useAppContext();
   const navigate = useNavigate();
 
+  const [hasResearchProfile, setHasResearchProfile] = useState(false);
+  useEffect(() => {
+    if (!id) return;
+    try {
+      const fs   = (window as any).require('fs')   as typeof import('fs');
+      const path = (window as any).require('path') as typeof import('path');
+      setHasResearchProfile(fs.existsSync(path.join(dataPath, 'research', `${id}.json`)));
+    } catch { setHasResearchProfile(false); }
+  }, [id]);
+
   if (!id) return <div style={{ padding: 24, color: 'var(--text-3)' }}>Invalid URL.</div>;
   const person = state.people.find(p => p.id === id);
   if (!person) return <div style={{ padding: 24, color: 'var(--text-3)' }}>Person not found.</div>;
@@ -444,21 +455,36 @@ export default function PersonDetail() {
               {docCount} {docCount === 1 ? 'document' : 'documents'}
             </span>
           </div>
-          {person.familyTreeId && (
-            <button
-              onClick={() => navigate(`/tree?focus=${encodeURIComponent(person.familyTreeId!)}`)}
-              className="btn-ghost-hover"
-              style={{
-                marginTop: 16,
-                background: 'none', border: '1px solid var(--border-muted)', borderRadius: 5,
-                padding: '6px 12px', cursor: 'pointer',
-                fontSize: 12, color: 'var(--text-3)', letterSpacing: '0.04em',
-                display: 'inline-flex', alignItems: 'center', gap: 6,
-              }}
-            >
-              <span style={{ fontSize: 10 }}>🌳</span> Show in family tree
-            </button>
-          )}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 16 }}>
+            {person.familyTreeId && (
+              <button
+                onClick={() => navigate(`/tree?focus=${encodeURIComponent(person.familyTreeId!)}`)}
+                className="btn-ghost-hover"
+                style={{
+                  background: 'none', border: '1px solid var(--border-muted)', borderRadius: 5,
+                  padding: '6px 12px', cursor: 'pointer',
+                  fontSize: 12, color: 'var(--text-3)', letterSpacing: '0.04em',
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                }}
+              >
+                <span style={{ fontSize: 10 }}>🌳</span> Show in family tree
+              </button>
+            )}
+            {hasResearchProfile && (
+              <button
+                onClick={() => navigate(`/profile/${id}`)}
+                className="btn-ghost-hover"
+                style={{
+                  background: 'none', border: '1px solid var(--border-muted)', borderRadius: 5,
+                  padding: '6px 12px', cursor: 'pointer',
+                  fontSize: 12, color: 'var(--text-3)', letterSpacing: '0.04em',
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                }}
+              >
+                <span style={{ fontSize: 10 }}>📋</span> Research profile
+              </button>
+            )}
+          </div>
         </div>
       </div>
 

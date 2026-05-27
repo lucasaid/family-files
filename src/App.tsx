@@ -12,6 +12,7 @@ import Home from './Home';
 import AlbumsRoute from './Albums';
 import FamilyTree from './FamilyTree';
 import SettingsModal from './Settings';
+import ResearchProfilePage from './ResearchProfiles/ResearchProfilePage';
 
 interface LoadState {
   status: SyncStatus;
@@ -137,6 +138,7 @@ function AppShell() {
         dispatch({ type: 'SET_PHOTOS', photos: result.photos });
         dispatch({ type: 'SET_ALBUMS', albums: result.albums });
         dispatch({ type: 'SET_DOCUMENTS', documents: result.documents });
+        dispatch({ type: 'SET_CATEGORIES', categories: result.categories });
         dispatch({ type: 'SET_FAMILY_CHART', data: result.familyChart });
         dispatch({ type: 'SET_SETTINGS', settings: result.settings });
         setLoad(prev => ({ ...prev, addedPeople: result.addedPeople, done: true }));
@@ -172,6 +174,7 @@ function AppShell() {
           <Route path="/documents" element={<DocumentsRoute />} />
           <Route path="/people/*" element={<PeopleRoute />} />
           <Route path="/tree" element={<FamilyTree />} />
+          <Route path="/profile/:personId" element={<ResearchProfilePage />} />
         </Routes>
       </div>
     </div>

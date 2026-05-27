@@ -27,12 +27,19 @@ export interface Photo {
   faces: FaceRegion[];
 }
 
+export interface DocumentCategory {
+  id: string;
+  name: string;
+  parentId: string | null;
+}
+
 export interface FamilyDocument {
   id: string;
   title: string;
   date: string | null;
   description: string;
   personIds: string[];
+  categoryId?: string | null;
   type: 'file' | 'note';
   filePath?: string; // relative to public/documents/ for type='file'
   content?: string;  // inline text for type='note'
@@ -107,6 +114,7 @@ export interface AppState {
   documents: FamilyDocument[];
   activeDocument: FamilyDocument | null;
   people: Person[];
+  categories: DocumentCategory[];
   isTaggingMode: boolean;
   showFaces: boolean;
   familyChart: FamilyChartPerson[] | null;
@@ -137,4 +145,8 @@ export type AppAction =
   | { type: 'REMOVE_PERSON'; id: string }
   | { type: 'SET_PHOTO_THUMBNAIL'; fsPath: string; thumbnailPath: string }
   | { type: 'SET_FAMILY_CHART'; data: FamilyChartPerson[] | null }
-  | { type: 'SET_SETTINGS'; settings: AppSettings };
+  | { type: 'SET_SETTINGS'; settings: AppSettings }
+  | { type: 'SET_CATEGORIES'; categories: DocumentCategory[] }
+  | { type: 'ADD_CATEGORY'; category: DocumentCategory }
+  | { type: 'UPDATE_CATEGORY'; category: DocumentCategory }
+  | { type: 'REMOVE_CATEGORY'; id: string };

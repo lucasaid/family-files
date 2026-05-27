@@ -1,7 +1,15 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron')
+const path = require('path')
 
 // Fix GPU crashes on macOS Sequoia and other systems
 app.disableHardwareAcceleration()
+
+// Resolved once app is ready so isPackaged is reliable.
+// In dev: project root (one level above public/main.js).
+// Packaged: the folder containing Family Files.app on the external drive.
+global.dataPath = app.isPackaged
+  ? path.dirname(path.dirname(path.dirname(path.dirname(app.getPath('exe')))))
+  : path.join(__dirname, '..');
 
 function createWindow () {
   // Create the browser window.
@@ -16,10 +24,12 @@ function createWindow () {
     }
   })
 
-  win.loadURL('http://localhost:3000');
-
-  // Always open DevTools so you can see errors during development
-  win.webContents.openDevTools();
+  if (app.isPackaged) {
+    win.loadFile(path.join(__dirname, '../build/index.html'));
+  } else {
+    win.loadURL('http://localhost:3000');
+    win.webContents.openDevTools();
+  }
 }
 
 // This method will be called when Electron has finished
@@ -47,6 +57,10 @@ app.on('activate', () => {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
+
+ipcMain.on('get-data-path', (event) => {
+  event.returnValue = global.dataPath;
+});
 
 ipcMain.handle('show-open-dialog', async (event, options) => {
   const safeOptions = {

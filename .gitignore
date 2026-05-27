@@ -10,11 +10,13 @@
 
 # production
 /build
+/dist
 
 # photo/document library — lives alongside the app, not in the repo
 /images/
 /public/images/
 /documents/
+/research/
 documents.json
 people.json
 family-tree.ged

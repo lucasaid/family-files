@@ -24,6 +24,41 @@ yarn electron-dev
 Photos are read from `public/images/`. Documents are stored in `public/documents/`.
 People and document metadata are saved to `people.json` and `documents.json` in the project root.
 
+## Building the .app (macOS)
+
+First, install dependencies (only needed once):
+
+```bash
+yarn install
+```
+
+Then build and package:
+
+```bash
+yarn dist
+```
+
+This runs `react-scripts build` to compile the React app, then `electron-builder` to package it as a macOS `.app`. The output lands in `dist/Family Files.app`.
+
+### Portable layout (external hard drive)
+
+The app is designed to be self-contained on an external drive. The data files live **next to** the `.app`, not inside it:
+
+```
+/Volumes/MyDrive/FamilyFiles/
+  Family Files.app       ← the app itself
+  images/                ← photo albums (subfolders = albums)
+  documents/             ← attached documents
+  research/              ← research profile JSON files
+  people.json
+  documents.json
+  categories.json
+  settings.json
+  family-tree.ged
+```
+
+Copy `Family Files.app` from `dist/` into this folder alongside your data. The app will automatically find all files relative to its own location. To move everything to a different machine or drive, just copy the whole folder.
+
 ## Available Scripts
 
 In the project directory, you can run:

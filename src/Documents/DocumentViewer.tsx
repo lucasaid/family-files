@@ -1,6 +1,7 @@
 // src/Documents/DocumentViewer.tsx
 import React, { useRef, useState, useCallback } from 'react';
 import { FamilyDocument } from '../context/types';
+import { dataPath } from '../utils/paths';
 
 const IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'];
 
@@ -126,7 +127,7 @@ export default function DocumentViewer({ doc }: Props) {
   const { shell } = (window as any).require('electron');
   const path = (window as any).require('path') as typeof import('path');
   const ext = getExt(doc.filePath);
-  const fullPath = path.join(process.cwd(), 'documents', doc.filePath);
+  const fullPath = path.join(dataPath, 'documents', doc.filePath);
   const fileUrl = `file://${fullPath}`;
 
   if (IMAGE_EXTS.includes(ext)) {
