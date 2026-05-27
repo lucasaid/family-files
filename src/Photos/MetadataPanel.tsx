@@ -5,10 +5,11 @@ import MetadataFields from './MetadataFields';
 import PeopleList from './PeopleList';
 import AlbumPicker from './AlbumPicker';
 
-export default function MetadataPanel() {
+export default function MetadataPanel({ onNavigate }: { onNavigate?: (dir: 'prev' | 'next') => void }) {
   const { state, dispatch } = useAppContext();
   const { activePhoto, isTaggingMode, showFaces } = state;
   const alwaysEdit = !!state.settings.photosAlwaysEdit;
+  const saveOnNavigate = !!state.settings.photosSaveOnNavigate;
   const [isEditing, setIsEditing] = useState(false);
 
   // Reset to read-only when switching photos (no-op when alwaysEdit is on)
@@ -48,7 +49,7 @@ export default function MetadataPanel() {
       </div>
 
       <div style={{ flex: 1, overflow: 'auto', padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 14 }}>
-        <MetadataFields readOnly={metaReadOnly} onExitEdit={() => setIsEditing(false)} />
+        <MetadataFields readOnly={metaReadOnly} alwaysEdit={alwaysEdit} saveOnNavigate={saveOnNavigate} onNavigate={onNavigate} onExitEdit={() => setIsEditing(false)} />
         <PeopleList />
       </div>
 

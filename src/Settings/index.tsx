@@ -7,6 +7,24 @@ function fcName(fc: FamilyChartPerson) {
   return [fc.data['first name'], fc.data['last name']].filter(Boolean).join(' ');
 }
 
+function Tip({ kbd, children }: { kbd: string; children: React.ReactNode }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+      <span style={{
+        flexShrink: 0,
+        fontSize: 10, fontWeight: 600,
+        background: 'var(--bg)', border: '1px solid var(--border-muted)',
+        borderRadius: 4, padding: '1px 6px',
+        color: 'var(--text-2)', letterSpacing: '0.03em',
+        fontFamily: 'ui-monospace, monospace',
+      }}>
+        {kbd}
+      </span>
+      <span style={{ fontSize: 11, color: 'var(--text-4)', lineHeight: 1.4 }}>{children}</span>
+    </div>
+  );
+}
+
 interface Props {
   onClose: () => void;
 }
@@ -115,6 +133,54 @@ export default function SettingsModal({ onClose }: Props) {
                 </div>
               </div>
             </label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', marginTop: 10 }}>
+              <input
+                type="checkbox"
+                checked={!!state.settings.photosSaveOnNavigate}
+                onChange={async e => {
+                  const updated = { ...state.settings, photosSaveOnNavigate: e.target.checked };
+                  dispatch({ type: 'SET_SETTINGS', settings: updated });
+                  await writeSettings(updated);
+                }}
+                style={{ width: 14, height: 14, cursor: 'pointer', accentColor: 'var(--accent)' }}
+              />
+              <div>
+                <div style={{ fontSize: 13, color: 'var(--text-1)' }}>Save on navigate away</div>
+                <div style={{ fontSize: 11, color: 'var(--text-4)', marginTop: 2 }}>
+                  Automatically save unsaved metadata changes when switching to another photo.
+                </div>
+              </div>
+            </label>
+
+            {(state.settings.photosAlwaysEdit || state.settings.photosSaveOnNavigate) && (
+              <div style={{
+                marginTop: 14,
+                padding: '10px 12px',
+                background: 'var(--bg-elevated)',
+                border: '1px solid var(--border-muted)',
+                borderRadius: 6,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 6,
+              }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-3)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                  How it works
+                </div>
+                <Tip kbd="⌥ ← / ⌥ →">
+                  Navigate to the previous or next photo from any metadata field.
+                </Tip>
+                {state.settings.photosAlwaysEdit && (
+                  <Tip kbd="↵ Enter">
+                    Save changes from any single-line field without clicking Save.
+                  </Tip>
+                )}
+                {state.settings.photosSaveOnNavigate && (
+                  <Tip kbd="Auto-save">
+                    Any unsaved changes are written to the file automatically when you navigate away.
+                  </Tip>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Setting: family tree start point */}

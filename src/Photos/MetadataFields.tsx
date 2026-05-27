@@ -1,5 +1,5 @@
 // src/Photos/MetadataFields.tsx
-import React, { useEffect, useLayoutEffect, useState, useRef } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useState, useRef } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { writeMeta, normalizeExifDate, formatDisplayDate } from '../utils/exiftool';
 import { Photo } from '../context/types';
@@ -118,10 +118,11 @@ function StarRating({ value, onChange, readOnly }: {
 
 // ── Keyword tags ───────────────────────────────────────────────────────────────
 
-function KeywordInput({ keywords, onChange, readOnly }: {
+function KeywordInput({ keywords, onChange, readOnly, onNavigate }: {
   keywords: string[];
   onChange: (kw: string[]) => void;
   readOnly: boolean;
+  onNavigate?: (dir: 'prev' | 'next') => void;
 }) {
   const [input, setInput] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -160,6 +161,11 @@ function KeywordInput({ keywords, onChange, readOnly }: {
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={e => {
+            if (e.altKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+              e.preventDefault();
+              onNavigate?.(e.key === 'ArrowRight' ? 'next' : 'prev');
+              return;
+            }
             if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); add(input); }
             if (e.key === 'Backspace' && !input && keywords.length) remove(keywords[keywords.length - 1]);
           }}
@@ -174,7 +180,7 @@ function KeywordInput({ keywords, onChange, readOnly }: {
 
 // ── Main component ─────────────────────────────────────────────────────────────
 
-export default function MetadataFields({ readOnly, onExitEdit }: { readOnly: boolean; onExitEdit?: () => void }) {
+export default function MetadataFields({ readOnly, alwaysEdit, saveOnNavigate, onNavigate, onExitEdit }: { readOnly: boolean; alwaysEdit?: boolean; saveOnNavigate?: boolean; onNavigate?: (dir: 'prev' | 'next') => void; onExitEdit?: () => void }) {
   const { state, dispatch } = useAppContext();
   const { activePhoto } = state;
   const [draft, setDraft] = useState<Draft | null>(null);
@@ -182,13 +188,60 @@ export default function MetadataFields({ readOnly, onExitEdit }: { readOnly: boo
   const [ratingSaving, setRatingSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const prevPhotoRef = useRef<typeof activePhoto>(null);
+  const prevDraftRef = useRef<Draft | null>(null);
+  const saveOnNavigateRef = useRef(saveOnNavigate);
+  saveOnNavigateRef.current = saveOnNavigate;
+
+  const autoSave = useCallback(async (photo: NonNullable<typeof activePhoto>, d: Draft) => {
+    try {
+      const location = d.locationStr ? parseLocation(d.locationStr) : null;
+      const dateChanged = d.date !== (photo.date ?? '');
+      const normalizedDate = dateChanged && d.date ? normalizeExifDate(d.date) : undefined;
+      await writeMeta(photo.fsPath, {
+        date: normalizedDate,
+        caption: d.caption,
+        location,
+        city: d.city,
+        state: d.state,
+        country: d.country,
+        rating: d.rating,
+        keywords: d.keywords,
+      });
+      const savedDate = dateChanged ? (normalizedDate || null) : photo.date;
+      dispatch({
+        type: 'UPDATE_PHOTO_META',
+        file: photo.file,
+        meta: {
+          date: savedDate,
+          caption: d.caption || null,
+          location,
+          city: d.city || null,
+          state: d.state || null,
+          country: d.country || null,
+          rating: d.rating,
+          keywords: d.keywords,
+        },
+      });
+    } catch {
+      // Auto-save is best-effort; errors are silently dropped
+    }
+  }, [dispatch]);
+
   useLayoutEffect(() => {
+    const prev = prevPhotoRef.current;
+    const prevDraft = prevDraftRef.current;
+    if (saveOnNavigateRef.current && prev && prevDraft && draftDirty(prevDraft, prev)) {
+      autoSave(prev, prevDraft);
+    }
+    prevPhotoRef.current = activePhoto;
     setDraft(activePhoto ? photoDraft(activePhoto) : null);
     setError(null);
-  }, [activePhoto?.file]);
+  }, [activePhoto?.file, autoSave]);
 
   if (!activePhoto || !draft) return null;
 
+  prevDraftRef.current = draft;
   const isDirty = draftDirty(draft, activePhoto);
 
   const save = async () => {
@@ -208,11 +261,12 @@ export default function MetadataFields({ readOnly, onExitEdit }: { readOnly: boo
         rating: draft.rating,
         keywords: draft.keywords,
       });
+      const savedDate = dateChanged ? (normalizedDate || null) : activePhoto.date;
       dispatch({
         type: 'UPDATE_PHOTO_META',
         file: activePhoto.file,
         meta: {
-          date: dateChanged ? (normalizedDate || null) : activePhoto.date,
+          date: savedDate,
           caption: draft.caption || null,
           location,
           city: draft.city || null,
@@ -222,6 +276,7 @@ export default function MetadataFields({ readOnly, onExitEdit }: { readOnly: boo
           keywords: draft.keywords,
         },
       });
+      setDraft(d => d ? { ...d, date: savedDate ?? '' } : d);
       onExitEdit?.();
     } catch (err) {
       setError((err as Error).message);
@@ -232,6 +287,16 @@ export default function MetadataFields({ readOnly, onExitEdit }: { readOnly: boo
 
   const cancel = () => { setDraft(photoDraft(activePhoto)); setError(null); onExitEdit?.(); };
   const set = (patch: Partial<Draft>) => setDraft(d => d ? { ...d, ...patch } : d);
+
+  const onEnter = alwaysEdit
+    ? (e: React.KeyboardEvent<HTMLInputElement>) => { if (e.key === 'Enter') { e.preventDefault(); save(); } }
+    : undefined;
+
+  const onNavKeyDown = (e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    if (!e.altKey || (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight')) return;
+    e.preventDefault();
+    onNavigate?.(e.key === 'ArrowRight' ? 'next' : 'prev');
+  };
 
   const saveRating = async (rating: number | null) => {
     set({ rating });
@@ -264,7 +329,7 @@ export default function MetadataFields({ readOnly, onExitEdit }: { readOnly: boo
         <div style={label}>Date taken</div>
         {readOnly
           ? <ReadValue value={formatDisplayDate(draft.date)} />
-          : <input style={fieldBase} value={draft.date} onChange={e => set({ date: e.target.value })} />}
+          : <input style={fieldBase} value={draft.date} onChange={e => set({ date: e.target.value })} onKeyDown={e => { onEnter?.(e); onNavKeyDown(e); }} />}
       </div>
 
       {/* Caption */}
@@ -273,13 +338,13 @@ export default function MetadataFields({ readOnly, onExitEdit }: { readOnly: boo
         {readOnly
           ? <ReadValue value={draft.caption} multiline />
           : <textarea style={{ ...fieldBase, minHeight: 52, resize: 'vertical' }}
-              value={draft.caption} onChange={e => set({ caption: e.target.value })} />}
+              value={draft.caption} onChange={e => set({ caption: e.target.value })} onKeyDown={onNavKeyDown} />}
       </div>
 
       {/* Keywords */}
       <div>
         <div style={label}>Keywords</div>
-        <KeywordInput keywords={draft.keywords} onChange={kw => set({ keywords: kw })} readOnly={readOnly} />
+        <KeywordInput keywords={draft.keywords} onChange={kw => set({ keywords: kw })} readOnly={readOnly} onNavigate={onNavigate} />
       </div>
 
       {/* Location coords */}
@@ -287,7 +352,7 @@ export default function MetadataFields({ readOnly, onExitEdit }: { readOnly: boo
         <div style={label}>GPS (lat, lng)</div>
         {readOnly
           ? <ReadValue value={draft.locationStr} />
-          : <input style={fieldBase} value={draft.locationStr} onChange={e => set({ locationStr: e.target.value })} />}
+          : <input style={fieldBase} value={draft.locationStr} onChange={e => set({ locationStr: e.target.value })} onKeyDown={e => { onEnter?.(e); onNavKeyDown(e); }} />}
       </div>
 
       {/* Structured location */}
@@ -296,9 +361,9 @@ export default function MetadataFields({ readOnly, onExitEdit }: { readOnly: boo
         {readOnly
           ? <ReadValue value={[draft.city, draft.state, draft.country].filter(Boolean).join(', ')} />
           : <>
-              <input style={fieldBase} value={draft.city} placeholder="City" onChange={e => set({ city: e.target.value })} />
-              <input style={fieldBase} value={draft.state} placeholder="State / Province" onChange={e => set({ state: e.target.value })} />
-              <input style={fieldBase} value={draft.country} placeholder="Country" onChange={e => set({ country: e.target.value })} />
+              <input style={fieldBase} value={draft.city} placeholder="City" onChange={e => set({ city: e.target.value })} onKeyDown={e => { onEnter?.(e); onNavKeyDown(e); }} />
+              <input style={fieldBase} value={draft.state} placeholder="State / Province" onChange={e => set({ state: e.target.value })} onKeyDown={e => { onEnter?.(e); onNavKeyDown(e); }} />
+              <input style={fieldBase} value={draft.country} placeholder="Country" onChange={e => set({ country: e.target.value })} onKeyDown={e => { onEnter?.(e); onNavKeyDown(e); }} />
             </>}
       </div>
 

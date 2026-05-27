@@ -29,6 +29,13 @@ export default function PhotosRoute() {
     dispatch({ type: 'SET_ACTIVE_PHOTO', photo });
   }, [dispatch]);
 
+  const navigatePhoto = useCallback((dir: 'prev' | 'next') => {
+    if (!activePhoto || filteredPhotos.length === 0) return;
+    const idx = filteredPhotos.findIndex(p => p.file === activePhoto.file);
+    if (dir === 'next' && idx < filteredPhotos.length - 1) selectPhoto(filteredPhotos[idx + 1]);
+    if (dir === 'prev' && idx > 0) selectPhoto(filteredPhotos[idx - 1]);
+  }, [filteredPhotos, activePhoto, selectPhoto]);
+
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
       if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement).tagName)) return;
@@ -84,7 +91,7 @@ export default function PhotosRoute() {
           <Filmstrip photos={filteredPhotos} activePhoto={activePhoto} onSelect={selectPhoto} />
         </div>
         <div style={{ width: 260, flexShrink: 0, borderLeft: '1px solid var(--border)', overflow: 'auto', background: 'var(--bg-panel)' }}>
-          <MetadataPanel />
+          <MetadataPanel onNavigate={navigatePhoto} />
         </div>
       </div>
     </div>
