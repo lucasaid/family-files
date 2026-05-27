@@ -55,6 +55,7 @@ interface Source {
   icon: string;
   title: string;
   sub: string;
+  link?: string;
 }
 
 interface PotentialFinding {
@@ -432,7 +433,11 @@ export default function ResearchProfilePage() {
                 <div key={s.title} style={{ background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 8, padding: '10px 12px', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
                   <span style={{ fontSize: 18, flexShrink: 0 }}>{s.icon}</span>
                   <div>
-                    <div style={{ fontSize: 13, fontWeight: 500 }}>{s.title}</div>
+                    {s.link ? (
+                      <a href={s.link} target="_blank" rel="noreferrer" style={{ fontSize: 13, fontWeight: 500, color: '#1d4ed8', textDecoration: 'none' }}>{s.title}</a>
+                    ) : (
+                      <div style={{ fontSize: 13, fontWeight: 500 }}>{s.title}</div>
+                    )}
                     <div style={{ fontSize: 11, color: '#6b7280', marginTop: 2 }}>{s.sub}</div>
                   </div>
                 </div>
