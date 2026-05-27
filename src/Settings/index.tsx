@@ -90,7 +90,32 @@ export default function SettingsModal({ onClose }: Props) {
         </div>
 
         {/* Body */}
-        <div style={{ flex: 1, overflow: 'auto', padding: '20px' }}>
+        <div style={{ flex: 1, overflow: 'auto', padding: '20px', display: 'flex', flexDirection: 'column', gap: 24 }}>
+
+          {/* Setting: photos always in edit mode */}
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 6 }}>
+              Photos
+            </div>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={!!state.settings.photosAlwaysEdit}
+                onChange={async e => {
+                  const updated = { ...state.settings, photosAlwaysEdit: e.target.checked };
+                  dispatch({ type: 'SET_SETTINGS', settings: updated });
+                  await writeSettings(updated);
+                }}
+                style={{ width: 14, height: 14, cursor: 'pointer', accentColor: 'var(--accent)' }}
+              />
+              <div>
+                <div style={{ fontSize: 13, color: 'var(--text-1)' }}>Always show edit fields</div>
+                <div style={{ fontSize: 11, color: 'var(--text-4)', marginTop: 2 }}>
+                  Photo metadata is always editable — no need to click Edit first.
+                </div>
+              </div>
+            </label>
+          </div>
 
           {/* Setting: family tree start point */}
           <div>

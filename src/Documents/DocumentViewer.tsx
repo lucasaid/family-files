@@ -1,5 +1,5 @@
 // src/Documents/DocumentViewer.tsx
-import React, { useRef, useState, useCallback } from 'react';
+import React, { useRef, useState, useCallback, useEffect } from 'react';
 import { FamilyDocument } from '../context/types';
 import { dataPath } from '../utils/paths';
 
@@ -26,10 +26,17 @@ function ZoomableImage({ src, alt }: { src: string; alt: string }) {
     setOffset({ x: 0, y: 0 });
   }, []);
 
-  const onWheel = useCallback((e: React.WheelEvent) => {
-    e.preventDefault();
-    const speed = e.ctrlKey ? PINCH_ZOOM_SPEED : SCROLL_ZOOM_SPEED;
-    setScale(s => Math.min(MAX_SCALE, Math.max(MIN_SCALE, s - e.deltaY * speed * s)));
+  // Must use a non-passive listener so preventDefault() can block page scroll while zooming.
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const handler = (e: WheelEvent) => {
+      e.preventDefault();
+      const speed = e.ctrlKey ? PINCH_ZOOM_SPEED : SCROLL_ZOOM_SPEED;
+      setScale(s => Math.min(MAX_SCALE, Math.max(MIN_SCALE, s - e.deltaY * speed * s)));
+    };
+    el.addEventListener('wheel', handler, { passive: false });
+    return () => el.removeEventListener('wheel', handler);
   }, []);
 
   const onMouseDown = useCallback((e: React.MouseEvent) => {
@@ -64,7 +71,6 @@ function ZoomableImage({ src, alt }: { src: string; alt: string }) {
       {/* viewport */}
       <div
         ref={containerRef}
-        onWheel={onWheel}
         onMouseDown={onMouseDown}
         onMouseMove={onMouseMove}
         onMouseUp={onMouseUp}

@@ -44,7 +44,3 @@ Show the following EXIF fields in the side panel when viewing a photo:
 - nested albums??
 - data backups?
 - data resets?
-- categories for documents
-- auto show faces when editing face tags
-- update information on side to have edit button to show info as text but swap to input fields when edit mode
-- have setting to toggle edit mode always on

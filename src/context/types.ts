@@ -105,6 +105,7 @@ export interface FamilyChartPerson {
 
 export interface AppSettings {
   familyTreeStartId?: string; // FamilyChartPerson.id
+  photosAlwaysEdit?: boolean;
 }
 
 export interface AppState {
