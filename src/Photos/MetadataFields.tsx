@@ -1,7 +1,7 @@
 // src/Photos/MetadataFields.tsx
 import React, { useEffect, useLayoutEffect, useState, useRef } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { writeMeta } from '../utils/exiftool';
+import { writeMeta, normalizeExifDate, formatDisplayDate } from '../utils/exiftool';
 import { Photo } from '../context/types';
 
 type Draft = {
@@ -196,8 +196,10 @@ export default function MetadataFields({ readOnly, onExitEdit }: { readOnly: boo
     setError(null);
     try {
       const location = draft.locationStr ? parseLocation(draft.locationStr) : null;
+      const dateChanged = draft.date !== (activePhoto.date ?? '');
+      const normalizedDate = dateChanged && draft.date ? normalizeExifDate(draft.date) : undefined;
       await writeMeta(activePhoto.fsPath, {
-        date: draft.date || undefined,
+        date: normalizedDate,
         caption: draft.caption,
         location,
         city: draft.city,
@@ -210,7 +212,7 @@ export default function MetadataFields({ readOnly, onExitEdit }: { readOnly: boo
         type: 'UPDATE_PHOTO_META',
         file: activePhoto.file,
         meta: {
-          date: draft.date || null,
+          date: dateChanged ? (normalizedDate || null) : activePhoto.date,
           caption: draft.caption || null,
           location,
           city: draft.city || null,
@@ -261,7 +263,7 @@ export default function MetadataFields({ readOnly, onExitEdit }: { readOnly: boo
       <div>
         <div style={label}>Date taken</div>
         {readOnly
-          ? <ReadValue value={draft.date} />
+          ? <ReadValue value={formatDisplayDate(draft.date)} />
           : <input style={fieldBase} value={draft.date} onChange={e => set({ date: e.target.value })} />}
       </div>
 

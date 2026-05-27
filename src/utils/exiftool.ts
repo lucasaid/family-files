@@ -1,4 +1,5 @@
 // src/utils/exiftool.ts
+import * as chrono from 'chrono-node';
 import { Photo, FaceRegion, Person } from '../context/types';
 import { loadCache, saveCache, statImageFiles } from './metadata-cache';
 
@@ -28,6 +29,76 @@ function run(args: string[]): Promise<string> {
 
 function parseDate(raw: string | undefined): string | null {
   return raw ?? null;
+}
+
+function pad(n: number) { return String(n).padStart(2, '0'); }
+
+function toExif(d: Date): string {
+  return `${d.getFullYear()}:${pad(d.getMonth() + 1)}:${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}
+
+const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+function ordinal(n: number): string {
+  if (n >= 11 && n <= 13) return `${n}th`;
+  switch (n % 10) {
+    case 1: return `${n}st`;
+    case 2: return `${n}nd`;
+    case 3: return `${n}rd`;
+    default: return `${n}th`;
+  }
+}
+
+// Converts stored EXIF date (YYYY:MM:DD HH:MM:SS) to a human-readable string.
+// Time is omitted when it is exactly 00:00:00.
+export function formatDisplayDate(exifDate: string | null | undefined): string {
+  if (!exifDate) return '';
+  const m = exifDate.match(/^(\d{4}):(\d{2}):(\d{2}) (\d{2}):(\d{2}):(\d{2})$/);
+  if (!m) return exifDate;
+  const [, year, month, day, hh, mm] = m;
+  const dayNum = parseInt(day, 10);
+  const datePart = `${ordinal(dayNum)} ${MONTH_NAMES[parseInt(month, 10) - 1]} ${year}`;
+  const hasTime = !(hh === '00' && mm === '00');
+  if (!hasTime) return datePart;
+  const h = parseInt(hh, 10);
+  const period = h >= 12 ? 'pm' : 'am';
+  const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
+  return `${h12}:${mm}${period} on ${datePart}`;
+}
+
+// Parses any human-readable date string and returns EXIF format YYYY:MM:DD HH:MM:SS.
+// Returns the input unchanged if parsing fails (lets exiftool surface the error).
+export function normalizeExifDate(input: string): string {
+  const s = input.trim();
+
+  // Already valid EXIF
+  if (/^\d{4}:\d{2}:\d{2} \d{2}:\d{2}:\d{2}$/.test(s)) return s;
+
+  // YYYY:MM:DD or YYYY-MM-DD (no time)
+  const ymd = s.match(/^(\d{4})[-:](\d{2})[-:](\d{2})$/);
+  if (ymd) return `${ymd[1]}:${ymd[2]}:${ymd[3]} 00:00:00`;
+
+  // MM/YYYY — chrono reads this as a full date so handle it first
+  const mSlashY = s.match(/^(\d{1,2})\/(\d{4})$/);
+  if (mSlashY) return `${mSlashY[2]}:${mSlashY[1].padStart(2, '0')}:01 00:00:00`;
+
+  // YYYY:MM or YYYY-MM
+  const ym = s.match(/^(\d{4})[-:](\d{2})$/);
+  if (ym) return `${ym[1]}:${ym[2]}:01 00:00:00`;
+
+  // Four-digit year only
+  if (/^\d{4}$/.test(s)) return `${s}:01:01 00:00:00`;
+
+  // Two-digit year at the end of the string (e.g. "Aug 5th 69", "3/8 69")
+  // — expand to 1900s before passing to chrono
+  const expanded = s.replace(/(\s)(\d{2})(\s*)$/, (_, pre, y, post) => `${pre}19${y}${post}`);
+
+  const results = chrono.parse(expanded);
+  if (!results.length) return s;
+  const parsed = results[0];
+  const d = parsed.start.date();
+  if (!parsed.start.isCertain('hour')) d.setHours(0, 0, 0, 0);
+  return toExif(d);
 }
 
 function parseLocation(data: any): Photo['location'] {
