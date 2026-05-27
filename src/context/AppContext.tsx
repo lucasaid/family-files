@@ -11,6 +11,7 @@ export const initialState: AppState = {
   categories: [],
   isTaggingMode: false,
   showFaces: true,
+  showFacesBeforeTagging: null,
   familyChart: null,
   settings: {},
 };
@@ -24,7 +25,13 @@ export function appReducer(state: AppState, action: AppAction): AppState {
     case 'SET_PHOTOS':
       return { ...state, photos: action.photos, activePhoto: action.photos[0] ?? null };
     case 'SET_ACTIVE_PHOTO':
-      return { ...state, activePhoto: action.photo, isTaggingMode: false };
+      return {
+        ...state,
+        activePhoto: action.photo,
+        isTaggingMode: false,
+        showFaces: state.showFacesBeforeTagging ?? state.showFaces,
+        showFacesBeforeTagging: null,
+      };
     case 'UPDATE_PHOTO_META': {
       const photos = updatePhoto(state.photos, action.file, p => ({ ...p, ...action.meta }));
       const activePhoto = state.activePhoto?.file === action.file
@@ -50,7 +57,21 @@ export function appReducer(state: AppState, action: AppAction): AppState {
       return { ...state, photos, activePhoto };
     }
     case 'SET_TAGGING_MODE':
-      return { ...state, isTaggingMode: action.enabled };
+      if (action.enabled) {
+        return {
+          ...state,
+          isTaggingMode: true,
+          showFaces: true,
+          showFacesBeforeTagging: state.showFaces,
+        };
+      } else {
+        return {
+          ...state,
+          isTaggingMode: false,
+          showFaces: state.showFacesBeforeTagging ?? state.showFaces,
+          showFacesBeforeTagging: null,
+        };
+      }
     case 'TOGGLE_FACES':
       return { ...state, showFaces: !state.showFaces };
     case 'UPDATE_FACE_REGION': {

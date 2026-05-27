@@ -1,5 +1,5 @@
 // src/Photos/MetadataPanel.tsx
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import MetadataFields from './MetadataFields';
 import PeopleList from './PeopleList';
@@ -8,6 +8,10 @@ import AlbumPicker from './AlbumPicker';
 export default function MetadataPanel() {
   const { state, dispatch } = useAppContext();
   const { activePhoto, isTaggingMode, showFaces } = state;
+  const [isEditing, setIsEditing] = useState(false);
+
+  // Reset to read-only when switching photos
+  useEffect(() => { setIsEditing(false); }, [activePhoto?.file]);
 
   useEffect(() => {
     function handleEsc(e: KeyboardEvent) {
@@ -19,14 +23,31 @@ export default function MetadataPanel() {
 
   if (!activePhoto) return <div style={{ padding: 16, color: 'var(--text-3)', fontSize: 13 }}>No photo selected</div>;
 
+  const metaReadOnly = !isEditing || isTaggingMode;
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <div style={{ padding: '10px 12px 6px', borderBottom: '1px solid var(--border-dim)' }}>
-        <div style={{ color: 'var(--text-1)', fontSize: 12, fontWeight: 'bold' }}>{activePhoto.file}</div>
+      <div style={{ padding: '10px 12px 6px', borderBottom: '1px solid var(--border-dim)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ color: 'var(--text-1)', fontSize: 12, fontWeight: 'bold', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{activePhoto.file}</div>
+        {!isTaggingMode && (
+          <button
+            onClick={() => setIsEditing(e => !e)}
+            style={{
+              flexShrink: 0, marginLeft: 8,
+              background: isEditing ? 'var(--bg-elevated)' : 'none',
+              border: `1px solid ${isEditing ? 'var(--border-muted)' : 'transparent'}`,
+              borderRadius: 3, padding: '2px 8px',
+              color: isEditing ? 'var(--text-3)' : 'var(--accent)',
+              fontSize: 11, cursor: 'pointer',
+            }}
+          >
+            {isEditing ? 'Done' : 'Edit'}
+          </button>
+        )}
       </div>
 
       <div style={{ flex: 1, overflow: 'auto', padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 14 }}>
-        <MetadataFields readOnly={isTaggingMode} />
+        <MetadataFields readOnly={metaReadOnly} onExitEdit={() => setIsEditing(false)} />
         <PeopleList />
       </div>
 

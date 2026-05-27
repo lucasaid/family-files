@@ -60,7 +60,14 @@ const fieldBase: React.CSSProperties = {
   boxSizing: 'border-box', fontFamily: 'inherit',
 };
 
-const readOnlyField: React.CSSProperties = { ...fieldBase, color: 'var(--text-3)' };
+function ReadValue({ value, multiline }: { value: string; multiline?: boolean }) {
+  const style: React.CSSProperties = {
+    fontSize: 12, color: value ? 'var(--text-2)' : 'var(--text-5)',
+    lineHeight: 1.5, whiteSpace: multiline ? 'pre-wrap' : 'normal',
+    minHeight: 18,
+  };
+  return <div style={style}>{value || '—'}</div>;
+}
 
 // ── Star rating ────────────────────────────────────────────────────────────────
 
@@ -167,7 +174,7 @@ function KeywordInput({ keywords, onChange, readOnly }: {
 
 // ── Main component ─────────────────────────────────────────────────────────────
 
-export default function MetadataFields({ readOnly }: { readOnly: boolean }) {
+export default function MetadataFields({ readOnly, onExitEdit }: { readOnly: boolean; onExitEdit?: () => void }) {
   const { state, dispatch } = useAppContext();
   const { activePhoto } = state;
   const [draft, setDraft] = useState<Draft | null>(null);
@@ -213,6 +220,7 @@ export default function MetadataFields({ readOnly }: { readOnly: boolean }) {
           keywords: draft.keywords,
         },
       });
+      onExitEdit?.();
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -220,7 +228,7 @@ export default function MetadataFields({ readOnly }: { readOnly: boolean }) {
     }
   };
 
-  const cancel = () => { setDraft(photoDraft(activePhoto)); setError(null); };
+  const cancel = () => { setDraft(photoDraft(activePhoto)); setError(null); onExitEdit?.(); };
   const set = (patch: Partial<Draft>) => setDraft(d => d ? { ...d, ...patch } : d);
 
   const saveRating = async (rating: number | null) => {
@@ -252,16 +260,18 @@ export default function MetadataFields({ readOnly }: { readOnly: boolean }) {
       {/* Date */}
       <div>
         <div style={label}>Date taken</div>
-        <input style={readOnly ? readOnlyField : fieldBase} value={draft.date} readOnly={readOnly}
-          onChange={e => set({ date: e.target.value })} />
+        {readOnly
+          ? <ReadValue value={draft.date} />
+          : <input style={fieldBase} value={draft.date} onChange={e => set({ date: e.target.value })} />}
       </div>
 
       {/* Caption */}
       <div>
         <div style={label}>Caption</div>
-        <textarea style={{ ...(readOnly ? readOnlyField : fieldBase), minHeight: 52, resize: 'vertical' }}
-          value={draft.caption} readOnly={readOnly}
-          onChange={e => set({ caption: e.target.value })} />
+        {readOnly
+          ? <ReadValue value={draft.caption} multiline />
+          : <textarea style={{ ...fieldBase, minHeight: 52, resize: 'vertical' }}
+              value={draft.caption} onChange={e => set({ caption: e.target.value })} />}
       </div>
 
       {/* Keywords */}
@@ -273,25 +283,27 @@ export default function MetadataFields({ readOnly }: { readOnly: boolean }) {
       {/* Location coords */}
       <div>
         <div style={label}>GPS (lat, lng)</div>
-        <input style={readOnly ? readOnlyField : fieldBase} value={draft.locationStr} readOnly={readOnly}
-          onChange={e => set({ locationStr: e.target.value })} />
+        {readOnly
+          ? <ReadValue value={draft.locationStr} />
+          : <input style={fieldBase} value={draft.locationStr} onChange={e => set({ locationStr: e.target.value })} />}
       </div>
 
       {/* Structured location */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
         <div style={label}>Location</div>
-        <input style={readOnly ? readOnlyField : fieldBase} value={draft.city} readOnly={readOnly}
-          placeholder="City" onChange={e => set({ city: e.target.value })} />
-        <input style={readOnly ? readOnlyField : fieldBase} value={draft.state} readOnly={readOnly}
-          placeholder="State / Province" onChange={e => set({ state: e.target.value })} />
-        <input style={readOnly ? readOnlyField : fieldBase} value={draft.country} readOnly={readOnly}
-          placeholder="Country" onChange={e => set({ country: e.target.value })} />
+        {readOnly
+          ? <ReadValue value={[draft.city, draft.state, draft.country].filter(Boolean).join(', ')} />
+          : <>
+              <input style={fieldBase} value={draft.city} placeholder="City" onChange={e => set({ city: e.target.value })} />
+              <input style={fieldBase} value={draft.state} placeholder="State / Province" onChange={e => set({ state: e.target.value })} />
+              <input style={fieldBase} value={draft.country} placeholder="Country" onChange={e => set({ country: e.target.value })} />
+            </>}
       </div>
 
-      {/* Camera (read-only) */}
+      {/* Camera (always read-only) */}
       <div>
         <div style={label}>Camera</div>
-        <input style={readOnlyField} value={activePhoto.camera ?? ''} readOnly />
+        <ReadValue value={activePhoto.camera ?? ''} />
       </div>
 
       {error && <div role="alert" style={{ color: 'var(--color-error)', fontSize: 11 }}>{error}</div>}

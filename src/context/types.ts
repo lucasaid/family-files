@@ -117,6 +117,7 @@ export interface AppState {
   categories: DocumentCategory[];
   isTaggingMode: boolean;
   showFaces: boolean;
+  showFacesBeforeTagging: boolean | null;
   familyChart: FamilyChartPerson[] | null;
   settings: AppSettings;
 }
