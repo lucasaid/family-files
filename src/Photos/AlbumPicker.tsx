@@ -102,7 +102,8 @@ export default function AlbumPicker() {
     else if (e.key === 'Escape') { setOpen(false); }
   };
 
-  const labelFor = (a: string) => a === NO_ALBUM ? 'No album' : a;
+  const labelFor = (a: string) => a === NO_ALBUM ? 'No album' : a.split('/').pop()!;
+  const depthOf = (a: string) => a === NO_ALBUM ? 0 : a.split('/').length - 1;
   const currentLabel = labelFor(currentAlbum);
 
   return (
@@ -188,6 +189,7 @@ export default function AlbumPicker() {
               const isActive = i === activeIdx;
               const isCurrent = album === currentAlbum;
               const label = labelFor(album);
+              const depth = depthOf(album);
               const q = query.toLowerCase();
               const lbl = label.toLowerCase();
               const matchIdx = q ? lbl.indexOf(q) : -1;
@@ -200,7 +202,7 @@ export default function AlbumPicker() {
                   style={{
                     height: ITEM_HEIGHT,
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    padding: '0 12px',
+                    paddingLeft: 12 + depth * 14, paddingRight: 12,
                     fontSize: 12,
                     color: isActive ? 'var(--overlay-text)' : isCurrent ? 'var(--accent)' : 'var(--overlay-text-muted)',
                     background: isActive ? 'var(--overlay-active-bg)' : 'transparent',

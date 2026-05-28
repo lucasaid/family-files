@@ -5,6 +5,7 @@ import AlbumList from './AlbumList';
 import AlbumView from './AlbumView';
 
 export default function AlbumsRoute() {
-  const { albumName } = useParams<{ albumName?: string }>();
-  return albumName ? <AlbumView /> : <AlbumList />;
+  const params = useParams<{ '*': string }>();
+  const albumPath = params['*'] || '';
+  return albumPath ? <AlbumView albumPath={albumPath} /> : <AlbumList />;
 }

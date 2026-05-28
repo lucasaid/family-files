@@ -170,7 +170,7 @@ function AppShell() {
           <Route path="/" element={<Home />} />
           <Route path="/photos" element={<Photos />} />
           <Route path="/albums" element={<AlbumsRoute />} />
-          <Route path="/albums/:albumName" element={<AlbumsRoute />} />
+          <Route path="/albums/*" element={<AlbumsRoute />} />
           <Route path="/documents" element={<DocumentsRoute />} />
           <Route path="/people/*" element={<PeopleRoute />} />
           <Route path="/tree" element={<FamilyTree />} />

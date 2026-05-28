@@ -7,12 +7,22 @@ const path = (window as any).require('path') as typeof import('path');
 const IMAGES_DIR = path.join(dataPath, 'images');
 
 export async function listAlbums(): Promise<string[]> {
+  async function walk(dir: string, prefix: string): Promise<string[]> {
+    const entries = await fs.promises.readdir(dir, { withFileTypes: true });
+    const results: string[] = [];
+    for (const e of entries) {
+      if (!e.isDirectory() || e.name.startsWith('.')) continue;
+      const albumPath = prefix ? `${prefix}/${e.name}` : e.name;
+      results.push(albumPath);
+      try {
+        const nested = await walk(path.join(dir, e.name), albumPath);
+        results.push(...nested);
+      } catch { /* unreadable subdir — skip */ }
+    }
+    return results;
+  }
   try {
-    const entries = await fs.promises.readdir(IMAGES_DIR, { withFileTypes: true });
-    return entries
-      .filter((e: any) => e.isDirectory() && !e.name.startsWith('.'))
-      .map((e: any) => e.name as string)
-      .sort();
+    return (await walk(IMAGES_DIR, '')).sort();
   } catch {
     return [];
   }

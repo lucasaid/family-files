@@ -108,15 +108,20 @@ export default function AlbumList() {
   const [searchField, setSearchField] = useState<SearchField>('all');
   const [sort, setSort] = useState<'title-asc' | 'title-desc' | 'count-desc' | 'count-asc'>('title-asc');
 
-  // Build album→photos map once — avoids rescanning all photos per album per render
+  // Only show root-level albums in the main list
+  const rootAlbums = useMemo(() => albums.filter(a => !a.includes('/')), [albums]);
+
+  // Build album→photos map — for root albums, include photos from all descendants
   const albumPhotoMap = useMemo(() => {
     const map = new Map<string, Photo[]>();
-    for (const album of albums) map.set(album, []);
+    for (const album of rootAlbums) map.set(album, []);
     for (const photo of photos) {
-      if (photo.album) map.get(photo.album)?.push(photo);
+      if (!photo.album) continue;
+      const root = photo.album.split('/')[0];
+      map.get(root)?.push(photo);
     }
     return map;
-  }, [photos, albums]);
+  }, [photos, rootAlbums]);
 
   const albumPhotos = useCallback((name: string) => albumPhotoMap.get(name) ?? [], [albumPhotoMap]);
   const cover = useCallback((name: string) => albumPhotoMap.get(name)?.[0], [albumPhotoMap]);
@@ -124,8 +129,8 @@ export default function AlbumList() {
   const filteredAlbums = useMemo(() => {
     const ap = (name: string) => albumPhotoMap.get(name) ?? [];
     return (search.trim()
-      ? albums.filter(name => albumMatchesSearch(name, ap(name), search.trim(), searchField))
-      : [...albums]
+      ? rootAlbums.filter(name => albumMatchesSearch(name, ap(name), search.trim(), searchField))
+      : [...rootAlbums]
     ).sort((a, b) => {
       switch (sort) {
         case 'title-asc':   return a.localeCompare(b);
@@ -175,11 +180,11 @@ export default function AlbumList() {
           }}>
             Albums
           </h1>
-          {albums.length > 0 && (
+          {rootAlbums.length > 0 && (
             <span style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-4)' }}>
-              {search.trim() && filteredAlbums.length !== albums.length
-                ? `${filteredAlbums.length} of ${albums.length}`
-                : `${albums.length} ${albums.length === 1 ? 'album' : 'albums'}`}
+              {search.trim() && filteredAlbums.length !== rootAlbums.length
+                ? `${filteredAlbums.length} of ${rootAlbums.length}`
+                : `${rootAlbums.length} ${rootAlbums.length === 1 ? 'album' : 'albums'}`}
             </span>
           )}
         </div>
@@ -253,7 +258,7 @@ export default function AlbumList() {
         </div>
       )}
 
-      {albums.length === 0 && !creating && (
+      {rootAlbums.length === 0 && !creating && (
         <div style={{ padding: '32px 0', color: 'var(--text-4)', fontSize: 13, fontStyle: 'italic' }}>
           No albums yet. Create one to organise your photos.
         </div>
