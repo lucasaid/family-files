@@ -3,6 +3,7 @@ import { useAppContext } from '../context/AppContext';
 import { writeMeta, normalizeExifDate, formatDisplayDate } from '../utils/exiftool';
 import { Photo } from '../context/types';
 import { generateMapThumbnail, getMapUrl, ensureMapThumbnail, deleteMapIfUnshared } from '../utils/mapThumbnail';
+import MapModal from './MapModal';
 
 const path = (window as any).require('path') as typeof import('path');
 
@@ -203,6 +204,7 @@ export default function MetadataFields({ readOnly, alwaysEdit, saveOnNavigate, o
   const [ratingSaving, setRatingSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mapUrl, setMapUrl] = useState<string | null>(null);
+  const [mapModalOpen, setMapModalOpen] = useState(false);
 
   const prevPhotoRef = useRef<typeof activePhoto>(null);
   const prevDraftRef = useRef<Draft | null>(null);
@@ -361,9 +363,9 @@ export default function MetadataFields({ readOnly, alwaysEdit, saveOnNavigate, o
   const cancel = () => { setDraft(photoDraft(activePhoto)); setError(null); onExitEdit?.(); };
   const set = (patch: Partial<Draft>) => setDraft(d => d ? { ...d, ...patch } : d);
 
-  const onEnter = alwaysEdit
-    ? (e: React.KeyboardEvent<HTMLInputElement>) => { if (e.key === 'Enter') { e.preventDefault(); save(); } }
-    : undefined;
+  const onEnter = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') { e.preventDefault(); save(); }
+  };
 
   const onNavKeyDown = (e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     if (!e.altKey || (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight')) return;
@@ -427,13 +429,32 @@ export default function MetadataFields({ readOnly, alwaysEdit, saveOnNavigate, o
           ? (!mapUrl && <ReadValue value={draft.locationStr} />)
           : <input style={fieldBase} value={draft.locationStr} onChange={e => set({ locationStr: e.target.value })} onKeyDown={e => { onEnter?.(e); onNavKeyDown(e); }} />}
         {mapUrl && (
-          <img
-            src={mapUrl}
-            alt="Map showing photo location"
+          <button
+            onClick={() => setMapModalOpen(true)}
+            aria-label="View interactive map"
             style={{
-              display: 'block', marginTop: 6, width: '100%', height: 'auto',
-              borderRadius: 4, border: '1px solid var(--border-muted)',
+              display: 'block', marginTop: 6, padding: 0, border: 'none',
+              background: 'none', cursor: 'pointer', width: '100%',
             }}
+          >
+            <img
+              src={mapUrl}
+              alt="Map showing photo location"
+              style={{
+                display: 'block', width: '100%', height: 'auto',
+                borderRadius: 4, border: '1px solid var(--border-muted)',
+                transition: 'opacity 0.15s',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.opacity = '0.85')}
+              onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+            />
+          </button>
+        )}
+        {mapModalOpen && activePhoto.location && (
+          <MapModal
+            lat={activePhoto.location.lat}
+            lng={activePhoto.location.lng}
+            onClose={() => setMapModalOpen(false)}
           />
         )}
       </div>
