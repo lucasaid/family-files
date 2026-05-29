@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useLayoutEffect, useState, useRef } from
 import { useAppContext } from '../context/AppContext';
 import { writeMeta, normalizeExifDate, formatDisplayDate } from '../utils/exiftool';
 import { Photo } from '../context/types';
-import { generateMapThumbnail, getMapUrl } from '../utils/mapThumbnail';
+import { generateMapThumbnail, getMapUrl, ensureMapThumbnail, deleteMapIfUnshared } from '../utils/mapThumbnail';
 
 const path = (window as any).require('path') as typeof import('path');
 
@@ -311,6 +311,23 @@ export default function MetadataFields({ readOnly, alwaysEdit, saveOnNavigate, o
       });
       setDraft(d => d ? { ...d, date: savedDate ?? '' } : d);
       onExitEdit?.();
+
+      const mapsDir = getMapsDir(activePhoto.fsPath);
+      const oldLocation = activePhoto.location;
+      const newLocation = location; // already parsed: const location = draft.locationStr ? parseLocation(draft.locationStr) : null
+
+      if (oldLocation && (oldLocation.lat !== newLocation?.lat || oldLocation.lng !== newLocation?.lng)) {
+        deleteMapIfUnshared(state.photos, activePhoto.file, oldLocation.lat, oldLocation.lng, mapsDir);
+      }
+
+      if (newLocation) {
+        if (navigator.onLine) {
+          await ensureMapThumbnail(newLocation.lat, newLocation.lng, mapsDir);
+        }
+        setMapUrl(getMapUrl(mapsDir, newLocation.lat, newLocation.lng));
+      } else {
+        setMapUrl(null);
+      }
     } catch (err) {
       setError((err as Error).message);
     } finally {
