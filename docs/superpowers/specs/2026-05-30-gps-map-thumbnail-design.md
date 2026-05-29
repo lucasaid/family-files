@@ -75,12 +75,13 @@ All tile fetches are done in parallel with `Promise.all`. If any tile fetch fail
 
 ### GPS coords saved (explicit save or auto-save on navigate)
 
-| Online | Old coords shared by another photo | Old map file exists | New coords provided | Action |
-|---|---|---|---|---|
-| Yes | — | — | Yes | Generate map for new coords; delete old map only if old coords are unshared |
-| Yes | — | Yes | No (cleared) | Delete old map only if old coords are unshared |
-| No | — | Yes | Yes or No | Delete old map only if old coords are unshared; do NOT generate |
-| No | — | No | Yes or No | No-op |
+| Online | Old coords shared by another photo | Old map file exists | New coords provided | New map file already exists | Action |
+|---|---|---|---|---|---|
+| Yes | — | — | Yes | No | Generate map for new coords; delete old map only if old coords are unshared |
+| Yes | — | — | Yes | Yes | No-op for generation; delete old map only if old coords are unshared |
+| Yes | — | Yes | No (cleared) | — | Delete old map only if old coords are unshared |
+| No | — | Yes | Yes or No | — | Delete old map only if old coords are unshared; do NOT generate |
+| No | — | No | Yes or No | — | No-op |
 
 "Old coords" = the coords stored on the photo **before** this save. "Unshared" = no other photo in `state.photos` has those exact same lat/lng values.
 
