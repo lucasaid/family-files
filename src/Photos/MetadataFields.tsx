@@ -203,6 +203,8 @@ export default function MetadataFields({ readOnly, alwaysEdit, saveOnNavigate, o
   const prevDraftRef = useRef<Draft | null>(null);
   const saveOnNavigateRef = useRef(saveOnNavigate);
   saveOnNavigateRef.current = saveOnNavigate;
+  const photosRef = useRef(state.photos);
+  photosRef.current = state.photos;
 
   const autoSave = useCallback(async (photo: NonNullable<typeof activePhoto>, d: Draft) => {
     try {
@@ -234,6 +236,18 @@ export default function MetadataFields({ readOnly, alwaysEdit, saveOnNavigate, o
           keywords: d.keywords,
         },
       });
+
+      const mapsDir = getMapsDir(photo.fsPath);
+      const oldLocation = photo.location;
+      const newLocation = location;
+
+      if (oldLocation && (oldLocation.lat !== newLocation?.lat || oldLocation.lng !== newLocation?.lng)) {
+        deleteMapIfUnshared(photosRef.current, photo.file, oldLocation.lat, oldLocation.lng, mapsDir);
+      }
+
+      if (newLocation && navigator.onLine) {
+        await ensureMapThumbnail(newLocation.lat, newLocation.lng, mapsDir);
+      }
     } catch {
       // Auto-save is best-effort; errors are silently dropped
     }
