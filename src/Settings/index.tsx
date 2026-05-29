@@ -1,7 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { writeSettings } from '../utils/settings';
-import { FamilyChartPerson } from '../context/types';
 import { fcName } from '../utils/people';
 
 function Tip({ kbd, children }: { kbd: string; children: React.ReactNode }) {

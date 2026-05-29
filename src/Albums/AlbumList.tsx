@@ -133,13 +133,14 @@ export default function AlbumList() {
       : [...rootAlbums]
     ).sort((a, b) => {
       switch (sort) {
-        case 'title-asc':   return a.localeCompare(b);
         case 'title-desc':  return b.localeCompare(a);
         case 'count-desc':  return (albumPhotoMap.get(b)?.length ?? 0) - (albumPhotoMap.get(a)?.length ?? 0);
         case 'count-asc':   return (albumPhotoMap.get(a)?.length ?? 0) - (albumPhotoMap.get(b)?.length ?? 0);
+        case 'title-asc':
+        default:   return a.localeCompare(b);
       }
     });
-  }, [albums, search, searchField, sort, albumPhotoMap]);
+  }, [search, rootAlbums, albumPhotoMap, searchField, sort]);
 
   const inputStyle: React.CSSProperties = {
     background: 'var(--input-bg)', border: '1px solid var(--input-border)',

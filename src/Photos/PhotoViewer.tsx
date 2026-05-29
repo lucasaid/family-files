@@ -232,7 +232,7 @@ export default function PhotoViewer() {
       setImgDims(null);
       resetZoom();
     }
-  }, [activePhoto?.path, resetZoom]);
+  }, [activePhoto, activePhoto?.path, resetZoom]);
 
   if (!activePhoto) return null;
 

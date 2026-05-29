@@ -50,7 +50,7 @@ export default function DocumentFields() {
       categoryId: activeDocument.categoryId ?? null,
     });
     setEditing(false);
-  }, [activeDocument?.id]);
+  }, [activeDocument, activeDocument?.id]);
 
   if (!activeDocument || !draft) return null;
 

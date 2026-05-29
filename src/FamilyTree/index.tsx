@@ -148,7 +148,7 @@ export default function FamilyTree() {
     chartRef.current = chart;
 
     return () => {
-      if (containerRef.current) containerRef.current.innerHTML = '';
+      if (el) el.innerHTML = '';
       chartRef.current = null;
     };
   }, [chartData, focusId, state.settings]);

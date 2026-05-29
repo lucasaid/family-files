@@ -133,12 +133,13 @@ export default function Home() {
       : [...photos]
   ).sort((a, b) => {
     switch (sort) {
-      case 'title-asc':    return a.file.localeCompare(b.file);
       case 'title-desc':   return b.file.localeCompare(a.file);
       case 'date-desc':    return (b.date ?? '').localeCompare(a.date ?? '');
       case 'date-asc':     return (a.date ?? '').localeCompare(b.date ?? '');
       case 'people-desc':  return b.faces.length - a.faces.length;
       case 'people-asc':   return a.faces.length - b.faces.length;
+      case 'title-asc':
+      default:   return a.file.localeCompare(b.file);
     }
   }), [photos, search, searchField, sort]);
 

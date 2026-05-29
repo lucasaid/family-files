@@ -124,7 +124,6 @@ export default function AlbumView({ albumPath }: { albumPath: string }) {
 
   // Breadcrumb segments for the current path
   const segments = albumPath.split('/');
-  const parentPath = segments.length > 1 ? segments.slice(0, -1).join('/') : null;
 
   return (
     <div style={{ padding: '24px 24px', background: 'var(--bg)', minHeight: '100%' }}>

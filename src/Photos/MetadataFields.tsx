@@ -1,5 +1,5 @@
 // src/Photos/MetadataFields.tsx
-import React, { useCallback, useEffect, useLayoutEffect, useState, useRef } from 'react';
+import React, { useCallback, useLayoutEffect, useState, useRef } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { writeMeta, normalizeExifDate, formatDisplayDate } from '../utils/exiftool';
 import { Photo } from '../context/types';
@@ -241,7 +241,7 @@ export default function MetadataFields({ readOnly, alwaysEdit, saveOnNavigate, o
     prevPhotoRef.current = activePhoto;
     setDraft(activePhoto ? photoDraft(activePhoto) : null);
     setError(null);
-  }, [activePhoto?.file, autoSave]);
+  }, [activePhoto, activePhoto?.file, autoSave]);
 
   if (!activePhoto || !draft) return null;
 

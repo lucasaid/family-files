@@ -68,10 +68,11 @@ export default function PeopleManager() {
       : [...people]
   ).sort((a, b) => {
     switch (sort) {
-      case 'name-asc':    return a.name.localeCompare(b.name);
       case 'name-desc':   return b.name.localeCompare(a.name);
       case 'photos-desc': return (photoCountMap.get(b.id) ?? 0) - (photoCountMap.get(a.id) ?? 0);
       case 'photos-asc':  return (photoCountMap.get(a.id) ?? 0) - (photoCountMap.get(b.id) ?? 0);
+      case 'name-asc':
+      default:    return a.name.localeCompare(b.name);
     }
   }), [people, search, sort, photoCountMap]);
 
