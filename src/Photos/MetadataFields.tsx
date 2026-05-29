@@ -1,7 +1,14 @@
-import React, { useCallback, useLayoutEffect, useState, useRef } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useState, useRef } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { writeMeta, normalizeExifDate, formatDisplayDate } from '../utils/exiftool';
 import { Photo } from '../context/types';
+import { generateMapThumbnail, getMapUrl } from '../utils/mapThumbnail';
+
+const path = (window as any).require('path') as typeof import('path');
+
+function getMapsDir(fsPath: string): string {
+  return path.join(path.dirname(fsPath), '.maps');
+}
 
 type Draft = {
   date: string;
@@ -190,6 +197,7 @@ export default function MetadataFields({ readOnly, alwaysEdit, saveOnNavigate, o
   const [saving, setSaving] = useState(false);
   const [ratingSaving, setRatingSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [mapUrl, setMapUrl] = useState<string | null>(null);
 
   const prevPhotoRef = useRef<typeof activePhoto>(null);
   const prevDraftRef = useRef<Draft | null>(null);
@@ -241,6 +249,28 @@ export default function MetadataFields({ readOnly, alwaysEdit, saveOnNavigate, o
     setDraft(activePhoto ? photoDraft(activePhoto) : null);
     setError(null);
   }, [activePhoto, activePhoto?.file, autoSave]);
+
+  useEffect(() => {
+    if (!activePhoto?.location) {
+      setMapUrl(null);
+      return;
+    }
+    const { lat, lng } = activePhoto.location;
+    const mapsDir = getMapsDir(activePhoto.fsPath);
+    const cached = getMapUrl(mapsDir, lat, lng);
+    if (cached) {
+      setMapUrl(cached);
+      return;
+    }
+    if (!navigator.onLine) {
+      setMapUrl(null);
+      return;
+    }
+    setMapUrl(null);
+    generateMapThumbnail(lat, lng, mapsDir).then(() => {
+      setMapUrl(getMapUrl(mapsDir, lat, lng));
+    });
+  }, [activePhoto?.file, activePhoto?.location?.lat, activePhoto?.location?.lng]);
 
   if (!activePhoto || !draft) return null;
 
@@ -356,6 +386,16 @@ export default function MetadataFields({ readOnly, alwaysEdit, saveOnNavigate, o
         {readOnly
           ? <ReadValue value={draft.locationStr} />
           : <input style={fieldBase} value={draft.locationStr} onChange={e => set({ locationStr: e.target.value })} onKeyDown={e => { onEnter?.(e); onNavKeyDown(e); }} />}
+        {mapUrl && (
+          <img
+            src={mapUrl}
+            alt="Map showing photo location"
+            style={{
+              display: 'block', marginTop: 6, width: '100%', height: 'auto',
+              borderRadius: 4, border: '1px solid var(--border-muted)',
+            }}
+          />
+        )}
       </div>
 
       {/* Structured location */}
