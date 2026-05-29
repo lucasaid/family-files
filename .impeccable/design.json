@@ -1,0 +1,150 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-05-29T00:00:00.000Z",
+  "title": "Design System: Family Files",
+  "extensions": {
+    "colorMeta": {
+      "surface":          { "role": "neutral",   "displayName": "Warm Parchment",   "canonical": "oklch(96% 0.007 85)",  "tonalRamp": ["#1c1b18","#4e4d49","#79786f","#9e9d94","#ccc9c2","#d5d2cb","#edebe4","#f6f4ef"] },
+      "surface-panel":    { "role": "neutral",   "displayName": "Ash Panel",        "canonical": "oklch(91% 0.007 85)",  "tonalRamp": ["#1c1b18","#4e4d49","#79786f","#9e9d94","#ccc9c2","#d5d2cb","#edebe4","#f6f4ef"] },
+      "surface-elevated": { "role": "neutral",   "displayName": "Ash Elevated",     "canonical": "oklch(88% 0.007 85)",  "tonalRamp": ["#1c1b18","#4e4d49","#79786f","#9e9d94","#ccc9c2","#d5d2cb","#edebe4","#f6f4ef"] },
+      "surface-active":   { "role": "neutral",   "displayName": "Ash Active",       "canonical": "oklch(84% 0.007 85)",  "tonalRamp": ["#1c1b18","#4e4d49","#79786f","#9e9d94","#ccc9c2","#d5d2cb","#edebe4","#f6f4ef"] },
+      "text-primary":     { "role": "neutral",   "displayName": "Deep Ink",         "canonical": "oklch(14% 0.006 85)",  "tonalRamp": ["#1c1b18","#4e4d49","#79786f","#9e9d94","#ccc9c2","#d5d2cb","#edebe4","#f6f4ef"] },
+      "text-secondary":   { "role": "neutral",   "displayName": "Aged Slate",       "canonical": "oklch(34% 0.006 85)",  "tonalRamp": ["#1c1b18","#4e4d49","#79786f","#9e9d94","#ccc9c2","#d5d2cb","#edebe4","#f6f4ef"] },
+      "text-muted":       { "role": "neutral",   "displayName": "Faded Slate",      "canonical": "oklch(51% 0.006 85)",  "tonalRamp": ["#1c1b18","#4e4d49","#79786f","#9e9d94","#ccc9c2","#d5d2cb","#edebe4","#f6f4ef"] },
+      "text-dim":         { "role": "neutral",   "displayName": "Parchment Dim",    "canonical": "oklch(64% 0.005 85)",  "tonalRamp": ["#1c1b18","#4e4d49","#79786f","#9e9d94","#ccc9c2","#d5d2cb","#edebe4","#f6f4ef"] },
+      "text-heading":     { "role": "neutral",   "displayName": "Navy Heading",     "canonical": "oklch(27% 0.12 265)",  "tonalRamp": ["#07101e","#0d2043","#123068","#1a3562","#2a4d8a","#4a6db0","#8aa8d8","#d0ddf8"] },
+      "accent":           { "role": "primary",   "displayName": "Faded Steel",      "canonical": "oklch(35% 0.18 265)",  "tonalRamp": ["#07101e","#0d2043","#123068","#1d4db0","#2f64d4","#5a85e8","#9bb8f5","#d0ddf8"] },
+      "amber":            { "role": "secondary", "displayName": "Archival Amber",   "canonical": "oklch(48% 0.15 65)",   "tonalRamp": ["#2a1500","#4d2800","#703c00","#a06010","#c07820","#d99832","#efbe6a","#f8dfa8"] },
+      "green":            { "role": "tertiary",  "displayName": "Sage Green",       "canonical": "oklch(44% 0.12 155)",  "tonalRamp": ["#071a0d","#0f3018","#1a4a28","#2a7848","#3a9a60","#5ab87e","#7ecfa0","#c3ecd4"] },
+      "error":            { "role": "error",     "displayName": "Error Red",        "canonical": "oklch(43% 0.19 25)",   "tonalRamp": ["#1a0400","#3a0a04","#6a1810","#c0392b","#e05040","#e87868","#f0a8a0","#fde8e5"] },
+      "border":           { "role": "neutral",   "displayName": "Parchment Border", "canonical": "oklch(82% 0.006 85)",  "tonalRamp": ["#1c1b18","#4e4d49","#79786f","#9e9d94","#ccc9c2","#d5d2cb","#edebe4","#f6f4ef"] },
+      "border-muted":     { "role": "neutral",   "displayName": "Faint Border",     "canonical": "oklch(79% 0.006 85)",  "tonalRamp": ["#1c1b18","#4e4d49","#79786f","#9e9d94","#ccc9c2","#d5d2cb","#edebe4","#f6f4ef"] }
+    },
+    "typographyMeta": {
+      "display":  { "displayName": "Display",  "purpose": "Person name h1 on PersonDetail. Appears once per screen at most." },
+      "headline": { "displayName": "Headline", "purpose": "Page section headings: Archive, Albums, People, Documents." },
+      "title":    { "displayName": "Title",    "purpose": "Settings section labels, modal headers. Heaviest weight in the system." },
+      "body":     { "displayName": "Body",     "purpose": "Description text, document content, metadata values in read mode. Cap at 65-75ch." },
+      "label":    { "displayName": "Label",    "purpose": "Section sub-labels, stat counts. Bold + tight tracking compensate for 10px size." },
+      "micro":    { "displayName": "Micro",    "purpose": "Metadata field labels (Date taken, Caption, Rating). Always uppercase. Minimum color: --text-3." }
+    },
+    "shadows": [
+      { "name": "modal",   "value": "0 8px 32px rgba(0,0,0,0.3)", "purpose": "Settings modal overlay. The only shadow in the system." },
+      { "name": "overlay-deep", "value": "0 8px 32px rgba(0,0,0,.7), 0 0 0 1px rgba(74,112,192,.15)", "purpose": "Album-picker overlay that appears over photos. Intentionally dark in both themes." }
+    ],
+    "motion": [
+      { "name": "fast",           "value": "0.1s ease-out",  "purpose": "Micro-interactions: row hover backgrounds, star hover color." },
+      { "name": "standard",       "value": "0.15s ease-out", "purpose": "Default for all state transitions: button hover, nav link color/border, ghost button color." },
+      { "name": "deliberate",     "value": "0.2s ease-out",  "purpose": "Album cell gradient opacity on hover." },
+      { "name": "thumbnail-zoom", "value": "0.25s ease-out", "purpose": "Photo and album thumbnail scale(1.05) on hover." }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The primary action in any given context. Blue-tinted fill with Faded Steel text and border.",
+      "html": "<button class=\"ds-btn-primary\">Save changes</button>",
+      "css": ".ds-btn-primary { background: #dce5f5; color: #1d4db0; border: 1px solid #9bb8f5; border-radius: 3px; padding: 4px 12px; font-family: system-ui, -apple-system, sans-serif; font-size: 11px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; transition: background 0.15s ease-out, color 0.15s ease-out, border-color 0.15s ease-out; } .ds-btn-primary:hover { background: #1d4db0; color: #f6f4ef; border-color: #1d4db0; } .ds-btn-primary:focus-visible { outline: 2px solid #1d4db0; outline-offset: 2px; border-radius: 3px; } .ds-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }"
+    },
+    {
+      "name": "Save Button",
+      "kind": "button",
+      "refersTo": "button-save",
+      "description": "Appears only when confirming a save action. Sage green palette signals success without alarm.",
+      "html": "<button class=\"ds-btn-save\">Save</button>",
+      "css": ".ds-btn-save { background: #d4edda; color: #1a5e35; border: 1px solid #7ecfa0; border-radius: 3px; padding: 4px 12px; font-family: system-ui, -apple-system, sans-serif; font-size: 11px; font-weight: 500; cursor: pointer; transition: background 0.15s ease-out; } .ds-btn-save:hover { background: #c3e4cc; } .ds-btn-save:focus-visible { outline: 2px solid #2a7848; outline-offset: 2px; } .ds-btn-save:disabled { opacity: 0.6; cursor: not-allowed; }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Navigation and utility actions where the label carries the meaning. Muted at rest, Faded Steel on hover.",
+      "html": "<button class=\"ds-btn-ghost\">← Back to People</button>",
+      "css": ".ds-btn-ghost { background: none; border: none; color: #79786f; font-family: system-ui, -apple-system, sans-serif; font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; padding: 4px 10px; border-radius: 3px; transition: color 0.15s ease-out; display: inline-flex; align-items: center; gap: 6px; } .ds-btn-ghost:hover { color: #1d4db0; } .ds-btn-ghost:focus-visible { outline: 2px solid #1d4db0; outline-offset: 2px; border-radius: 3px; }"
+    },
+    {
+      "name": "Text Input with Label",
+      "kind": "input",
+      "refersTo": "input-default",
+      "description": "Metadata field with micro-label above. Stroked border, white fill, 3px radius. Focus ring via :focus-visible.",
+      "html": "<div class=\"ds-field\"><label class=\"ds-field-label\" for=\"ds-input-ex\">Caption</label><input class=\"ds-input\" id=\"ds-input-ex\" type=\"text\" placeholder=\"Add a caption…\" /></div>",
+      "css": ".ds-field { display: flex; flex-direction: column; gap: 3px; } .ds-field-label { font-family: system-ui, -apple-system, sans-serif; font-size: 9px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #79786f; } .ds-input { background: #ffffff; border: 1px solid #ccc9c2; border-radius: 3px; padding: 5px 10px; font-family: system-ui, -apple-system, sans-serif; font-size: 12px; color: #1c1b18; width: 100%; box-sizing: border-box; } .ds-input:focus-visible { outline: 2px solid #1d4db0; outline-offset: 2px; border-radius: 3px; } .ds-input::placeholder { color: #9e9d94; }"
+    },
+    {
+      "name": "Keyword Chip",
+      "kind": "chip",
+      "refersTo": "chip-keyword",
+      "description": "Pill-shaped tag for photo keywords. Includes an accessible remove button with aria-label.",
+      "html": "<span class=\"ds-chip\">Vacation <button class=\"ds-chip-remove\" aria-label=\"Remove keyword Vacation\">×</button></span>",
+      "css": ".ds-chip { display: inline-flex; align-items: center; gap: 3px; background: #dce5f5; border: 1px solid #9bb8f5; border-radius: 10px; padding: 1px 7px; font-family: system-ui, -apple-system, sans-serif; font-size: 11px; color: #1d4db0; } .ds-chip-remove { background: none; border: none; color: #79786f; cursor: pointer; padding: 0; font-size: 11px; line-height: 1; transition: color 0.1s ease-out; } .ds-chip-remove:hover { color: #1d4db0; } .ds-chip-remove:focus-visible { outline: 2px solid #1d4db0; outline-offset: 1px; border-radius: 2px; }"
+    },
+    {
+      "name": "Navigation Bar",
+      "kind": "nav",
+      "refersTo": "button-ghost",
+      "description": "44px fixed top bar. Georgia wordmark left, system-ui nav links center, controls right. Active link: Faded Steel with bottom border.",
+      "html": "<nav class=\"ds-nav\"><span class=\"ds-wordmark\">Family Files</span><div class=\"ds-nav-divider\"></div><a class=\"ds-nav-link ds-nav-link--active\" href=\"#\">Photos</a><a class=\"ds-nav-link\" href=\"#\">Albums</a><a class=\"ds-nav-link\" href=\"#\">People</a></nav>",
+      "css": ".ds-nav { display: flex; align-items: center; background: #f6f4ef; border-bottom: 1px solid #d5d2cb; padding: 0 24px; height: 44px; flex-shrink: 0; box-sizing: border-box; } .ds-wordmark { font-family: \"Georgia\", \"Times New Roman\", serif; font-size: 15px; font-weight: 400; letter-spacing: 0.04em; color: #1a3562; margin-right: 32px; white-space: nowrap; user-select: none; } .ds-nav-divider { width: 1px; height: 16px; background: #ccc9c2; margin-right: 32px; flex-shrink: 0; } .ds-nav-link { display: flex; align-items: center; padding: 0 12px; height: 44px; font-family: system-ui, -apple-system, sans-serif; font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; text-decoration: none; color: #79786f; border-bottom: 2px solid transparent; box-sizing: border-box; transition: color 0.15s ease-out, border-color 0.15s ease-out; } .ds-nav-link:hover { color: #1d4db0; border-bottom-color: #1d4db0; } .ds-nav-link--active { color: #1d4db0; border-bottom-color: #1d4db0; } .ds-nav-link:focus-visible { outline: 2px solid #1d4db0; outline-offset: -2px; }"
+    },
+    {
+      "name": "Person Chip (Relative)",
+      "kind": "custom",
+      "refersTo": "button-ghost",
+      "description": "Clickable chip for a family member on PersonDetail. Shows name in Faded Steel and birth year in muted text.",
+      "html": "<button class=\"ds-person-chip\"><span class=\"ds-person-chip__name\">Margaret Lucas</span><span class=\"ds-person-chip__sub\">b. 1932</span></button>",
+      "css": ".ds-person-chip { background: #e4e1da; border: 1px solid #ccc9c2; border-radius: 5px; padding: 6px 12px; cursor: pointer; text-align: left; display: flex; flex-direction: column; gap: 1px; transition: border-color 0.15s ease-out; } .ds-person-chip:hover { border-color: #1d4db0; } .ds-person-chip:focus-visible { outline: 2px solid #1d4db0; outline-offset: 2px; } .ds-person-chip__name { font-family: system-ui, -apple-system, sans-serif; font-size: 13px; font-weight: 500; color: #1d4db0; } .ds-person-chip__sub { font-family: system-ui, -apple-system, sans-serif; font-size: 11px; color: #9e9d94; }"
+    },
+    {
+      "name": "Section Label",
+      "kind": "custom",
+      "refersTo": "input-default",
+      "description": "Section divider used throughout PersonDetail. 10px uppercase label with a bottom border separator.",
+      "html": "<div class=\"ds-section-label\">Life Events</div>",
+      "css": ".ds-section-label { font-family: system-ui, -apple-system, sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #79786f; padding-bottom: 6px; border-bottom: 1px solid #ccc9c2; margin-bottom: 12px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Curated Memory Box",
+    "overview": "Family Files is a private archive, not a product. The interface recedes so that photographs, faces, and documents take the foreground. Every design decision that asks 'should this be more prominent?' is answered by asking whether the prominence serves a person, a photo, or a story, not the application itself.\n\nThe aesthetic is warm ash and faded steel: parchment-toned surfaces that feel like paper rather than screen, a steel-blue accent as rare and deliberate as a library stamp, and a serif typeface that appears only where history warrants it. There are two typographic voices. Georgia carries the archival register; system-ui carries everything functional and disappears on use.\n\nDepth is expressed through tonal surface stepping, not shadow. Six named surface values step from surface to surface-active; the eye reads the elevation without needing a drop shadow to announce it. Shadows are reserved for one context only: the modal that floats above the application.",
+    "keyCharacteristics": [
+      "Content-first: nothing in the chrome competes with the photograph",
+      "Two-voice typography: Georgia for the archival register, system-ui for the functional register",
+      "Faded steel accent on 10% or less of any screen; rarity is the signal",
+      "Warm ash neutrals across six tonal steps; no surface is pure white or pure black",
+      "Tactile and honest controls: visible borders, clear affordances, legible at larger text sizes",
+      "Tonal elevation; shadows appear only for modal overlays"
+    ],
+    "rules": [
+      { "name": "The Rarity Rule",           "body": "The accent (Faded Steel) is used on 10% or less of any given screen: one active nav link, primary interactive affordances, focus rings. Its presence is a signal, not decoration.",                         "section": "colors" },
+      { "name": "The No-Pure-Extremes Rule", "body": "No #000 or #fff. Every surface is tinted toward the warm-ash hue at minimum chroma. Pure black and pure white have no place in an archive made by human hands.",                               "section": "colors" },
+      { "name": "The Contrast Contract",     "body": "--text-4 fails WCAG AA at 9-10px. Use --text-3 as the minimum for any information-bearing micro-label. Placeholder text and decorative separators may use --text-4; field labels may not.", "section": "colors" },
+      { "name": "The Two-Voice Rule",        "body": "Georgia is the archival voice; it appears only when the subject has historical weight. system-ui is the functional voice; it appears everywhere else and disappears on use. Never mix within a single component.", "section": "typography" },
+      { "name": "The Small-Type Contract",   "body": "Any text at 10px or below must be uppercase with at least +0.08em letter-spacing. Use --text-3 or above. Dimmer colors may carry decorative separators, not labels.",                       "section": "typography" },
+      { "name": "The Flat-By-Default Rule",  "body": "Surfaces at rest cast no shadow. Layering is expressed tonally. A new shadow is a new exception; add it deliberately.",                                                                          "section": "elevation" }
+    ],
+    "dos": [
+      "Use Georgia only for person names, page h1 headings, album names in photo cards, and the wordmark.",
+      "Use the accent on 10% or less of any screen. Its appearance must feel like a signal.",
+      "Use --text-3 or above for any information-bearing label at 10px or below.",
+      "Add aria-label to every button whose accessible name is a glyph (←, ⚙, ☀, ×).",
+      "Make every interactive element keyboard-reachable: tabIndex, role, and onKeyDown.",
+      "Let the photograph dominate the Photos view. Minimize surrounding chrome.",
+      "Use tonal surface stepping for perceived depth.",
+      "Add role=dialog, aria-modal, aria-labelledby, and a focus trap to any modal overlay."
+    ],
+    "donts": [
+      "Don't produce a generic admin dashboard: colorless surfaces, data-grid density, no warmth.",
+      "Don't use consumer photo app patterns (Google Photos, iCloud): algorithm-sorted equal grids, platform branding.",
+      "Don't use genealogy SaaS patterns (Ancestry, MyHeritage): dated dense forms, commercial-first hierarchy.",
+      "Don't use a border-left or border-right greater than 1px as a colored accent stripe.",
+      "Don't use background-clip: text with a gradient for decorative text color.",
+      "Don't mix Georgia and system-ui within a single component.",
+      "Don't override outline: none on focusable elements.",
+      "Don't use --text-4 for metadata field labels or information-carrying micro-labels.",
+      "Don't create nested cards.",
+      "Don't animate layout properties (width, height, padding, top, left)."
+    ]
+  }
+}
