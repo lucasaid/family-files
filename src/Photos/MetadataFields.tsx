@@ -6,8 +6,12 @@ import { generateMapThumbnail, getMapUrl, ensureMapThumbnail, deleteMapIfUnshare
 
 const path = (window as any).require('path') as typeof import('path');
 
-function getMapsDir(fsPath: string): string {
-  return path.join(path.dirname(fsPath), '.maps');
+function getMapsDir(photo: Pick<Photo, 'fsPath' | 'album'>): string {
+  // Photos in an album live one subdirectory below the images root; go up an extra level.
+  const imagesDir = photo.album
+    ? path.dirname(path.dirname(photo.fsPath))
+    : path.dirname(photo.fsPath);
+  return path.join(imagesDir, '.maps');
 }
 
 type Draft = {
@@ -237,7 +241,7 @@ export default function MetadataFields({ readOnly, alwaysEdit, saveOnNavigate, o
         },
       });
 
-      const mapsDir = getMapsDir(photo.fsPath);
+      const mapsDir = getMapsDir(photo);
       const oldLocation = photo.location;
       const newLocation = location;
 
@@ -270,7 +274,7 @@ export default function MetadataFields({ readOnly, alwaysEdit, saveOnNavigate, o
       return;
     }
     const { lat, lng } = activePhoto.location;
-    const mapsDir = getMapsDir(activePhoto.fsPath);
+    const mapsDir = getMapsDir(activePhoto);
     const cached = getMapUrl(mapsDir, lat, lng);
     if (cached) {
       setMapUrl(cached);
@@ -326,7 +330,7 @@ export default function MetadataFields({ readOnly, alwaysEdit, saveOnNavigate, o
       setDraft(d => d ? { ...d, date: savedDate ?? '' } : d);
       onExitEdit?.();
 
-      const mapsDir = getMapsDir(activePhoto.fsPath);
+      const mapsDir = getMapsDir(activePhoto);
       const oldLocation = activePhoto.location;
       const newLocation = location; // already parsed: const location = draft.locationStr ? parseLocation(draft.locationStr) : null
 
@@ -415,7 +419,7 @@ export default function MetadataFields({ readOnly, alwaysEdit, saveOnNavigate, o
       <div>
         <div style={label}>GPS (lat, lng)</div>
         {readOnly
-          ? <ReadValue value={draft.locationStr} />
+          ? (!mapUrl && <ReadValue value={draft.locationStr} />)
           : <input style={fieldBase} value={draft.locationStr} onChange={e => set({ locationStr: e.target.value })} onKeyDown={e => { onEnter?.(e); onNavKeyDown(e); }} />}
         {mapUrl && (
           <img

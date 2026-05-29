@@ -1,6 +1,7 @@
 const fs = (window as any).require('fs') as typeof import('fs');
 const path = (window as any).require('path') as typeof import('path');
 const https = (window as any).require('https') as typeof import('https');
+const crypto = (window as any).require('crypto') as typeof import('crypto');
 
 import { Photo } from '../context/types';
 
@@ -20,7 +21,8 @@ export function latLngToTile(
 }
 
 export function mapFileName(lat: number, lng: number): string {
-  return `${lat}_${lng}.png`;
+  const hash = crypto.createHash('md5').update(`${lat}_${lng}`).digest('hex');
+  return `${hash}.png`;
 }
 
 export function mapFilePath(mapsDir: string, lat: number, lng: number): string {

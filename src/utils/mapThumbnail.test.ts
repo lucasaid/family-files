@@ -33,16 +33,22 @@ test('latLngToTile: x and y are non-negative integers', () => {
   expect(y).toBeGreaterThanOrEqual(0);
 });
 
-test('mapFileName: formats as lat_lng.png', () => {
-  expect(mapFileName(48.8566, 2.3522)).toBe('48.8566_2.3522.png');
+test('mapFileName: returns a 32-char hex hash + .png extension', () => {
+  expect(mapFileName(48.8566, 2.3522)).toMatch(/^[0-9a-f]{32}\.png$/);
 });
 
-test('mapFileName: handles negative coordinates', () => {
-  expect(mapFileName(-33.8688, 151.2093)).toBe('-33.8688_151.2093.png');
+test('mapFileName: same coords produce the same filename', () => {
+  expect(mapFileName(48.8566, 2.3522)).toBe(mapFileName(48.8566, 2.3522));
 });
 
-test('mapFilePath: joins mapsDir and filename', () => {
-  expect(mapFilePath('/images/.maps', 48.8566, 2.3522)).toBe('/images/.maps/48.8566_2.3522.png');
+test('mapFileName: different coords produce different filenames', () => {
+  expect(mapFileName(48.8566, 2.3522)).not.toBe(mapFileName(51.5074, -0.1278));
+});
+
+test('mapFilePath: joins mapsDir with a hashed .png filename', () => {
+  const result = mapFilePath('/images/.maps', 48.8566, 2.3522);
+  expect(result.startsWith('/images/.maps/')).toBe(true);
+  expect(result.endsWith('.png')).toBe(true);
 });
 
 test('isCoordShared: returns false when no other photo has those coords', () => {

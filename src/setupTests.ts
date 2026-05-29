@@ -13,6 +13,20 @@ import '@testing-library/jest-dom';
     },
     extname: (p: string) => { const m = (p.split('/').pop() ?? '').match(/\.[^.]+$/); return m ? m[0] : ''; },
   };
+  if (mod === 'crypto') {
+    const h = (data: string) => {
+      let n = 5381;
+      for (let i = 0; i < data.length; i++) n = Math.imul(33, n) ^ data.charCodeAt(i);
+      return (n >>> 0).toString(16).padStart(8, '0').repeat(4);
+    };
+    return {
+      createHash: (_: string) => {
+        let buf = '';
+        const obj = { update: (s: string) => { buf += s; return obj; }, digest: (_e: string) => h(buf) };
+        return obj;
+      }
+    };
+  }
   if (mod === 'child_process') return { execFile: vi.fn() };
   if (mod === 'electron') return { ipcRenderer: { sendSync: vi.fn().mockReturnValue('/tmp') } };
   return {
