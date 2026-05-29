@@ -1,5 +1,5 @@
 // src/People/PersonPhotoGrid.tsx
-import React, { useState, useCallback, useMemo, memo } from 'react';
+import { useState, useCallback, useMemo, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Photo } from '../context/types';
 import { useAppContext } from '../context/AppContext';

@@ -1,4 +1,3 @@
-// src/Photos/MetadataFields.tsx
 import React, { useCallback, useLayoutEffect, useState, useRef } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { writeMeta, normalizeExifDate, formatDisplayDate } from '../utils/exiftool';

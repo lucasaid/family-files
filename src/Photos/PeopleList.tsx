@@ -1,5 +1,3 @@
-// src/Photos/PeopleList.tsx
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 import { writeFaceRegions } from '../utils/exiftool';

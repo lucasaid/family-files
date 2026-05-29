@@ -1,4 +1,3 @@
-// src/Documents/index.tsx
 import React from 'react';
 import DocumentList from './DocumentList';
 import DocumentPanel from './DocumentPanel';

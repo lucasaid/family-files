@@ -1,4 +1,3 @@
-// src/utils/people.ts
 import { FamilyChartPerson, Person } from '../context/types';
 import { dataPath } from './paths';
 

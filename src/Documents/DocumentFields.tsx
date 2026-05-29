@@ -1,4 +1,3 @@
-// src/Documents/DocumentFields.tsx
 import React, { useEffect, useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { writeDocumentsJson, writeCategoriesJson } from '../utils/documents';

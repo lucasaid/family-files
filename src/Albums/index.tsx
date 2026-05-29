@@ -1,4 +1,3 @@
-// src/Albums/index.tsx
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import AlbumList from './AlbumList';

@@ -1,4 +1,3 @@
-// src/People/PersonDetail.tsx
 import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';

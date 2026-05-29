@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import PhotoViewer from './PhotoViewer';

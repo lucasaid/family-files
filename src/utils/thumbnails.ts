@@ -1,4 +1,4 @@
-// src/utils/thumbnails.ts — renderer-side thumbnail generation via canvas + Node fs
+// renderer-side thumbnail generation via canvas + Node fs
 const fs = (window as any).require('fs') as typeof import('fs');
 const path = (window as any).require('path') as typeof import('path');
 

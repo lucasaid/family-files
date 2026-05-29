@@ -1,4 +1,3 @@
-// src/Photos/FaceTagger.tsx
 import React, { useRef, useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { writeFaceRegions } from '../utils/exiftool';

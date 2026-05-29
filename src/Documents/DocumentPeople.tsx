@@ -1,4 +1,3 @@
-// src/Documents/DocumentPeople.tsx
 import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { writeDocumentsJson } from '../utils/documents';

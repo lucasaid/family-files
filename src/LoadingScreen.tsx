@@ -1,5 +1,3 @@
-// src/LoadingScreen.tsx
-import React from 'react';
 import { SyncStatus } from './utils/sync';
 
 const STATUS_LABELS: Record<SyncStatus, string> = {

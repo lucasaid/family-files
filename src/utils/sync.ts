@@ -1,4 +1,3 @@
-// src/utils/sync.ts
 import { Photo, Person, FamilyDocument, FamilyChartPerson, AppSettings, DocumentCategory } from '../context/types';
 import { readMetadata } from './exiftool';
 import { readPeopleJson, writePeopleJson } from './people';

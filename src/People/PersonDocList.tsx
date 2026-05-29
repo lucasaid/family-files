@@ -1,5 +1,5 @@
 // src/People/PersonDocList.tsx
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FamilyDocument } from '../context/types';
 import { useAppContext } from '../context/AppContext';

@@ -1,4 +1,3 @@
-// src/People/PersonAvatar.tsx
 import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { Photo, FaceRegion } from '../context/types';

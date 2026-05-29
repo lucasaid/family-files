@@ -1,4 +1,3 @@
-// src/Documents/DocumentList.tsx
 import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { FamilyDocument, DocumentCategory } from '../context/types';

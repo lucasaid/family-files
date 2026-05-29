@@ -1,4 +1,3 @@
-// src/utils/documents.ts
 import { FamilyDocument, DocumentCategory } from '../context/types';
 import { dataPath } from './paths';
 

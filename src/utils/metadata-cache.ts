@@ -1,4 +1,3 @@
-// src/utils/metadata-cache.ts
 const fs = (window as any).require('fs') as typeof import('fs');
 const path = (window as any).require('path') as typeof import('path');
 

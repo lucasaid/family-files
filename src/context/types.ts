@@ -1,4 +1,3 @@
-// src/context/types.ts
 
 export interface FaceRegion {
   personId: string | null; // matched from people[] by name on read; null if unmatched

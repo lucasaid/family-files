@@ -1,4 +1,3 @@
-// src/Documents/DocumentViewer.tsx
 import React, { useRef, useState, useCallback, useEffect } from 'react';
 import { FamilyDocument } from '../context/types';
 import { dataPath } from '../utils/paths';

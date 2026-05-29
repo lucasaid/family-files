@@ -1,4 +1,3 @@
-// src/utils/albums.ts
 import { dataPath } from './paths';
 
 const fs = (window as any).require('fs') as typeof import('fs');

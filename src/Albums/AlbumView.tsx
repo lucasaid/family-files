@@ -1,4 +1,3 @@
-// src/Albums/AlbumView.tsx
 import React, { useState, useCallback, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';

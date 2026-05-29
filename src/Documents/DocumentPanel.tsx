@@ -1,4 +1,3 @@
-// src/Documents/DocumentPanel.tsx
 import React from 'react';
 import { useAppContext } from '../context/AppContext';
 import { writeDocumentsJson } from '../utils/documents';

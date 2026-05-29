@@ -1,4 +1,3 @@
-// src/Photos/PhotoViewer.tsx
 import React, { useRef, useState, useEffect, useLayoutEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';

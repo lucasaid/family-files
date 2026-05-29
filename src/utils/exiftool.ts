@@ -1,4 +1,3 @@
-// src/utils/exiftool.ts
 import * as chrono from 'chrono-node';
 import { Photo, FaceRegion, Person } from '../context/types';
 import { loadCache, saveCache, statImageFiles } from './metadata-cache';

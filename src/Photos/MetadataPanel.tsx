@@ -1,5 +1,4 @@
-// src/Photos/MetadataPanel.tsx
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import MetadataFields from './MetadataFields';
 import PeopleList from './PeopleList';
