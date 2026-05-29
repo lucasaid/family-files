@@ -5,7 +5,7 @@ import { AppProvider } from '../context/AppContext';
 import PeopleManager from './PeopleManager';
 
 (window as any).require = () => ({
-  promises: { writeFile: jest.fn().mockResolvedValue(undefined), readFile: jest.fn().mockRejectedValue(new Error()) },
+  promises: { writeFile: vi.fn().mockResolvedValue(undefined), readFile: vi.fn().mockRejectedValue(new Error()) },
 });
 
 function renderWithContext(ui: React.ReactElement) {
