@@ -19,7 +19,7 @@ export default function PersonDocList({ personId }: Props) {
   const docs = state.documents.filter(d => d.personIds.includes(personId));
 
   if (docs.length === 0) {
-    return <div style={{ color: 'var(--text-4)', fontSize: 13, fontStyle: 'italic', padding: '8px 0' }}>No documents linked.</div>;
+    return <div style={{ color: 'var(--text-4)', fontSize: 'var(--font-size-body)', fontStyle: 'italic', padding: '8px 0' }}>No documents linked.</div>;
   }
 
   const openDoc = (doc: FamilyDocument) => {
@@ -39,13 +39,13 @@ export default function PersonDocList({ personId }: Props) {
             onMouseLeave={() => setHoveredId(null)}
             style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '10px 0', borderBottom: '1px solid var(--border)', cursor: 'pointer' }}
           >
-            <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-3)', background: 'var(--bg-elevated)', border: '1px solid var(--border-muted)', borderRadius: 2, padding: '2px 6px', flexShrink: 0 }}>
+            <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: 'var(--tracking-label)', textTransform: 'uppercase', color: 'var(--text-3)', background: 'var(--bg-elevated)', border: '1px solid var(--border-muted)', borderRadius: 2, padding: '2px 6px', flexShrink: 0 }}>
               {docTypeLabel(doc)}
             </span>
-            <span style={{ flex: 1, fontSize: 13, color: isHovered ? 'var(--text-heading)' : 'var(--text-2)', transition: 'color 0.12s', fontFamily: '"Georgia", "Times New Roman", serif', letterSpacing: '0.01em' }}>
+            <span style={{ flex: 1, fontSize: 'var(--font-size-body)', color: isHovered ? 'var(--text-heading)' : 'var(--text-2)', transition: 'color 0.12s', fontFamily: 'var(--font-serif)', letterSpacing: 'var(--tracking-tight)' }}>
               {doc.title}
             </span>
-            {doc.date && <span style={{ fontSize: 10, color: 'var(--text-4)', letterSpacing: '0.04em', flexShrink: 0 }}>{doc.date}</span>}
+            {doc.date && <span style={{ fontSize: 10, color: 'var(--text-4)', letterSpacing: 'var(--tracking-wordmark)', flexShrink: 0 }}>{doc.date}</span>}
             <span style={{ fontSize: 10, color: 'var(--accent)', opacity: isHovered ? 1 : 0, transition: 'opacity 0.15s', flexShrink: 0 }}>→</span>
           </div>
         );

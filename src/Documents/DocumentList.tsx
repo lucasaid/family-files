@@ -37,10 +37,10 @@ function DocRow({ doc, active, onClick, depth = 0 }: { doc: FamilyDocument; acti
       }}
     >
       <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-        <span style={{ fontSize: 14, flexShrink: 0 }}>{docIcon(doc)}</span>
+        <span style={{ fontSize: 'var(--font-size-title)', flexShrink: 0 }}>{docIcon(doc)}</span>
         <div style={{ overflow: 'hidden' }}>
-          <div style={{ color: 'var(--text-1)', fontSize: 12, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{doc.title}</div>
-          <div style={{ color: 'var(--text-4)', fontSize: 11 }}>
+          <div style={{ color: 'var(--text-1)', fontSize: 'var(--font-size-ui)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{doc.title}</div>
+          <div style={{ color: 'var(--text-4)', fontSize: 'var(--font-size-label)' }}>
             {doc.date && <span>{doc.date}{firstPerson ? ' · ' : ''}</span>}
             {firstPerson && <span>👤 {firstPerson}</span>}
           </div>
@@ -98,7 +98,7 @@ function CategorySection({
         }}
       >
         <span style={{ fontSize: 9, color: 'var(--text-4)', width: 10, flexShrink: 0 }}>{open ? '▾' : '▸'}</span>
-        <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-3)', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        <span style={{ fontSize: 'var(--font-size-label)', fontWeight: 600, color: 'var(--text-3)', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
           {category.name}
         </span>
         {totalCount > 0 && (
@@ -204,7 +204,7 @@ export default function DocumentList() {
   const inputStyle: React.CSSProperties = {
     background: 'var(--input-bg)', border: '1px solid var(--input-border)',
     borderRadius: 3, padding: '4px 8px', color: 'var(--input-text)',
-    fontSize: 11, fontFamily: 'system-ui, sans-serif', outline: 'none', width: '100%',
+    fontSize: 'var(--font-size-label)', fontFamily: 'var(--font-sans)', width: '100%',
     boxSizing: 'border-box',
   };
 
@@ -216,11 +216,11 @@ export default function DocumentList() {
       <div style={{ padding: '10px 12px', borderBottom: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: 6 }}>
         <div style={{ display: 'flex', gap: 6 }}>
           <button onClick={addFile} disabled={loading}
-            style={{ flex: 1, background: 'var(--btn-primary-bg)', border: '1px solid var(--btn-primary-border)', borderRadius: 4, padding: '5px 0', color: 'var(--btn-primary-text)', cursor: loading ? 'wait' : 'pointer', opacity: loading ? 0.6 : 1, fontSize: 12 }}>
+            style={{ flex: 1, background: 'var(--btn-primary-bg)', border: '1px solid var(--btn-primary-border)', borderRadius: 4, padding: '5px 0', color: 'var(--btn-primary-text)', cursor: loading ? 'wait' : 'pointer', opacity: loading ? 0.6 : 1, fontSize: 'var(--font-size-ui)' }}>
             {loading ? 'Importing…' : '+ Add file'}
           </button>
           <button onClick={addNote}
-            style={{ flex: 1, background: 'var(--bg-elevated)', border: '1px solid var(--border-muted)', borderRadius: 4, padding: '5px 0', color: 'var(--text-2)', cursor: 'pointer', fontSize: 12 }}>
+            style={{ flex: 1, background: 'var(--bg-elevated)', border: '1px solid var(--border-muted)', borderRadius: 4, padding: '5px 0', color: 'var(--text-2)', cursor: 'pointer', fontSize: 'var(--font-size-ui)' }}>
             + New note
           </button>
         </div>
@@ -247,14 +247,14 @@ export default function DocumentList() {
 
       <div style={{ flex: 1, overflowY: 'auto' }}>
         {documents.length === 0 && (
-          <div style={{ padding: 16, color: 'var(--text-4)', fontSize: 13 }}>No documents yet.</div>
+          <div style={{ padding: 16, color: 'var(--text-4)', fontSize: 'var(--font-size-body)' }}>No documents yet.</div>
         )}
 
         {/* Search results — flat list */}
         {isSearching && (
           <>
             {filteredDocs.length === 0 && (
-              <div style={{ padding: 16, color: 'var(--text-4)', fontSize: 12, fontStyle: 'italic' }}>No documents match "{search}".</div>
+              <div style={{ padding: 16, color: 'var(--text-4)', fontSize: 'var(--font-size-ui)', fontStyle: 'italic' }}>No documents match "{search}".</div>
             )}
             {filteredDocs.map(doc => (
               <DocRow key={doc.id} doc={doc} active={doc.id === activeDocument?.id} onClick={() => onSelect(doc)} />
@@ -310,7 +310,7 @@ function UncategorizedSection({ docs, activeDocId, onSelect }: {
         }}
       >
         <span style={{ fontSize: 9, color: 'var(--text-4)', width: 10, flexShrink: 0 }}>{open ? '▾' : '▸'}</span>
-        <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-4)', flex: 1 }}>Uncategorized</span>
+        <span style={{ fontSize: 'var(--font-size-label)', fontWeight: 600, color: 'var(--text-4)', flex: 1 }}>Uncategorized</span>
         <span style={{ fontSize: 10, color: 'var(--text-5)' }}>{docs.length}</span>
       </div>
       {open && docs.map(doc => (

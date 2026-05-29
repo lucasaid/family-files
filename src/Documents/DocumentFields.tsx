@@ -7,11 +7,11 @@ import { FamilyDocument, DocumentCategory } from '../context/types';
 type Draft = Pick<FamilyDocument, 'title' | 'date' | 'description' | 'content' | 'categoryId'>;
 
 const labelStyle: React.CSSProperties = {
-  fontSize: 10, textTransform: 'uppercase', color: 'var(--text-4)', marginBottom: 3,
+  fontSize: 'var(--font-size-label)', textTransform: 'uppercase', color: 'var(--text-4)', marginBottom: 3,
 };
 
 const valueStyle: React.CSSProperties = {
-  fontSize: 13, color: 'var(--text-2)', marginBottom: 12, whiteSpace: 'pre-wrap', lineHeight: 1.5,
+  fontSize: 'var(--font-size-body)', color: 'var(--text-2)', marginBottom: 12, whiteSpace: 'pre-wrap', lineHeight: 1.5,
 };
 
 const emptyStyle: React.CSSProperties = {
@@ -113,7 +113,7 @@ export default function DocumentFields() {
 
   const inputStyle: React.CSSProperties = {
     width: '100%', background: 'var(--input-bg)', border: '1px solid var(--input-border)',
-    borderRadius: 3, padding: '4px 8px', color: 'var(--input-text)', fontSize: 13,
+    borderRadius: 3, padding: '4px 8px', color: 'var(--input-text)', fontSize: 'var(--font-size-body)',
     boxSizing: 'border-box', marginBottom: 10,
   };
 
@@ -126,9 +126,9 @@ export default function DocumentFields() {
     return (
       <div style={{ padding: 16 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-          <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Details</span>
+          <span style={{ fontSize: 'var(--font-size-label)', fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Details</span>
           <button onClick={() => setEditing(true)}
-            style={{ background: 'var(--btn-secondary-bg, var(--bg-3))', border: '1px solid var(--border-2)', borderRadius: 4, padding: '3px 10px', color: 'var(--text-2)', cursor: 'pointer', fontSize: 11 }}>
+            style={{ background: 'var(--btn-secondary-bg, var(--bg-3))', border: '1px solid var(--border-2)', borderRadius: 4, padding: '3px 10px', color: 'var(--text-2)', cursor: 'pointer', fontSize: 'var(--font-size-label)' }}>
             Edit
           </button>
         </div>
@@ -158,14 +158,14 @@ export default function DocumentFields() {
   return (
     <div style={{ padding: 16 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-        <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Details</span>
+        <span style={{ fontSize: 'var(--font-size-label)', fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Details</span>
         <div style={{ display: 'flex', gap: 6 }}>
           <button onClick={save} disabled={saving}
-            style={{ background: 'var(--btn-save-bg)', border: '1px solid var(--btn-save-border)', borderRadius: 4, padding: '3px 10px', color: 'var(--btn-save-text)', fontSize: 11, cursor: 'pointer' }}>
+            style={{ background: 'var(--btn-save-bg)', border: '1px solid var(--btn-save-border)', borderRadius: 4, padding: '3px 10px', color: 'var(--btn-save-text)', fontSize: 'var(--font-size-label)', cursor: 'pointer' }}>
             {saving ? 'Saving…' : 'Save'}
           </button>
           <button onClick={cancel} disabled={saving}
-            style={{ background: 'var(--btn-cancel-bg)', border: '1px solid var(--btn-cancel-border)', borderRadius: 4, padding: '3px 10px', color: 'var(--btn-cancel-text)', fontSize: 11, cursor: 'pointer' }}>
+            style={{ background: 'var(--btn-cancel-bg)', border: '1px solid var(--btn-cancel-border)', borderRadius: 4, padding: '3px 10px', color: 'var(--btn-cancel-text)', fontSize: 'var(--font-size-label)', cursor: 'pointer' }}>
             Cancel
           </button>
         </div>
@@ -186,7 +186,7 @@ export default function DocumentFields() {
         <button
           onClick={() => setShowNewCat(s => !s)}
           title="New category"
-          style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-muted)', borderRadius: 4, padding: '2px 8px', color: 'var(--text-3)', cursor: 'pointer', fontSize: 14, flexShrink: 0 }}>
+          style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-muted)', borderRadius: 4, padding: '2px 8px', color: 'var(--text-3)', cursor: 'pointer', fontSize: 'var(--font-size-title)', flexShrink: 0 }}>
           +
         </button>
       </div>
@@ -215,11 +215,11 @@ export default function DocumentFields() {
           </select>
           <div style={{ display: 'flex', gap: 6 }}>
             <button onClick={addCategory} disabled={!newCatName.trim()}
-              style={{ background: 'var(--btn-save-bg)', border: '1px solid var(--btn-save-border)', borderRadius: 4, padding: '3px 10px', color: 'var(--btn-save-text)', fontSize: 11, cursor: 'pointer' }}>
+              style={{ background: 'var(--btn-save-bg)', border: '1px solid var(--btn-save-border)', borderRadius: 4, padding: '3px 10px', color: 'var(--btn-save-text)', fontSize: 'var(--font-size-label)', cursor: 'pointer' }}>
               Add
             </button>
             <button onClick={() => setShowNewCat(false)}
-              style={{ background: 'none', border: '1px solid var(--border-muted)', borderRadius: 4, padding: '3px 10px', color: 'var(--text-3)', fontSize: 11, cursor: 'pointer' }}>
+              style={{ background: 'none', border: '1px solid var(--border-muted)', borderRadius: 4, padding: '3px 10px', color: 'var(--text-3)', fontSize: 'var(--font-size-label)', cursor: 'pointer' }}>
               Cancel
             </button>
           </div>

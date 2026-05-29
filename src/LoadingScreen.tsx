@@ -33,7 +33,7 @@ export default function LoadingScreen({ status, addedPeople, error }: Props) {
     <div style={{
       height: '100vh', display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center',
-      background: 'var(--bg)', color: 'var(--text-1)', fontFamily: 'system-ui, sans-serif',
+      background: 'var(--bg)', color: 'var(--text-1)', fontFamily: 'var(--font-sans)',
     }}>
       <div style={{ fontSize: 22, fontWeight: 600, marginBottom: 32, color: 'var(--accent)' }}>
         Family Files
@@ -60,7 +60,7 @@ export default function LoadingScreen({ status, addedPeople, error }: Props) {
                 )}
               </div>
               <span style={{
-                fontSize: 13,
+                fontSize: 'var(--font-size-body)',
                 color: done ? 'var(--green)' : active ? 'var(--text-1)' : 'var(--text-5)',
               }}>
                 {STATUS_LABELS[s]}
@@ -75,11 +75,11 @@ export default function LoadingScreen({ status, addedPeople, error }: Props) {
           marginTop: 24, padding: '10px 16px', background: 'var(--bg-card)',
           border: '1px solid var(--border-muted)', borderRadius: 6, maxWidth: 320, width: '100%',
         }}>
-          <div style={{ fontSize: 11, color: 'var(--green)', marginBottom: 6 }}>
+          <div style={{ fontSize: 'var(--font-size-label)', color: 'var(--green)', marginBottom: 6 }}>
             Added {addedPeople.length} new {addedPeople.length === 1 ? 'person' : 'people'} from image tags:
           </div>
           {addedPeople.map(name => (
-            <div key={name} style={{ fontSize: 12, color: 'var(--text-2)' }}>+ {name}</div>
+            <div key={name} style={{ fontSize: 'var(--font-size-ui)', color: 'var(--text-2)' }}>+ {name}</div>
           ))}
         </div>
       )}
@@ -88,7 +88,7 @@ export default function LoadingScreen({ status, addedPeople, error }: Props) {
         <div style={{
           marginTop: 24, padding: '10px 16px', background: 'var(--bg-card)',
           border: '1px solid var(--color-error-border)', borderRadius: 6, maxWidth: 320, width: '100%',
-          fontSize: 12, color: 'var(--color-error)',
+          fontSize: 'var(--font-size-ui)', color: 'var(--color-error)',
         }}>
           {error}
         </div>

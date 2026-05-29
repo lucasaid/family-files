@@ -50,19 +50,19 @@ function draftDirty(draft: Draft, photo: Photo): boolean {
 }
 
 const label: React.CSSProperties = {
-  fontSize: 9, textTransform: 'uppercase', letterSpacing: '.08em',
-  color: 'var(--text-4)', marginBottom: 3,
+  fontSize: 'var(--font-size-label)', textTransform: 'uppercase', letterSpacing: 'var(--tracking-wider)',
+  color: 'var(--text-3)', marginBottom: 3,
 };
 
 const fieldBase: React.CSSProperties = {
   width: '100%', background: 'var(--input-bg)', border: '1px solid var(--input-border)',
-  borderRadius: 3, padding: '3px 6px', color: 'var(--input-text)', fontSize: 12,
+  borderRadius: 3, padding: '3px 6px', color: 'var(--input-text)', fontSize: 'var(--font-size-ui)',
   boxSizing: 'border-box', fontFamily: 'inherit',
 };
 
 function ReadValue({ value, multiline }: { value: string; multiline?: boolean }) {
   const style: React.CSSProperties = {
-    fontSize: 12, color: value ? 'var(--text-2)' : 'var(--text-5)',
+    fontSize: 'var(--font-size-ui)', color: value ? 'var(--text-2)' : 'var(--text-5)',
     lineHeight: 1.5, whiteSpace: multiline ? 'pre-wrap' : 'normal',
     minHeight: 18,
   };
@@ -79,19 +79,21 @@ function StarRating({ value, onChange, readOnly }: {
   const [hovered, setHovered] = useState<number | null>(null);
 
   return (
-    <div style={{ display: 'flex', gap: 3, alignItems: 'center' }}>
+    <div role="group" aria-label="Rating" style={{ display: 'flex', gap: 3, alignItems: 'center' }}>
       {[1, 2, 3, 4, 5].map(star => {
         const filled = (hovered ?? value ?? 0) >= star;
         return (
-          <span
+          <button
             key={star}
+            type="button"
+            aria-label={`${star} ${star === 1 ? 'star' : 'stars'}${value === star ? ', selected' : ''}`}
+            aria-pressed={value === star}
+            tabIndex={readOnly ? -1 : 0}
             onMouseEnter={() => !readOnly && setHovered(star)}
             onMouseLeave={() => !readOnly && setHovered(null)}
-            onClick={() => {
-              if (readOnly) return;
-              onChange(value === star ? null : star);
-            }}
+            onClick={() => { if (!readOnly) onChange(value === star ? null : star); }}
             style={{
+              background: 'none', border: 'none', padding: 0,
               fontSize: 16, lineHeight: 1,
               color: filled ? 'var(--amber)' : 'var(--text-5)',
               cursor: readOnly ? 'default' : 'pointer',
@@ -100,14 +102,15 @@ function StarRating({ value, onChange, readOnly }: {
             }}
           >
             ★
-          </span>
+          </button>
         );
       })}
       {value != null && !readOnly && (
         <button
+          type="button"
           onClick={() => onChange(null)}
+          aria-label="Clear rating"
           style={{ background: 'none', border: 'none', color: 'var(--text-4)', fontSize: 10, cursor: 'pointer', padding: '0 2px', marginLeft: 2 }}
-          title="Clear rating"
         >
           ×
         </button>
@@ -143,12 +146,13 @@ function KeywordInput({ keywords, onChange, readOnly, onNavigate }: {
           <span key={kw} style={{
             display: 'inline-flex', alignItems: 'center', gap: 3,
             background: 'var(--tag-bg)', border: '1px solid var(--tag-border)',
-            borderRadius: 10, padding: '1px 7px', fontSize: 11, color: 'var(--accent)',
+            borderRadius: 10, padding: '1px 7px', fontSize: 'var(--font-size-label)', color: 'var(--accent)',
           }}>
             {kw}
             {!readOnly && (
               <button onClick={() => remove(kw)}
-                style={{ background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'pointer', padding: 0, fontSize: 11, lineHeight: 1 }}>
+                aria-label={`Remove keyword ${kw}`}
+                style={{ background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'pointer', padding: 0, fontSize: 'var(--font-size-label)', lineHeight: 1 }}>
                 ×
               </button>
             )}
@@ -373,16 +377,16 @@ export default function MetadataFields({ readOnly, alwaysEdit, saveOnNavigate, o
         <ReadValue value={activePhoto.camera ?? ''} />
       </div>
 
-      {error && <div role="alert" style={{ color: 'var(--color-error)', fontSize: 11 }}>{error}</div>}
+      {error && <div role="alert" style={{ color: 'var(--color-error)', fontSize: 'var(--font-size-label)' }}>{error}</div>}
 
       {isDirty && !readOnly && (
         <div style={{ display: 'flex', gap: 6 }}>
           <button onClick={save} disabled={saving}
-            style={{ background: 'var(--btn-save-bg)', border: '1px solid var(--btn-save-border)', borderRadius: 3, padding: '4px 12px', color: 'var(--btn-save-text)', fontSize: 11, cursor: 'pointer' }}>
+            style={{ background: 'var(--btn-save-bg)', border: '1px solid var(--btn-save-border)', borderRadius: 3, padding: '4px 12px', color: 'var(--btn-save-text)', fontSize: 'var(--font-size-label)', cursor: 'pointer' }}>
             {saving ? 'Saving…' : 'Save'}
           </button>
           <button onClick={cancel}
-            style={{ background: 'var(--btn-cancel-bg)', border: '1px solid var(--btn-cancel-border)', borderRadius: 3, padding: '4px 12px', color: 'var(--btn-cancel-text)', fontSize: 11, cursor: 'pointer' }}>
+            style={{ background: 'var(--btn-cancel-bg)', border: '1px solid var(--btn-cancel-border)', borderRadius: 3, padding: '4px 12px', color: 'var(--btn-cancel-text)', fontSize: 'var(--font-size-label)', cursor: 'pointer' }}>
             Cancel
           </button>
         </div>

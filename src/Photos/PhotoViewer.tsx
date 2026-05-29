@@ -36,6 +36,7 @@ export default function PhotoViewer() {
   const [containerSize, setContainerSize] = useState<{ w: number; h: number } | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isPanning, setIsPanning] = useState(false);
 
   // Zoom/pan state
   const [scale, setScale] = useState(1);
@@ -209,6 +210,7 @@ export default function PhotoViewer() {
   const onMouseDown = useCallback((e: React.MouseEvent) => {
     if (scaleRef.current <= 1) return;
     isPanningRef.current = true;
+    setIsPanning(true);
     panStartRef.current = { x: e.clientX, y: e.clientY, ox: offsetRef.current.x, oy: offsetRef.current.y };
   }, []);
 
@@ -222,7 +224,7 @@ export default function PhotoViewer() {
     setOffset(nextOffset);
   }, [clampOffset]);
 
-  const onMouseUp = useCallback(() => { isPanningRef.current = false; }, []);
+  const onMouseUp = useCallback(() => { isPanningRef.current = false; setIsPanning(false); }, []);
 
   useLayoutEffect(() => {
     if (activePhoto) {
@@ -263,7 +265,7 @@ export default function PhotoViewer() {
         flex: 1, position: 'relative', display: 'flex',
         alignItems: 'center', justifyContent: 'center',
         overflow: 'hidden', background: 'var(--bg-viewer)',
-        cursor: isZoomed ? (isPanningRef.current ? 'grabbing' : 'grab') : 'default',
+        cursor: isZoomed ? (isPanning ? 'grabbing' : 'grab') : 'default',
       }}
     >
       {/* Zoomable layer — img + face overlay move together */}
@@ -328,7 +330,7 @@ export default function PhotoViewer() {
         <div style={{
           position: 'absolute', top: 8, left: '50%', transform: 'translateX(-50%)',
           background: 'rgba(240,176,96,.15)', border: '1px solid rgba(240,176,96,.4)',
-          borderRadius: 4, padding: '3px 12px', color: 'var(--amber)', fontSize: 11, pointerEvents: 'none',
+          borderRadius: 4, padding: '3px 12px', color: 'var(--amber)', fontSize: 'var(--font-size-label)', pointerEvents: 'none',
         }}>
           Tagging mode: drag to mark a face · Esc to exit
         </div>
@@ -358,20 +360,19 @@ export default function PhotoViewer() {
             borderTopColor: 'rgba(255,255,255,0.7)',
             animation: 'photo-spin 0.7s linear infinite',
           }} />
-          <style>{`@keyframes photo-spin { to { transform: rotate(360deg); } }`}</style>
         </div>
       )}
 
       <button
         onClick={handleFullscreen}
-        title={isFullscreen ? 'Exit full screen' : 'Full screen'}
+        aria-label={isFullscreen ? 'Exit full screen' : 'Enter full screen'}
         style={{
           position: 'absolute', top: 8, right: 8,
           background: isFullscreen ? 'rgba(155,184,245,.15)' : 'rgba(0,0,0,.6)',
           border: `1px solid ${isFullscreen ? 'rgba(155,184,245,.5)' : 'var(--border)'}`,
           borderRadius: 3, padding: '3px 8px',
           color: isFullscreen ? 'var(--accent)' : 'var(--text-3)',
-          fontSize: 11, cursor: 'pointer',
+          fontSize: 'var(--font-size-label)', cursor: 'pointer',
         }}
       >
         {isFullscreen ? '⛶ Exit' : '⛶ Full screen'}

@@ -72,14 +72,14 @@ export default function PhotosRoute() {
             style={{
               background: 'none', border: 'none', padding: 0, cursor: 'pointer',
               display: 'flex', alignItems: 'center', gap: 6,
-              fontSize: 11, fontWeight: 500, letterSpacing: '0.08em',
+              fontSize: 'var(--font-size-label)', fontWeight: 500, letterSpacing: 'var(--tracking-wider)',
               textTransform: 'uppercase', color: 'var(--text-3)',
             }}
           >
             <span style={{ fontSize: 9 }}>←</span> {backLabel}
           </button>
           <span style={{ color: 'var(--border-muted)', fontSize: 10 }}>·</span>
-          <span style={{ fontSize: 11, color: 'var(--text-4)', letterSpacing: '0.06em' }}>
+          <span style={{ fontSize: 'var(--font-size-label)', color: 'var(--text-4)', letterSpacing: 'var(--tracking-wide)' }}>
             {filteredPhotos.length} {filteredPhotos.length === 1 ? 'photo' : 'photos'}
           </span>
         </div>

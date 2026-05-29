@@ -83,14 +83,14 @@ const PhotoCell = memo(function PhotoCell({ photo, onClick }: CellProps) {
         {photo.date && (
           <span style={{
             fontSize: 10, color: 'rgba(255,255,255,.5)',
-            letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 2,
+            letterSpacing: 'var(--tracking-wide)', textTransform: 'uppercase', marginBottom: 2,
           }}>
             {photo.date.slice(0, 10).replace(/:/g, '–')}
           </span>
         )}
         <span style={{
-          fontSize: 11, color: 'rgba(255,255,255,.85)',
-          letterSpacing: '0.01em',
+          fontSize: 'var(--font-size-label)', color: 'rgba(255,255,255,.85)',
+          letterSpacing: 'var(--tracking-tight)',
           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
         }}>
           {photo.file}
@@ -98,7 +98,7 @@ const PhotoCell = memo(function PhotoCell({ photo, onClick }: CellProps) {
         {photo.faces.length > 0 && (
           <span style={{
             fontSize: 10, color: 'rgba(240,176,96,.7)',
-            marginTop: 3, letterSpacing: '0.04em',
+            marginTop: 3, letterSpacing: 'var(--tracking-wordmark)',
           }}>
             {photo.faces.map(f => f.name).join(', ')}
           </span>
@@ -152,9 +152,9 @@ export default function Home() {
       <div style={{
         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
         height: '100%', gap: 12, color: 'var(--text-3)',
-        fontFamily: 'system-ui, sans-serif',
+        fontFamily: 'var(--font-sans)',
       }}>
-        <span style={{ fontSize: 13, fontStyle: 'italic' }}>No photos in the archive yet.</span>
+        <span style={{ fontSize: 'var(--font-size-body)', fontStyle: 'italic' }}>No photos in the archive yet.</span>
       </div>
     );
   }
@@ -162,7 +162,7 @@ export default function Home() {
   const inputStyle: React.CSSProperties = {
     background: 'var(--input-bg)', border: '1px solid var(--input-border)',
     borderRadius: 3, padding: '5px 10px', color: 'var(--input-text)',
-    fontSize: 12, fontFamily: 'system-ui, sans-serif', outline: 'none',
+    fontSize: 'var(--font-size-ui)', fontFamily: 'var(--font-sans)',
   };
 
   return (
@@ -174,14 +174,14 @@ export default function Home() {
       }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, flexShrink: 0 }}>
           <h1 style={{
-            fontFamily: '"Georgia", "Times New Roman", serif',
-            fontSize: 20, fontWeight: 400, color: 'var(--text-heading)',
-            margin: 0, letterSpacing: '0.01em',
+            fontFamily: 'var(--font-serif)',
+            fontSize: 'var(--font-size-headline)', fontWeight: 400, color: 'var(--text-heading)',
+            margin: 0, letterSpacing: 'var(--tracking-tight)',
           }}>
             Archive
           </h1>
           <span style={{
-            fontSize: 11, fontWeight: 500, letterSpacing: '0.08em',
+            fontSize: 'var(--font-size-label)', fontWeight: 500, letterSpacing: 'var(--tracking-wider)',
             textTransform: 'uppercase', color: 'var(--text-4)',
           }}>
             {search.trim() && filteredPhotos.length !== photos.length
@@ -196,11 +196,13 @@ export default function Home() {
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search photos…"
+            aria-label="Search photos"
             style={{ ...inputStyle, flex: 1 }}
           />
           <select
             value={searchField}
             onChange={e => setSearchField(e.target.value as SearchField)}
+            aria-label="Search by field"
             style={{ ...inputStyle, flexShrink: 0, cursor: 'pointer' }}
           >
             {SEARCH_FIELDS.map(f => (
@@ -210,6 +212,7 @@ export default function Home() {
           <select
             value={sort}
             onChange={e => setSort(e.target.value as typeof sort)}
+            aria-label="Sort order"
             style={{ ...inputStyle, flexShrink: 0, cursor: 'pointer' }}
           >
             <option value="date-desc">Date (newest)</option>
@@ -223,7 +226,7 @@ export default function Home() {
       </div>
 
       {filteredPhotos.length === 0 ? (
-        <div style={{ padding: '32px 0', color: 'var(--text-4)', fontSize: 13, fontStyle: 'italic' }}>
+        <div style={{ padding: '32px 0', color: 'var(--text-4)', fontSize: 'var(--font-size-body)', fontStyle: 'italic' }}>
           No photos match "{search}".
         </div>
       ) : (

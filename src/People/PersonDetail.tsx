@@ -2,18 +2,12 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
-import { writePeopleJson } from '../utils/people';
+import { fcName, writePeopleJson } from '../utils/people';
 import { dataPath } from '../utils/paths';
 import { FamilyChartPerson, Person } from '../context/types';
 import PersonPhotoGrid from './PersonPhotoGrid';
 import PersonDocList from './PersonDocList';
 import PersonAvatar from './PersonAvatar';
-
-// ─── helpers ────────────────────────────────────────────────────────────────
-
-function fcName(fc: FamilyChartPerson): string {
-  return [fc.data['first name'], fc.data['last name']].filter(Boolean).join(' ');
-}
 
 // Chip for a single relative — links to their person page if they're linked in app
 function RelativeChip({ fc, linkedPerson }: { fc: FamilyChartPerson; linkedPerson: Person | null }) {
@@ -32,8 +26,8 @@ function RelativeChip({ fc, linkedPerson }: { fc: FamilyChartPerson; linkedPerso
           textAlign: 'left', display: 'flex', flexDirection: 'column', gap: 1,
         }}
       >
-        <span style={{ fontSize: 13, color: 'var(--accent)', fontWeight: 500 }}>{name}</span>
-        {birth && <span style={{ fontSize: 11, color: 'var(--text-4)' }}>b. {birth}</span>}
+        <span style={{ fontSize: 'var(--font-size-body)', color: 'var(--accent)', fontWeight: 500 }}>{name}</span>
+        {birth && <span style={{ fontSize: 'var(--font-size-label)', color: 'var(--text-3)' }}>b. {birth}</span>}
       </button>
     );
   }
@@ -44,8 +38,8 @@ function RelativeChip({ fc, linkedPerson }: { fc: FamilyChartPerson; linkedPerso
       borderRadius: 5, padding: '6px 12px',
       display: 'flex', flexDirection: 'column', gap: 1,
     }}>
-      <span style={{ fontSize: 13, color: 'var(--text-2)' }}>{name}</span>
-      {birth && <span style={{ fontSize: 11, color: 'var(--text-4)' }}>b. {birth}</span>}
+      <span style={{ fontSize: 'var(--font-size-body)', color: 'var(--text-2)' }}>{name}</span>
+      {birth && <span style={{ fontSize: 'var(--font-size-label)', color: 'var(--text-3)' }}>b. {birth}</span>}
     </div>
   );
 }
@@ -75,7 +69,7 @@ function RelGroup({ label, ids, chart, people }: {
 
   return (
     <div>
-      <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-4)', marginBottom: 8 }}>
+      <div style={{ fontSize: 'var(--font-size-label)', fontWeight: 600, letterSpacing: 'var(--tracking-label)', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 8 }}>
         {label}
       </div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
@@ -93,20 +87,20 @@ function RelGroup({ label, ids, chart, people }: {
 function DataField({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
     <div>
-      <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-4)', marginBottom: 3 }}>
+      <div style={{ fontSize: 'var(--font-size-label)', fontWeight: 600, letterSpacing: 'var(--tracking-label)', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 3 }}>
         {label}
       </div>
-      <div style={{ fontSize: 14, color: 'var(--text-1)' }}>{value}</div>
-      {sub && <div style={{ fontSize: 12, color: 'var(--text-4)', marginTop: 1 }}>{sub}</div>}
+      <div style={{ fontSize: 'var(--font-size-title)', color: 'var(--text-1)' }}>{value}</div>
+      {sub && <div style={{ fontSize: 'var(--font-size-ui)', color: 'var(--text-4)', marginTop: 1 }}>{sub}</div>}
     </div>
   );
 }
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 12, paddingBottom: 6, borderBottom: '1px solid var(--border-muted)' }}>
+    <h2 style={{ fontSize: 'var(--font-size-label)', fontWeight: 600, letterSpacing: 'var(--tracking-section)', textTransform: 'uppercase', color: 'var(--text-3)', margin: '0 0 12px', paddingBottom: 6, borderBottom: '1px solid var(--border-muted)' }}>
       {children}
-    </div>
+    </h2>
   );
 }
 
@@ -189,7 +183,7 @@ function FamilyTreeDetails({ fc }: { fc: FamilyChartPerson }) {
                 <div key={i} style={{ display: 'flex', flexWrap: 'wrap', gap: '12px 32px', alignItems: 'flex-start' }}>
                   {spouse && (
                     <div>
-                      <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-4)', marginBottom: 4 }}>
+                      <div style={{ fontSize: 'var(--font-size-label)', fontWeight: 600, letterSpacing: 'var(--tracking-label)', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 4 }}>
                         {m.divorceDate ? 'Former Spouse' : 'Spouse'}
                       </div>
                       <RelativeChip fc={spouse} linkedPerson={linkedPerson} />
@@ -296,15 +290,15 @@ function FamilyTreeLink({ personId }: { personId: string }) {
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-        <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-3)' }}>
+        <div style={{ fontSize: 'var(--font-size-label)', fontWeight: 600, letterSpacing: 'var(--tracking-section)', textTransform: 'uppercase', color: 'var(--text-3)' }}>
           Family Tree
         </div>
         {linked && mode === 'idle' && (
           <div style={{ display: 'flex', gap: 8 }}>
-            <button onClick={openLinking} className="btn-ghost-hover" style={{ background: 'none', border: '1px solid var(--border-muted)', borderRadius: 4, padding: '3px 9px', fontSize: 11, cursor: 'pointer', color: 'var(--text-4)' }}>
+            <button onClick={openLinking} className="btn-ghost-hover" style={{ background: 'none', border: '1px solid var(--border-muted)', borderRadius: 4, padding: '3px 9px', fontSize: 'var(--font-size-label)', cursor: 'pointer', color: 'var(--text-4)' }}>
               Change
             </button>
-            <button onClick={handleUnlink} className="btn-ghost-hover" style={{ background: 'none', border: '1px solid var(--border-muted)', borderRadius: 4, padding: '3px 9px', fontSize: 11, cursor: 'pointer', color: 'var(--text-4)' }}>
+            <button onClick={handleUnlink} className="btn-ghost-hover" style={{ background: 'none', border: '1px solid var(--border-muted)', borderRadius: 4, padding: '3px 9px', fontSize: 'var(--font-size-label)', cursor: 'pointer', color: 'var(--text-4)' }}>
               Unlink
             </button>
           </div>
@@ -317,7 +311,7 @@ function FamilyTreeLink({ personId }: { personId: string }) {
         <button
           onClick={openLinking}
           className="btn-ghost-hover"
-          style={{ background: 'none', border: '1px dashed var(--border-muted)', borderRadius: 6, padding: '10px 16px', fontSize: 12, cursor: 'pointer', color: 'var(--text-4)', width: '100%', textAlign: 'left' }}
+          style={{ background: 'none', border: '1px dashed var(--border-muted)', borderRadius: 6, padding: '10px 16px', fontSize: 'var(--font-size-ui)', cursor: 'pointer', color: 'var(--text-4)', width: '100%', textAlign: 'left' }}
         >
           + Link to family tree record
         </button>
@@ -326,27 +320,27 @@ function FamilyTreeLink({ personId }: { personId: string }) {
       {mode === 'confirm' && autoMatch && (
         <div style={{ border: '1px solid var(--border-muted)', borderRadius: 6, padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
           <div>
-            <div style={{ fontSize: 13, color: 'var(--text-2)', marginBottom: 4 }}>
+            <div style={{ fontSize: 'var(--font-size-body)', color: 'var(--text-2)', marginBottom: 4 }}>
               Is this the right record?
             </div>
-            <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-1)' }}>
+            <div style={{ fontSize: 'var(--font-size-wordmark)', fontWeight: 500, color: 'var(--text-1)' }}>
               {fcName(autoMatch)}
             </div>
             {autoMatch.data.birthday && (
-              <div style={{ fontSize: 12, color: 'var(--text-4)', marginTop: 2 }}>b. {autoMatch.data.birthday}</div>
+              <div style={{ fontSize: 'var(--font-size-ui)', color: 'var(--text-4)', marginTop: 2 }}>b. {autoMatch.data.birthday}</div>
             )}
           </div>
           <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
             <button
               onClick={() => handleLink(autoMatch)}
-              style={{ background: 'var(--accent)', border: 'none', borderRadius: 4, padding: '6px 14px', fontSize: 12, cursor: 'pointer', color: '#fff', fontWeight: 500 }}
+              style={{ background: 'var(--accent)', border: 'none', borderRadius: 4, padding: '6px 14px', fontSize: 'var(--font-size-ui)', cursor: 'pointer', color: 'var(--text-on-accent)', fontWeight: 500 }}
             >
               Yes, link
             </button>
             <button
               onClick={() => { setAutoMatch(null); setQuery(person.name); setMode('search'); }}
               className="btn-ghost-hover"
-              style={{ background: 'none', border: '1px solid var(--border-muted)', borderRadius: 4, padding: '6px 12px', fontSize: 12, cursor: 'pointer', color: 'var(--text-4)' }}
+              style={{ background: 'none', border: '1px solid var(--border-muted)', borderRadius: 4, padding: '6px 12px', fontSize: 'var(--font-size-ui)', cursor: 'pointer', color: 'var(--text-4)' }}
             >
               Search
             </button>
@@ -370,7 +364,7 @@ function FamilyTreeLink({ personId }: { personId: string }) {
               placeholder="Search by name…"
               value={query}
               onChange={e => setQuery(e.target.value)}
-              style={{ flex: 1, background: 'none', border: 'none', outline: 'none', fontSize: 13, color: 'var(--text-1)' }}
+              style={{ flex: 1, background: 'none', border: 'none', fontSize: 'var(--font-size-body)', color: 'var(--text-1)' }}
             />
             <button onClick={cancel} className="btn-ghost-hover" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-4)', fontSize: 16, lineHeight: 1, padding: '0 4px' }}>
               ×
@@ -378,7 +372,7 @@ function FamilyTreeLink({ personId }: { personId: string }) {
           </div>
           <div style={{ maxHeight: 240, overflowY: 'auto' }}>
             {candidates.length === 0 ? (
-              <div style={{ padding: '12px 16px', fontSize: 13, color: 'var(--text-4)' }}>No matches</div>
+              <div style={{ padding: '12px 16px', fontSize: 'var(--font-size-body)', color: 'var(--text-4)' }}>No matches</div>
             ) : (
               candidates.map(fc => (
                 <button
@@ -387,8 +381,8 @@ function FamilyTreeLink({ personId }: { personId: string }) {
                   className="btn-ghost-hover"
                   style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', borderBottom: '1px solid var(--border-muted)', padding: '10px 16px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
                 >
-                  <span style={{ fontSize: 13, color: 'var(--text-1)' }}>{fcName(fc)}</span>
-                  {fc.data.birthday && <span style={{ fontSize: 11, color: 'var(--text-4)' }}>b. {fc.data.birthday}</span>}
+                  <span style={{ fontSize: 'var(--font-size-body)', color: 'var(--text-1)' }}>{fcName(fc)}</span>
+                  {fc.data.birthday && <span style={{ fontSize: 'var(--font-size-label)', color: 'var(--text-4)' }}>b. {fc.data.birthday}</span>}
                 </button>
               ))
             )}
@@ -424,7 +418,7 @@ export default function PersonDetail() {
   const docCount = state.documents.filter(d => d.personIds.includes(id)).length;
 
   return (
-    <div style={{ padding: '32px 36px', maxWidth: 800, fontFamily: 'system-ui, sans-serif', color: 'var(--text-1)' }}>
+    <div style={{ padding: '32px 36px', maxWidth: 800, fontFamily: 'var(--font-sans)', color: 'var(--text-1)' }}>
       {/* Breadcrumb */}
       <button
         onClick={() => navigate('/people')}
@@ -432,7 +426,7 @@ export default function PersonDetail() {
         style={{
           background: 'none', border: 'none', padding: 0, cursor: 'pointer',
           display: 'flex', alignItems: 'center', gap: 6,
-          fontSize: 11, fontWeight: 500, letterSpacing: '0.08em',
+          fontSize: 'var(--font-size-label)', fontWeight: 500, letterSpacing: 'var(--tracking-wider)',
           textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 24,
         }}
       >
@@ -443,15 +437,15 @@ export default function PersonDetail() {
       <div style={{ marginBottom: 36, paddingBottom: 24, borderBottom: '1px solid var(--border)', display: 'flex', gap: 24, alignItems: 'flex-start' }}>
         <PersonAvatar personId={person.id} size={200} />
         <div style={{ flex: 1 }}>
-          <h1 style={{ fontFamily: '"Georgia", "Times New Roman", serif', fontWeight: 400, fontSize: 28, color: 'var(--text-heading)', margin: '0 0 8px', letterSpacing: '0.01em' }}>
+          <h1 style={{ fontFamily: 'var(--font-serif)', fontWeight: 400, fontSize: 'var(--font-size-display)', color: 'var(--text-heading)', margin: '0 0 8px', letterSpacing: 'var(--tracking-tight)' }}>
             {person.name}
           </h1>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
-            <span style={{ fontSize: 11, color: 'var(--text-4)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+            <span style={{ fontSize: 'var(--font-size-label)', color: 'var(--text-3)', letterSpacing: 'var(--tracking-wider)', textTransform: 'uppercase' }}>
               {photoCount} {photoCount === 1 ? 'photo' : 'photos'}
             </span>
-            <span style={{ fontSize: 11, color: 'var(--border-muted)' }}>·</span>
-            <span style={{ fontSize: 11, color: 'var(--text-4)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+            <span style={{ fontSize: 'var(--font-size-label)', color: 'var(--border-muted)' }}>·</span>
+            <span style={{ fontSize: 'var(--font-size-label)', color: 'var(--text-3)', letterSpacing: 'var(--tracking-wider)', textTransform: 'uppercase' }}>
               {docCount} {docCount === 1 ? 'document' : 'documents'}
             </span>
           </div>
@@ -463,7 +457,7 @@ export default function PersonDetail() {
                 style={{
                   background: 'none', border: '1px solid var(--border-muted)', borderRadius: 5,
                   padding: '6px 12px', cursor: 'pointer',
-                  fontSize: 12, color: 'var(--text-3)', letterSpacing: '0.04em',
+                  fontSize: 'var(--font-size-ui)', color: 'var(--text-3)', letterSpacing: 'var(--tracking-wordmark)',
                   display: 'inline-flex', alignItems: 'center', gap: 6,
                 }}
               >
@@ -477,7 +471,7 @@ export default function PersonDetail() {
                 style={{
                   background: 'none', border: '1px solid var(--border-muted)', borderRadius: 5,
                   padding: '6px 12px', cursor: 'pointer',
-                  fontSize: 12, color: 'var(--text-3)', letterSpacing: '0.04em',
+                  fontSize: 'var(--font-size-ui)', color: 'var(--text-3)', letterSpacing: 'var(--tracking-wordmark)',
                   display: 'inline-flex', alignItems: 'center', gap: 6,
                 }}
               >
@@ -497,7 +491,7 @@ export default function PersonDetail() {
 
       {/* Photos section */}
       <div style={{ marginBottom: 36 }}>
-        <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 14 }}>
+        <div style={{ fontSize: 'var(--font-size-label)', fontWeight: 600, letterSpacing: 'var(--tracking-section)', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 14 }}>
           Photos
         </div>
         <PersonPhotoGrid
@@ -513,7 +507,7 @@ export default function PersonDetail() {
 
       {/* Documents section */}
       <div>
-        <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 14 }}>
+        <div style={{ fontSize: 'var(--font-size-label)', fontWeight: 600, letterSpacing: 'var(--tracking-section)', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 14 }}>
           Documents
         </div>
         <PersonDocList personId={person.id} />

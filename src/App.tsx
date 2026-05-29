@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { HashRouter, Route, Routes, NavLink, useNavigate } from 'react-router-dom';
 import { AppProvider, useAppContext } from './context/AppContext';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
@@ -62,8 +62,8 @@ function AppNav({ onOpenSettings }: { onOpenSettings: () => void }) {
 
       {/* Wordmark */}
       <span style={{
-        fontFamily: '"Georgia", "Times New Roman", serif',
-        fontSize: 15, fontWeight: 400, letterSpacing: '0.04em',
+        fontFamily: 'var(--font-serif)',
+        fontSize: 'var(--font-size-wordmark)', fontWeight: 400, letterSpacing: 'var(--tracking-wordmark)',
         color: 'var(--text-heading)',
         marginRight: 32, whiteSpace: 'nowrap', userSelect: 'none',
       }}>
@@ -84,8 +84,8 @@ function AppNav({ onOpenSettings }: { onOpenSettings: () => void }) {
             style={({ isActive }) => ({
               display: 'flex', alignItems: 'center',
               padding: '0 12px', height: 44,
-              fontSize: 11, fontFamily: 'system-ui, sans-serif',
-              fontWeight: 500, letterSpacing: '0.1em', textTransform: 'uppercase',
+              fontSize: 'var(--font-size-label)', fontFamily: 'var(--font-sans)',
+              fontWeight: 500, letterSpacing: 'var(--tracking-label)', textTransform: 'uppercase',
               textDecoration: 'none',
               color: isActive ? 'var(--accent)' : 'var(--text-3)',
               borderBottom: isActive ? '2px solid var(--accent)' : '2px solid transparent',
@@ -104,7 +104,7 @@ function AppNav({ onOpenSettings }: { onOpenSettings: () => void }) {
           onClick={toggle}
           aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
           className="btn-outline-hover"
-          style={{ background: 'none', border: '1px solid var(--border-muted)', borderRadius: 4, padding: '4px 10px', color: 'var(--text-3)', fontSize: 12, cursor: 'pointer', letterSpacing: '0.02em' }}
+          style={{ background: 'none', border: '1px solid var(--border-muted)', borderRadius: 4, padding: '4px 10px', color: 'var(--text-3)', fontSize: 'var(--font-size-ui)', cursor: 'pointer', letterSpacing: '0.02em' }}
         >
           {theme === 'dark' ? '☀' : '☾'}
         </button>
@@ -112,7 +112,7 @@ function AppNav({ onOpenSettings }: { onOpenSettings: () => void }) {
           onClick={onOpenSettings}
           aria-label="Settings"
           className="btn-outline-hover"
-          style={{ background: 'none', border: '1px solid var(--border-muted)', borderRadius: 4, padding: '4px 8px', color: 'var(--text-3)', fontSize: 14, cursor: 'pointer', lineHeight: 1 }}
+          style={{ background: 'none', border: '1px solid var(--border-muted)', borderRadius: 4, padding: '4px 8px', color: 'var(--text-3)', fontSize: 'var(--font-size-title)', cursor: 'pointer', lineHeight: 1 }}
         >
           ⚙
         </button>

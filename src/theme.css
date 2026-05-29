@@ -1,14 +1,36 @@
 /* src/theme.css — CSS custom properties for dark/light themes */
 
+/* ─── Typography tokens ──────────────────────────────────────────────────── */
+:root {
+  --font-serif: "Georgia", "Times New Roman", serif;
+  --font-sans:  system-ui, -apple-system, sans-serif;
+  --font-mono:  ui-monospace, monospace;
+
+  --font-size-display:  28px;
+  --font-size-headline: 20px;
+  --font-size-wordmark: 15px;
+  --font-size-title:    14px;
+  --font-size-body:     13px;
+  --font-size-ui:       12px;
+  --font-size-label:    11px;
+
+  --tracking-tight:   0.01em;
+  --tracking-wordmark: 0.04em;
+  --tracking-wide:    0.06em;
+  --tracking-wider:   0.08em;
+  --tracking-label:   0.1em;
+  --tracking-section: 0.12em;
+}
+
 :root[data-theme="dark"] {
   --bg:            #09090f;
   --bg-subtle:     #0d0d14;
   --bg-panel:      #161622;
-  --bg-card:       #111111;
+  --bg-card:       #0f0f1a;
   --bg-elevated:   #1a1a2a;
   --bg-active:     #1e2535;
-  --bg-viewer:     #000000;
-  --bg-filmstrip:  #0a0a0a;
+  --bg-viewer:     #08080f;
+  --bg-filmstrip:  #09090e;
 
   --border:        #1e1e2e;
   --border-dim:    #252535;
@@ -144,6 +166,8 @@
 :root[data-theme="light"] .f3 div.card-inner.f3-path-to-main {
   outline-color: rgba(28, 27, 24, 0.4);
 }
+
+@keyframes photo-spin { to { transform: rotate(360deg); } }
 
 /* Reduced motion — disable animations and transitions for users who prefer it */
 @media (prefers-reduced-motion: reduce) {

@@ -23,14 +23,14 @@ export default function MetadataPanel({ onNavigate }: { onNavigate?: (dir: 'prev
     return () => window.removeEventListener('keydown', handleEsc);
   }, [isTaggingMode, dispatch]);
 
-  if (!activePhoto) return <div style={{ padding: 16, color: 'var(--text-3)', fontSize: 13 }}>No photo selected</div>;
+  if (!activePhoto) return <div style={{ padding: 16, color: 'var(--text-3)', fontSize: 'var(--font-size-body)' }}>No photo selected</div>;
 
   const metaReadOnly = (!isEditing && !alwaysEdit) || isTaggingMode;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <div style={{ padding: '10px 12px 6px', borderBottom: '1px solid var(--border-dim)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ color: 'var(--text-1)', fontSize: 12, fontWeight: 'bold', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{activePhoto.file}</div>
+        <div style={{ color: 'var(--text-1)', fontSize: 'var(--font-size-ui)', fontWeight: 'bold', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{activePhoto.file}</div>
         {!isTaggingMode && !alwaysEdit && (
           <button
             onClick={() => setIsEditing(e => !e)}
@@ -40,7 +40,7 @@ export default function MetadataPanel({ onNavigate }: { onNavigate?: (dir: 'prev
               border: `1px solid ${isEditing ? 'var(--border-muted)' : 'transparent'}`,
               borderRadius: 3, padding: '2px 8px',
               color: isEditing ? 'var(--text-3)' : 'var(--accent)',
-              fontSize: 11, cursor: 'pointer',
+              fontSize: 'var(--font-size-label)', cursor: 'pointer',
             }}
           >
             {isEditing ? 'Done' : 'Edit'}
@@ -55,7 +55,7 @@ export default function MetadataPanel({ onNavigate }: { onNavigate?: (dir: 'prev
 
       {/* Album assignment */}
       <div style={{ padding: '8px 12px', borderTop: '1px solid var(--border-dim)' }}>
-        <div style={{ fontSize: 10, fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-4)', marginBottom: 5 }}>
+        <div style={{ fontSize: 'var(--font-size-label)', fontWeight: 500, letterSpacing: 'var(--tracking-wider)', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 5 }}>
           Album
         </div>
         <AlbumPicker />
@@ -70,7 +70,7 @@ export default function MetadataPanel({ onNavigate }: { onNavigate?: (dir: 'prev
             width: '100%', background: showFaces ? 'rgba(240,176,96,.15)' : 'var(--bg-elevated)',
             border: `1px solid ${showFaces ? 'rgba(240,176,96,.5)' : 'var(--border-muted)'}`,
             borderRadius: 4, padding: '6px 0', color: showFaces ? 'var(--amber)' : 'var(--text-3)',
-            fontSize: 12, cursor: 'pointer',
+            fontSize: 'var(--font-size-ui)', cursor: 'pointer',
           }}
         >
           👤 {showFaces ? 'Hide faces' : 'Show faces'}
@@ -83,7 +83,7 @@ export default function MetadataPanel({ onNavigate }: { onNavigate?: (dir: 'prev
             width: '100%', background: isTaggingMode ? 'var(--btn-toggle-on-bg)' : 'var(--btn-primary-bg)',
             border: `1px solid ${isTaggingMode ? 'var(--btn-toggle-on-border)' : 'var(--btn-primary-border)'}`,
             borderRadius: 4, padding: '6px 0', color: isTaggingMode ? 'var(--btn-toggle-on-text)' : 'var(--btn-primary-text)',
-            fontSize: 12, cursor: 'pointer',
+            fontSize: 'var(--font-size-ui)', cursor: 'pointer',
           }}
         >
           {isTaggingMode ? '✕ Close face tag editor' : 'Face tag editor'}

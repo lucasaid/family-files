@@ -117,7 +117,7 @@ export default function AlbumPicker() {
           border: `1px solid ${open ? 'var(--overlay-border)' : 'var(--input-border)'}`,
           borderRadius: 3, padding: '5px 10px',
           color: currentAlbum ? 'var(--text-1)' : 'var(--text-4)',
-          fontSize: 12, fontFamily: 'system-ui, sans-serif',
+          fontSize: 'var(--font-size-ui)', fontFamily: 'var(--font-sans)',
           cursor: moving ? 'wait' : 'pointer',
           transition: 'border-color 0.15s, background 0.15s',
           textAlign: 'left',
@@ -152,7 +152,7 @@ export default function AlbumPicker() {
             <div style={{ position: 'relative' }}>
               <span style={{
                 position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)',
-                fontSize: 11, color: 'var(--overlay-search-icon)', pointerEvents: 'none', userSelect: 'none',
+                fontSize: 'var(--font-size-label)', color: 'var(--overlay-search-icon)', pointerEvents: 'none', userSelect: 'none',
               }}>
                 ⌕
               </span>
@@ -167,9 +167,9 @@ export default function AlbumPicker() {
                   background: 'rgba(255,255,255,.04)',
                   border: '1px solid var(--overlay-input-border)',
                   borderRadius: 4, padding: '5px 8px 5px 24px',
-                  color: 'var(--overlay-text)', fontSize: 12,
-                  fontFamily: 'system-ui, sans-serif',
-                  outline: 'none', letterSpacing: '0.01em',
+                  color: 'var(--overlay-text)', fontSize: 'var(--font-size-ui)',
+                  fontFamily: 'var(--font-sans)',
+                  letterSpacing: 'var(--tracking-tight)',
                 }}
               />
             </div>
@@ -181,7 +181,7 @@ export default function AlbumPicker() {
             style={{ maxHeight: ITEM_HEIGHT * MAX_VISIBLE, overflowY: 'auto', overflowX: 'hidden' }}
           >
             {filtered.length === 0 && !canAddNew && (
-              <div style={{ padding: '10px 12px', fontSize: 11, color: 'var(--overlay-text-dim)', fontStyle: 'italic' }}>
+              <div style={{ padding: '10px 12px', fontSize: 'var(--font-size-label)', color: 'var(--overlay-text-dim)', fontStyle: 'italic' }}>
                 No albums found
               </div>
             )}
@@ -203,7 +203,7 @@ export default function AlbumPicker() {
                     height: ITEM_HEIGHT,
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                     paddingLeft: 12 + depth * 14, paddingRight: 12,
-                    fontSize: 12,
+                    fontSize: 'var(--font-size-ui)',
                     color: isActive ? 'var(--overlay-text)' : isCurrent ? 'var(--accent)' : 'var(--overlay-text-muted)',
                     background: isActive ? 'var(--overlay-active-bg)' : 'transparent',
                     borderLeft: `2px solid ${isActive ? 'var(--overlay-active-border)' : 'transparent'}`,
@@ -225,7 +225,7 @@ export default function AlbumPicker() {
                     ) : label}
                   </span>
                   {isCurrent && (
-                    <span style={{ fontSize: 9, color: 'var(--overlay-active-border)', letterSpacing: '0.06em' }}>current</span>
+                    <span style={{ fontSize: 9, color: 'var(--overlay-active-border)', letterSpacing: 'var(--tracking-wide)' }}>current</span>
                   )}
                 </div>
               );
@@ -239,7 +239,7 @@ export default function AlbumPicker() {
                   height: ITEM_HEIGHT,
                   display: 'flex', alignItems: 'center', gap: 7,
                   padding: '0 12px',
-                  fontSize: 12,
+                  fontSize: 'var(--font-size-ui)',
                   color: activeIdx === filtered.length ? 'var(--overlay-new-text-active)' : 'var(--overlay-new-text)',
                   background: activeIdx === filtered.length ? 'var(--overlay-new-bg-active)' : 'transparent',
                   borderTop: filtered.length > 0 ? '1px solid rgba(255,255,255,.05)' : 'none',
@@ -249,7 +249,7 @@ export default function AlbumPicker() {
                   userSelect: 'none',
                 }}
               >
-                <span style={{ fontSize: 14, lineHeight: 1, opacity: 0.8 }}>+</span>
+                <span style={{ fontSize: 'var(--font-size-title)', lineHeight: 1, opacity: 0.8 }}>+</span>
                 <span>
                   Create <span style={{ color: activeIdx === filtered.length ? 'var(--overlay-new-mark-active)' : 'var(--overlay-new-mark)', fontStyle: 'italic' }}>"{trimmed}"</span>
                 </span>
@@ -259,9 +259,9 @@ export default function AlbumPicker() {
 
           {/* Footer */}
           <div style={{ padding: '5px 12px', borderTop: '1px solid rgba(255,255,255,.04)', display: 'flex', gap: 10 }}>
-            <span style={{ fontSize: 9, color: 'var(--overlay-text-hint)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>↑↓ navigate</span>
-            <span style={{ fontSize: 9, color: 'var(--overlay-text-hint)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>↵ move</span>
-            <span style={{ fontSize: 9, color: 'var(--overlay-text-hint)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>esc cancel</span>
+            <span style={{ fontSize: 9, color: 'var(--overlay-text-hint)', letterSpacing: 'var(--tracking-wide)', textTransform: 'uppercase' }}>↑↓ navigate</span>
+            <span style={{ fontSize: 9, color: 'var(--overlay-text-hint)', letterSpacing: 'var(--tracking-wide)', textTransform: 'uppercase' }}>↵ move</span>
+            <span style={{ fontSize: 9, color: 'var(--overlay-text-hint)', letterSpacing: 'var(--tracking-wide)', textTransform: 'uppercase' }}>esc cancel</span>
           </div>
         </div>
       )}

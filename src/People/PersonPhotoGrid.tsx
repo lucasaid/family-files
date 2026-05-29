@@ -43,8 +43,8 @@ const PhotoCell = memo(function PhotoCell({ photo, isPrimary, onOpen, onSetPrima
           position: 'absolute', top: 5, left: 5,
           background: 'var(--accent)', borderRadius: 3,
           padding: '2px 5px', fontSize: 9, fontWeight: 600,
-          letterSpacing: '0.06em', textTransform: 'uppercase',
-          color: '#fff', lineHeight: 1.4, pointerEvents: 'none',
+          letterSpacing: 'var(--tracking-wide)', textTransform: 'uppercase',
+          color: 'var(--text-on-accent)', lineHeight: 1.4, pointerEvents: 'none',
         }}>
           Avatar
         </div>
@@ -58,8 +58,8 @@ const PhotoCell = memo(function PhotoCell({ photo, isPrimary, onOpen, onSetPrima
             position: 'absolute', top: 5, left: 5,
             background: 'rgba(0,0,0,0.6)', border: 'none', borderRadius: 3,
             padding: '3px 6px', fontSize: 9, fontWeight: 600,
-            letterSpacing: '0.06em', textTransform: 'uppercase',
-            color: '#fff', cursor: 'pointer', lineHeight: 1.4,
+            letterSpacing: 'var(--tracking-wide)', textTransform: 'uppercase',
+            color: 'var(--overlay-text)', cursor: 'pointer', lineHeight: 1.4,
           }}
         >
           Set avatar
@@ -69,7 +69,7 @@ const PhotoCell = memo(function PhotoCell({ photo, isPrimary, onOpen, onSetPrima
       {/* Filename / date overlay */}
       {isHovered && (
         <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'linear-gradient(to top, rgba(0,0,0,.7) 0%, transparent 100%)', padding: '14px 8px 6px', pointerEvents: 'none' }}>
-          <span style={{ fontSize: 10, color: 'rgba(255,255,255,.7)', letterSpacing: '0.04em', lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>
+          <span style={{ fontSize: 10, color: 'rgba(255,255,255,.7)', letterSpacing: 'var(--tracking-wordmark)', lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>
             {photo.date ?? photo.file}
           </span>
         </div>
@@ -98,7 +98,7 @@ export default function PersonPhotoGrid({ personId, primaryPhotoFile, onSetPrima
   }, [dispatch, navigate, personId]);
 
   if (photos.length === 0) {
-    return <div style={{ color: 'var(--text-4)', fontSize: 13, fontStyle: 'italic', padding: '8px 0' }}>No photos tagged.</div>;
+    return <div style={{ color: 'var(--text-4)', fontSize: 'var(--font-size-body)', fontStyle: 'italic', padding: '8px 0' }}>No photos tagged.</div>;
   }
 
   // The effective primary: explicit choice, or first photo as default

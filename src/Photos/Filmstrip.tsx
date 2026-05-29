@@ -9,18 +9,25 @@ interface ItemProps {
 
 const FilmstripItem = memo(function FilmstripItem({ photo, isActive, onSelect }: ItemProps) {
   return (
-    <img
-      src={photo.thumbnailPath ?? photo.path}
-      alt={photo.file}
-      loading="lazy"
-      decoding="async"
+    <button
+      type="button"
       onClick={() => onSelect(photo)}
+      aria-label={photo.file}
+      aria-pressed={isActive}
       style={{
-        width: 56, height: 44, objectFit: 'cover', flexShrink: 0,
-        borderRadius: 2, cursor: 'pointer',
+        padding: 0, background: 'none', flexShrink: 0, display: 'block',
         border: isActive ? '2px solid var(--accent)' : '2px solid transparent',
+        borderRadius: 2, cursor: 'pointer',
       }}
-    />
+    >
+      <img
+        src={photo.thumbnailPath ?? photo.path}
+        alt=""
+        loading="lazy"
+        decoding="async"
+        style={{ width: 56, height: 44, objectFit: 'cover', display: 'block', borderRadius: 1 }}
+      />
+    </button>
   );
 });
 

@@ -160,7 +160,7 @@ export default function FaceTagger({ filePath, fileName }: Props) {
             <div style={{ position: 'relative' }}>
               <span style={{
                 position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)',
-                fontSize: 11, color: 'var(--overlay-search-icon)', pointerEvents: 'none', userSelect: 'none',
+                fontSize: 'var(--font-size-label)', color: 'var(--overlay-search-icon)', pointerEvents: 'none', userSelect: 'none',
               }}>
                 ⌕
               </span>
@@ -178,16 +178,15 @@ export default function FaceTagger({ filePath, fileName }: Props) {
                   borderRadius: 4,
                   padding: '5px 8px 5px 24px',
                   color: 'var(--overlay-text)',
-                  fontSize: 12,
-                  fontFamily: 'system-ui, sans-serif',
-                  outline: 'none',
-                  letterSpacing: '0.01em',
+                  fontSize: 'var(--font-size-ui)',
+                  fontFamily: 'var(--font-sans)',
+                  letterSpacing: 'var(--tracking-tight)',
                 }}
               />
             </div>
             {saving && (
               <div style={{
-                fontSize: 10, color: 'var(--accent)', letterSpacing: '0.08em',
+                fontSize: 10, color: 'var(--accent)', letterSpacing: 'var(--tracking-wider)',
                 textTransform: 'uppercase', marginTop: 5, textAlign: 'center',
                 animation: 'facePulse 1.2s ease-in-out infinite',
               }}>
@@ -208,7 +207,7 @@ export default function FaceTagger({ filePath, fileName }: Props) {
             {filteredPeople.length === 0 && !canAddNew && (
               <div style={{
                 padding: '10px 12px',
-                fontSize: 11, color: 'var(--overlay-text-dim)',
+                fontSize: 'var(--font-size-label)', color: 'var(--overlay-text-dim)',
                 fontStyle: 'italic', letterSpacing: '0.02em',
               }}>
                 No people found
@@ -231,13 +230,13 @@ export default function FaceTagger({ filePath, fileName }: Props) {
                     height: ITEM_HEIGHT,
                     display: 'flex', alignItems: 'center',
                     padding: '0 12px',
-                    fontSize: 12,
+                    fontSize: 'var(--font-size-ui)',
                     color: isActive ? 'var(--overlay-text)' : 'var(--overlay-text-muted)',
                     background: isActive ? 'var(--overlay-active-bg)' : 'transparent',
                     cursor: saving ? 'wait' : 'pointer',
                     transition: 'background 0.08s, color 0.08s',
                     borderLeft: `2px solid ${isActive ? 'var(--overlay-active-border)' : 'transparent'}`,
-                    letterSpacing: '0.01em',
+                    letterSpacing: 'var(--tracking-tight)',
                     userSelect: 'none',
                     position: 'relative',
                   }}
@@ -263,7 +262,7 @@ export default function FaceTagger({ filePath, fileName }: Props) {
                   height: ITEM_HEIGHT,
                   display: 'flex', alignItems: 'center', gap: 7,
                   padding: '0 12px',
-                  fontSize: 12,
+                  fontSize: 'var(--font-size-ui)',
                   color: activeIdx === filteredPeople.length ? 'var(--overlay-new-text-active)' : 'var(--overlay-new-text)',
                   background: activeIdx === filteredPeople.length ? 'var(--overlay-new-bg-active)' : 'transparent',
                   borderTop: filteredPeople.length > 0 ? '1px solid rgba(255,255,255,.05)' : 'none',
@@ -273,7 +272,7 @@ export default function FaceTagger({ filePath, fileName }: Props) {
                   userSelect: 'none',
                 }}
               >
-                <span style={{ fontSize: 14, lineHeight: 1, opacity: 0.8 }}>+</span>
+                <span style={{ fontSize: 'var(--font-size-title)', lineHeight: 1, opacity: 0.8 }}>+</span>
                 <span>
                   Add <span style={{ color: activeIdx === filteredPeople.length ? 'var(--overlay-new-mark-active)' : 'var(--overlay-new-mark)', fontStyle: 'italic' }}>"{trimmed}"</span>
                 </span>
@@ -287,9 +286,9 @@ export default function FaceTagger({ filePath, fileName }: Props) {
             borderTop: '1px solid rgba(255,255,255,.04)',
             display: 'flex', gap: 10,
           }}>
-            <span style={{ fontSize: 9, color: 'var(--overlay-text-hint)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>↑↓ navigate</span>
-            <span style={{ fontSize: 9, color: 'var(--overlay-text-hint)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>↵ select</span>
-            <span style={{ fontSize: 9, color: 'var(--overlay-text-hint)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>esc cancel</span>
+            <span style={{ fontSize: 9, color: 'var(--overlay-text-hint)', letterSpacing: 'var(--tracking-wide)', textTransform: 'uppercase' }}>↑↓ navigate</span>
+            <span style={{ fontSize: 9, color: 'var(--overlay-text-hint)', letterSpacing: 'var(--tracking-wide)', textTransform: 'uppercase' }}>↵ select</span>
+            <span style={{ fontSize: 9, color: 'var(--overlay-text-hint)', letterSpacing: 'var(--tracking-wide)', textTransform: 'uppercase' }}>esc cancel</span>
           </div>
         </div>
       )}

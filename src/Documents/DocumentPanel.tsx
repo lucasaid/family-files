@@ -11,7 +11,7 @@ export default function DocumentPanel() {
   const { activeDocument, documents } = state;
 
   if (!activeDocument) {
-    return <div style={{ padding: 24, color: 'var(--text-4)', fontSize: 13 }}>Select a document from the list.</div>;
+    return <div style={{ padding: 24, color: 'var(--text-4)', fontSize: 'var(--font-size-body)' }}>Select a document from the list.</div>;
   }
 
   const deleteDoc = async () => {
@@ -30,10 +30,10 @@ export default function DocumentPanel() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column' }}>
       <div style={{ borderBottom: '1px solid var(--border)', padding: '8px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span style={{ color: 'var(--text-1)', fontSize: 13, fontWeight: 'bold' }}>{activeDocument.title}</span>
+        <span style={{ color: 'var(--text-1)', fontSize: 'var(--font-size-body)', fontWeight: 'bold' }}>{activeDocument.title}</span>
         <button onClick={deleteDoc}
           aria-label={`Delete ${activeDocument.title}`}
-          style={{ background: 'none', border: 'none', color: 'var(--color-error)', cursor: 'pointer', fontSize: 12 }}>
+          style={{ background: 'none', border: 'none', color: 'var(--color-error)', cursor: 'pointer', fontSize: 'var(--font-size-ui)' }}>
           Delete
         </button>
       </div>

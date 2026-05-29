@@ -161,8 +161,8 @@ export default function FamilyTree() {
         color: 'var(--text-4)',
       }}>
         <div style={{ fontSize: 40 }}>🌳</div>
-        <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-2)' }}>No family tree found</div>
-        <div style={{ fontSize: 13 }}>
+        <div style={{ fontSize: 'var(--font-size-wordmark)', fontWeight: 500, color: 'var(--text-2)' }}>No family tree found</div>
+        <div style={{ fontSize: 'var(--font-size-body)' }}>
           Add a <code style={{ background: 'var(--bg-elevated)', padding: '2px 6px', borderRadius: 3 }}>family-tree.ged</code> file to your project folder to get started.
         </div>
       </div>

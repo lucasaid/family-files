@@ -87,10 +87,10 @@ const AlbumCell = memo(function AlbumCell({ name, count, coverPhoto, onClick }: 
         display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
         padding: '10px 10px 10px', pointerEvents: 'none',
       }}>
-        <span style={{ fontFamily: '"Georgia", "Times New Roman", serif', fontSize: 13, color: 'rgba(255,255,255,.9)', letterSpacing: '0.01em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <span style={{ fontFamily: 'var(--font-sans)', fontSize: 'var(--font-size-body)', color: 'rgba(255,255,255,.9)', letterSpacing: 'var(--tracking-tight)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {name}
         </span>
-        <span style={{ fontSize: 10, color: 'rgba(255,255,255,.4)', letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: 2 }}>
+        <span style={{ fontSize: 10, color: 'rgba(255,255,255,.4)', letterSpacing: 'var(--tracking-wider)', textTransform: 'uppercase', marginTop: 2 }}>
           {count} {count === 1 ? 'photo' : 'photos'}
         </span>
       </div>
@@ -144,7 +144,7 @@ export default function AlbumList() {
   const inputStyle: React.CSSProperties = {
     background: 'var(--input-bg)', border: '1px solid var(--input-border)',
     borderRadius: 3, padding: '5px 10px', color: 'var(--input-text)',
-    fontSize: 12, fontFamily: 'system-ui, sans-serif', outline: 'none',
+    fontSize: 'var(--font-size-ui)', fontFamily: 'var(--font-sans)',
   };
 
   const handleAlbumClick = useCallback((name: string) => {
@@ -174,14 +174,14 @@ export default function AlbumList() {
       }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, flexShrink: 0 }}>
           <h1 style={{
-            fontFamily: '"Georgia", "Times New Roman", serif',
-            fontSize: 20, fontWeight: 400, color: 'var(--text-heading)',
-            margin: 0, letterSpacing: '0.01em',
+            fontFamily: 'var(--font-serif)',
+            fontSize: 'var(--font-size-headline)', fontWeight: 400, color: 'var(--text-heading)',
+            margin: 0, letterSpacing: 'var(--tracking-tight)',
           }}>
             Albums
           </h1>
           {rootAlbums.length > 0 && (
-            <span style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-4)' }}>
+            <span style={{ fontSize: 'var(--font-size-label)', fontWeight: 500, letterSpacing: 'var(--tracking-wider)', textTransform: 'uppercase', color: 'var(--text-4)' }}>
               {search.trim() && filteredAlbums.length !== rootAlbums.length
                 ? `${filteredAlbums.length} of ${rootAlbums.length}`
                 : `${rootAlbums.length} ${rootAlbums.length === 1 ? 'album' : 'albums'}`}
@@ -196,11 +196,13 @@ export default function AlbumList() {
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Search albums…"
+              aria-label="Search albums"
               style={{ ...inputStyle, flex: 1 }}
             />
             <select
               value={searchField}
               onChange={e => setSearchField(e.target.value as SearchField)}
+              aria-label="Search by field"
               style={{ ...inputStyle, flexShrink: 0, cursor: 'pointer' }}
             >
               {SEARCH_FIELDS.map(f => (
@@ -210,6 +212,7 @@ export default function AlbumList() {
             <select
               value={sort}
               onChange={e => setSort(e.target.value as typeof sort)}
+              aria-label="Sort order"
               style={{ ...inputStyle, flexShrink: 0, cursor: 'pointer' }}
             >
               <option value="title-asc">Title A–Z</option>
@@ -225,8 +228,8 @@ export default function AlbumList() {
             onClick={() => setCreating(true)}
             style={{
               background: 'none', border: '1px solid var(--border-muted)', borderRadius: 3,
-              padding: '4px 12px', color: 'var(--accent)', fontSize: 11, flexShrink: 0,
-              fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer',
+              padding: '4px 12px', color: 'var(--accent)', fontSize: 'var(--font-size-label)', flexShrink: 0,
+              fontWeight: 500, letterSpacing: 'var(--tracking-wider)', textTransform: 'uppercase', cursor: 'pointer',
             }}
           >
             + New album
@@ -246,25 +249,25 @@ export default function AlbumList() {
             style={{
               flex: 1, background: 'var(--input-bg)', border: '1px solid var(--input-border)',
               borderRadius: 3, padding: '5px 10px', color: 'var(--input-text)',
-              fontSize: 13, fontFamily: 'system-ui, sans-serif', outline: 'none',
+              fontSize: 'var(--font-size-body)', fontFamily: 'var(--font-sans)',
             }}
           />
-          <button onClick={handleCreate} style={{ background: 'var(--btn-save-bg)', border: '1px solid var(--btn-save-border)', borderRadius: 3, padding: '5px 12px', color: 'var(--btn-save-text)', fontSize: 11, letterSpacing: '0.06em', textTransform: 'uppercase', cursor: 'pointer' }}>
+          <button onClick={handleCreate} style={{ background: 'var(--btn-save-bg)', border: '1px solid var(--btn-save-border)', borderRadius: 3, padding: '5px 12px', color: 'var(--btn-save-text)', fontSize: 'var(--font-size-label)', letterSpacing: 'var(--tracking-wide)', textTransform: 'uppercase', cursor: 'pointer' }}>
             Create
           </button>
-          <button onClick={() => { setCreating(false); setNewName(''); }} style={{ background: 'none', border: 'none', color: 'var(--text-4)', fontSize: 11, cursor: 'pointer', padding: '5px 8px' }}>
+          <button onClick={() => { setCreating(false); setNewName(''); }} style={{ background: 'none', border: 'none', color: 'var(--text-4)', fontSize: 'var(--font-size-label)', cursor: 'pointer', padding: '5px 8px' }}>
             Cancel
           </button>
         </div>
       )}
 
       {rootAlbums.length === 0 && !creating && (
-        <div style={{ padding: '32px 0', color: 'var(--text-4)', fontSize: 13, fontStyle: 'italic' }}>
+        <div style={{ padding: '32px 0', color: 'var(--text-4)', fontSize: 'var(--font-size-body)', fontStyle: 'italic' }}>
           No albums yet. Create one to organise your photos.
         </div>
       )}
       {albums.length > 0 && filteredAlbums.length === 0 && (
-        <div style={{ padding: '32px 0', color: 'var(--text-4)', fontSize: 13, fontStyle: 'italic' }}>
+        <div style={{ padding: '32px 0', color: 'var(--text-4)', fontSize: 'var(--font-size-body)', fontStyle: 'italic' }}>
           No albums match "{search}".
         </div>
       )}

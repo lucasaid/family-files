@@ -24,9 +24,9 @@ const PhotoCell = memo(function PhotoCell({ photo, onClick }: CellProps) {
     >
       <img src={photo.thumbnailPath ?? photo.path} alt={photo.file} loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transform: isHovered ? 'scale(1.05)' : 'scale(1)', transition: 'transform 0.25s ease-out' }} />
       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,.75) 0%, rgba(0,0,0,.1) 45%, transparent 100%)', opacity: isHovered ? 1 : 0, transition: 'opacity 0.2s ease-out', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '10px 10px 8px', pointerEvents: 'none' }}>
-        {photo.date && <span style={{ fontSize: 10, color: 'rgba(255,255,255,.5)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 2 }}>{photo.date.slice(0, 10).replace(/:/g, '–')}</span>}
-        <span style={{ fontSize: 11, color: 'rgba(255,255,255,.85)', letterSpacing: '0.01em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{photo.file}</span>
-        {photo.faces.length > 0 && <span style={{ fontSize: 10, color: 'rgba(240,176,96,.7)', marginTop: 3, letterSpacing: '0.04em' }}>{photo.faces.map(f => f.name).join(', ')}</span>}
+        {photo.date && <span style={{ fontSize: 10, color: 'rgba(255,255,255,.5)', letterSpacing: 'var(--tracking-wide)', textTransform: 'uppercase', marginBottom: 2 }}>{photo.date.slice(0, 10).replace(/:/g, '–')}</span>}
+        <span style={{ fontSize: 'var(--font-size-label)', color: 'rgba(255,255,255,.85)', letterSpacing: 'var(--tracking-tight)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{photo.file}</span>
+        {photo.faces.length > 0 && <span style={{ fontSize: 10, color: 'rgba(240,176,96,.7)', marginTop: 3, letterSpacing: 'var(--tracking-wordmark)' }}>{photo.faces.map(f => f.name).join(', ')}</span>}
       </div>
       {photo.rating != null && photo.rating > 0 && (
         <div style={{ position: 'absolute', top: 6, right: 6, background: 'rgba(0,0,0,.65)', borderRadius: 3, padding: '2px 5px', fontSize: 10, color: 'var(--amber)', letterSpacing: '0.5px', pointerEvents: 'none' }}>
@@ -77,10 +77,10 @@ const SubAlbumCell = memo(function SubAlbumCell({ albumPath, label, count, cover
         display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
         padding: '10px 10px 10px', pointerEvents: 'none',
       }}>
-        <span style={{ fontFamily: '"Georgia", "Times New Roman", serif', fontSize: 13, color: 'rgba(255,255,255,.9)', letterSpacing: '0.01em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <span style={{ fontFamily: 'var(--font-serif)', fontSize: 'var(--font-size-body)', color: 'rgba(255,255,255,.9)', letterSpacing: 'var(--tracking-tight)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {label}
         </span>
-        <span style={{ fontSize: 10, color: 'rgba(255,255,255,.4)', letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: 2 }}>
+        <span style={{ fontSize: 10, color: 'rgba(255,255,255,.4)', letterSpacing: 'var(--tracking-wider)', textTransform: 'uppercase', marginTop: 2 }}>
           {count} {count === 1 ? 'photo' : 'photos'}
         </span>
       </div>
@@ -134,7 +134,7 @@ export default function AlbumView({ albumPath }: { albumPath: string }) {
         <button
           onClick={() => navigate('/albums')}
           className="btn-ghost-hover"
-          style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: 'var(--text-3)', fontSize: 11, fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase' }}
+          style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: 'var(--text-3)', fontSize: 'var(--font-size-label)', fontWeight: 500, letterSpacing: 'var(--tracking-wider)', textTransform: 'uppercase' }}
         >
           ← Albums
         </button>
@@ -143,16 +143,16 @@ export default function AlbumView({ albumPath }: { albumPath: string }) {
           const isLast = i === segments.length - 1;
           return (
             <React.Fragment key={segPath}>
-              <span style={{ color: 'var(--border-muted)', fontSize: 11 }}>/</span>
+              <span style={{ color: 'var(--border-muted)', fontSize: 'var(--font-size-label)' }}>/</span>
               {isLast ? (
-                <h1 style={{ fontFamily: '"Georgia", "Times New Roman", serif', fontSize: 20, fontWeight: 400, color: 'var(--text-heading)', margin: 0, letterSpacing: '0.01em' }}>
+                <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'var(--font-size-headline)', fontWeight: 400, color: 'var(--text-heading)', margin: 0, letterSpacing: 'var(--tracking-tight)' }}>
                   {seg}
                 </h1>
               ) : (
                 <button
                   onClick={() => navigate(`/albums/${segPath}`)}
                   className="btn-ghost-hover"
-                  style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: 'var(--text-3)', fontSize: 13, fontFamily: '"Georgia", "Times New Roman", serif' }}
+                  style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: 'var(--text-3)', fontSize: 'var(--font-size-body)', fontFamily: 'var(--font-serif)' }}
                 >
                   {seg}
                 </button>
@@ -160,7 +160,7 @@ export default function AlbumView({ albumPath }: { albumPath: string }) {
             </React.Fragment>
           );
         })}
-        <span style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-4)' }}>
+        <span style={{ fontSize: 'var(--font-size-label)', fontWeight: 500, letterSpacing: 'var(--tracking-wider)', textTransform: 'uppercase', color: 'var(--text-4)' }}>
           {photos.length} {photos.length === 1 ? 'photo' : 'photos'}
           {subAlbums.length > 0 && ` · ${subAlbums.length} ${subAlbums.length === 1 ? 'album' : 'albums'}`}
         </span>
@@ -169,7 +169,7 @@ export default function AlbumView({ albumPath }: { albumPath: string }) {
       {/* Sub-albums grid */}
       {subAlbums.length > 0 && (
         <div style={{ marginBottom: 24 }}>
-          <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 10 }}>
+          <div style={{ fontSize: 'var(--font-size-label)', fontWeight: 600, letterSpacing: 'var(--tracking-label)', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 10 }}>
             Albums
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 3 }}>
@@ -189,14 +189,14 @@ export default function AlbumView({ albumPath }: { albumPath: string }) {
 
       {/* Photos in this album */}
       {photos.length === 0 && subAlbums.length === 0 && (
-        <div style={{ padding: '32px 0', color: 'var(--text-4)', fontSize: 13, fontStyle: 'italic' }}>
+        <div style={{ padding: '32px 0', color: 'var(--text-4)', fontSize: 'var(--font-size-body)', fontStyle: 'italic' }}>
           No photos in this album yet.
         </div>
       )}
       {photos.length > 0 && (
         <>
           {subAlbums.length > 0 && (
-            <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 10 }}>
+            <div style={{ fontSize: 'var(--font-size-label)', fontWeight: 600, letterSpacing: 'var(--tracking-label)', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 10 }}>
               Photos
             </div>
           )}

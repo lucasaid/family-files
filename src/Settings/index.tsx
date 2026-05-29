@@ -1,11 +1,8 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { writeSettings } from '../utils/settings';
 import { FamilyChartPerson } from '../context/types';
-
-function fcName(fc: FamilyChartPerson) {
-  return [fc.data['first name'], fc.data['last name']].filter(Boolean).join(' ');
-}
+import { fcName } from '../utils/people';
 
 function Tip({ kbd, children }: { kbd: string; children: React.ReactNode }) {
   return (
@@ -16,11 +13,11 @@ function Tip({ kbd, children }: { kbd: string; children: React.ReactNode }) {
         background: 'var(--bg)', border: '1px solid var(--border-muted)',
         borderRadius: 4, padding: '1px 6px',
         color: 'var(--text-2)', letterSpacing: '0.03em',
-        fontFamily: 'ui-monospace, monospace',
+        fontFamily: 'var(--font-mono)',
       }}>
         {kbd}
       </span>
-      <span style={{ fontSize: 11, color: 'var(--text-4)', lineHeight: 1.4 }}>{children}</span>
+      <span style={{ fontSize: 'var(--font-size-label)', color: 'var(--text-4)', lineHeight: 1.4 }}>{children}</span>
     </div>
   );
 }
@@ -32,6 +29,39 @@ interface Props {
 export default function SettingsModal({ onClose }: Props) {
   const { state, dispatch } = useAppContext();
   const [query, setQuery] = useState('');
+  const modalRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+
+  // Save previous focus, move focus into modal, restore on close
+  useEffect(() => {
+    previousFocusRef.current = document.activeElement as HTMLElement;
+    closeButtonRef.current?.focus();
+    return () => { previousFocusRef.current?.focus(); };
+  }, []);
+
+  // Focus trap
+  useEffect(() => {
+    const modal = modalRef.current;
+    if (!modal) return;
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') { onClose(); return; }
+      if (e.key !== 'Tab') return;
+      const focusable = Array.from(modal!.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      ));
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey) {
+        if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+      } else {
+        if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    }
+    modal.addEventListener('keydown', onKeyDown);
+    return () => modal.removeEventListener('keydown', onKeyDown);
+  }, [onClose]);
 
   const currentStart = state.settings.familyTreeStartId
     ? state.familyChart?.find(fc => fc.id === state.settings.familyTreeStartId) ?? null
@@ -58,13 +88,6 @@ export default function SettingsModal({ onClose }: Props) {
     setQuery('');
   }
 
-  // Close on Escape
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) { if (e.key === 'Escape') onClose(); }
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
-
   return (
     <div
       onClick={onClose}
@@ -75,6 +98,10 @@ export default function SettingsModal({ onClose }: Props) {
       }}
     >
       <div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="settings-modal-title"
         onClick={e => e.stopPropagation()}
         style={{
           background: 'var(--bg)',
@@ -95,11 +122,13 @@ export default function SettingsModal({ onClose }: Props) {
           borderBottom: '1px solid var(--border)',
           flexShrink: 0,
         }}>
-          <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-1)', letterSpacing: '0.01em' }}>
+          <span id="settings-modal-title" style={{ fontSize: 'var(--font-size-title)', fontWeight: 600, color: 'var(--text-1)', letterSpacing: 'var(--tracking-tight)' }}>
             Settings
           </span>
           <button
+            ref={closeButtonRef}
             onClick={onClose}
+            aria-label="Close settings"
             className="btn-ghost-hover"
             style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-4)', fontSize: 18, lineHeight: 1, padding: '2px 4px' }}
           >
@@ -112,7 +141,7 @@ export default function SettingsModal({ onClose }: Props) {
 
           {/* Setting: photos always in edit mode */}
           <div>
-            <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 6 }}>
+            <div style={{ fontSize: 'var(--font-size-label)', fontWeight: 600, letterSpacing: 'var(--tracking-label)', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 6 }}>
               Photos
             </div>
             <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
@@ -127,8 +156,8 @@ export default function SettingsModal({ onClose }: Props) {
                 style={{ width: 14, height: 14, cursor: 'pointer', accentColor: 'var(--accent)' }}
               />
               <div>
-                <div style={{ fontSize: 13, color: 'var(--text-1)' }}>Always show edit fields</div>
-                <div style={{ fontSize: 11, color: 'var(--text-4)', marginTop: 2 }}>
+                <div style={{ fontSize: 'var(--font-size-body)', color: 'var(--text-1)' }}>Always show edit fields</div>
+                <div style={{ fontSize: 'var(--font-size-label)', color: 'var(--text-4)', marginTop: 2 }}>
                   Photo metadata is always editable — no need to click Edit first.
                 </div>
               </div>
@@ -145,8 +174,8 @@ export default function SettingsModal({ onClose }: Props) {
                 style={{ width: 14, height: 14, cursor: 'pointer', accentColor: 'var(--accent)' }}
               />
               <div>
-                <div style={{ fontSize: 13, color: 'var(--text-1)' }}>Save on navigate away</div>
-                <div style={{ fontSize: 11, color: 'var(--text-4)', marginTop: 2 }}>
+                <div style={{ fontSize: 'var(--font-size-body)', color: 'var(--text-1)' }}>Save on navigate away</div>
+                <div style={{ fontSize: 'var(--font-size-label)', color: 'var(--text-4)', marginTop: 2 }}>
                   Automatically save unsaved metadata changes when switching to another photo.
                 </div>
               </div>
@@ -163,7 +192,7 @@ export default function SettingsModal({ onClose }: Props) {
                 flexDirection: 'column',
                 gap: 6,
               }}>
-                <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-3)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                <div style={{ fontSize: 'var(--font-size-label)', fontWeight: 600, color: 'var(--text-3)', letterSpacing: 'var(--tracking-wide)', textTransform: 'uppercase' }}>
                   How it works
                 </div>
                 <Tip kbd="⌥ ← / ⌥ →">
@@ -185,10 +214,10 @@ export default function SettingsModal({ onClose }: Props) {
 
           {/* Setting: family tree start point */}
           <div>
-            <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 6 }}>
+            <div style={{ fontSize: 'var(--font-size-label)', fontWeight: 600, letterSpacing: 'var(--tracking-label)', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 6 }}>
               Family Tree Start Point
             </div>
-            <div style={{ fontSize: 12, color: 'var(--text-4)', marginBottom: 12 }}>
+            <div style={{ fontSize: 'var(--font-size-ui)', color: 'var(--text-4)', marginBottom: 12 }}>
               The person shown at the centre of the tree when you open Family Tree.
             </div>
 
@@ -201,21 +230,21 @@ export default function SettingsModal({ onClose }: Props) {
                 borderRadius: 6,
               }}>
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-1)' }}>{fcName(currentStart)}</div>
+                  <div style={{ fontSize: 'var(--font-size-body)', fontWeight: 500, color: 'var(--text-1)' }}>{fcName(currentStart)}</div>
                   {currentStart.data.birthday && (
-                    <div style={{ fontSize: 11, color: 'var(--text-4)', marginTop: 2 }}>b. {currentStart.data.birthday}</div>
+                    <div style={{ fontSize: 'var(--font-size-label)', color: 'var(--text-4)', marginTop: 2 }}>b. {currentStart.data.birthday}</div>
                   )}
                 </div>
                 <button
                   onClick={() => select(undefined)}
                   className="btn-ghost-hover"
-                  style={{ background: 'none', border: '1px solid var(--border-muted)', borderRadius: 4, padding: '3px 9px', fontSize: 11, cursor: 'pointer', color: 'var(--text-4)' }}
+                  style={{ background: 'none', border: '1px solid var(--border-muted)', borderRadius: 4, padding: '3px 9px', fontSize: 'var(--font-size-label)', cursor: 'pointer', color: 'var(--text-4)' }}
                 >
                   Clear
                 </button>
               </div>
             ) : (
-              <div style={{ fontSize: 12, color: 'var(--text-4)', fontStyle: 'italic', marginBottom: 12 }}>
+              <div style={{ fontSize: 'var(--font-size-ui)', color: 'var(--text-4)', fontStyle: 'italic', marginBottom: 12 }}>
                 No start point set — tree opens on the first person in the file.
               </div>
             )}
@@ -224,22 +253,22 @@ export default function SettingsModal({ onClose }: Props) {
             {!currentStart && state.familyChart && state.familyChart.length > 0 && (
               <div style={{ border: '1px solid var(--border-muted)', borderRadius: 6, overflow: 'hidden' }}>
                 <div style={{ padding: '9px 12px', borderBottom: '1px solid var(--border-muted)', display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontSize: 12, color: 'var(--text-4)' }}>⌕</span>
+                  <span style={{ fontSize: 'var(--font-size-ui)', color: 'var(--text-4)' }}>⌕</span>
                   <input
                     autoFocus
                     type="text"
                     placeholder="Search family tree…"
                     value={query}
                     onChange={e => setQuery(e.target.value)}
-                    style={{ flex: 1, background: 'none', border: 'none', outline: 'none', fontSize: 13, color: 'var(--text-1)' }}
+                    style={{ flex: 1, background: 'none', border: 'none', fontSize: 'var(--font-size-body)', color: 'var(--text-1)' }}
                   />
                   {query && (
-                    <button onClick={() => setQuery('')} className="btn-ghost-hover" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-4)', fontSize: 14, lineHeight: 1, padding: 0 }}>×</button>
+                    <button type="button" onClick={() => setQuery('')} aria-label="Clear search" className="btn-ghost-hover" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-4)', fontSize: 'var(--font-size-title)', lineHeight: 1, padding: 0 }}>×</button>
                   )}
                 </div>
                 <div style={{ maxHeight: 240, overflowY: 'auto' }}>
                   {candidates.length === 0 ? (
-                    <div style={{ padding: '12px 14px', fontSize: 13, color: 'var(--text-4)' }}>No matches</div>
+                    <div style={{ padding: '12px 14px', fontSize: 'var(--font-size-body)', color: 'var(--text-4)' }}>No matches</div>
                   ) : (
                     candidates.map(fc => {
                       const isSelected = fc.id === state.settings.familyTreeStartId;
@@ -255,15 +284,15 @@ export default function SettingsModal({ onClose }: Props) {
                             display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12,
                           }}
                         >
-                          <span style={{ fontSize: 13, color: isSelected ? 'var(--accent)' : 'var(--text-1)' }}>
+                          <span style={{ fontSize: 'var(--font-size-body)', color: isSelected ? 'var(--accent)' : 'var(--text-1)' }}>
                             {fcName(fc)}
                           </span>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
                             {fc.data.birthday && (
-                              <span style={{ fontSize: 11, color: 'var(--text-4)' }}>b. {fc.data.birthday}</span>
+                              <span style={{ fontSize: 'var(--font-size-label)', color: 'var(--text-4)' }}>b. {fc.data.birthday}</span>
                             )}
                             {isSelected && (
-                              <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--accent)' }}>Selected</span>
+                              <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: 'var(--tracking-wide)', textTransform: 'uppercase', color: 'var(--accent)' }}>Selected</span>
                             )}
                           </div>
                         </button>
@@ -275,7 +304,7 @@ export default function SettingsModal({ onClose }: Props) {
             )}
 
             {!currentStart && !state.familyChart && (
-              <div style={{ fontSize: 12, color: 'var(--text-4)', fontStyle: 'italic' }}>
+              <div style={{ fontSize: 'var(--font-size-ui)', color: 'var(--text-4)', fontStyle: 'italic' }}>
                 No family tree loaded — add a family-tree.ged file to enable this setting.
               </div>
             )}

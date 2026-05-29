@@ -60,12 +60,12 @@ function ZoomableImage({ src, alt }: { src: string; alt: string }) {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* toolbar */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderBottom: '1px solid var(--border-1)', flexShrink: 0 }}>
-        <button onClick={() => setScale(s => Math.min(MAX_SCALE, s * 1.25))} style={btnStyle} title="Zoom in">+</button>
-        <button onClick={() => setScale(s => Math.max(MIN_SCALE, s / 1.25))} style={btnStyle} title="Zoom out">−</button>
-        <span style={{ fontSize: 12, color: 'var(--text-3)', minWidth: 40, textAlign: 'center' }}>
+        <button type="button" onClick={() => setScale(s => Math.min(MAX_SCALE, s * 1.25))} style={btnStyle} aria-label="Zoom in">+</button>
+        <button type="button" onClick={() => setScale(s => Math.max(MIN_SCALE, s / 1.25))} style={btnStyle} aria-label="Zoom out">−</button>
+        <span style={{ fontSize: 'var(--font-size-ui)', color: 'var(--text-3)', minWidth: 40, textAlign: 'center' }}>
           {Math.round(scale * 100)}%
         </span>
-        <button onClick={reset} style={{ ...btnStyle, marginLeft: 4 }} title="Reset">Reset</button>
+        <button type="button" onClick={reset} style={{ ...btnStyle, marginLeft: 4 }} aria-label="Reset zoom">Reset</button>
       </div>
 
       {/* viewport */}
@@ -122,7 +122,7 @@ interface Props { doc: FamilyDocument }
 export default function DocumentViewer({ doc }: Props) {
   if (doc.type === 'note') {
     return (
-      <div style={{ padding: 16, color: 'var(--text-2)', fontSize: 14, whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>
+      <div style={{ padding: 16, color: 'var(--text-2)', fontSize: 'var(--font-size-title)', whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>
         {doc.content || <span style={{ color: 'var(--text-5)' }}>No content.</span>}
       </div>
     );
@@ -152,10 +152,10 @@ export default function DocumentViewer({ doc }: Props) {
 
   return (
     <div style={{ padding: 16 }}>
-      <div style={{ color: 'var(--text-3)', fontSize: 13, marginBottom: 12 }}>{doc.filePath}</div>
+      <div style={{ color: 'var(--text-3)', fontSize: 'var(--font-size-body)', marginBottom: 12 }}>{doc.filePath}</div>
       <button
         onClick={() => shell.openPath(fullPath)}
-        style={{ background: 'var(--btn-primary-bg)', border: '1px solid var(--btn-primary-border)', borderRadius: 4, padding: '6px 16px', color: 'var(--btn-primary-text)', cursor: 'pointer', fontSize: 13 }}
+        style={{ background: 'var(--btn-primary-bg)', border: '1px solid var(--btn-primary-border)', borderRadius: 4, padding: '6px 16px', color: 'var(--btn-primary-text)', cursor: 'pointer', fontSize: 'var(--font-size-body)' }}
       >
         Open in default app
       </button>

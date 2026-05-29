@@ -22,11 +22,11 @@ export default function PeopleList() {
 
   return (
     <div>
-      <div style={{ fontSize: 9, textTransform: 'uppercase', letterSpacing: '.08em', color: 'var(--text-4)', marginBottom: 4 }}>
+      <div style={{ fontSize: 9, textTransform: 'uppercase', letterSpacing: 'var(--tracking-wider)', color: 'var(--text-4)', marginBottom: 4 }}>
         People
       </div>
       {activePhoto.faces.length === 0 && (
-        <div style={{ fontSize: 12, color: 'var(--text-3)' }}>No people tagged</div>
+        <div style={{ fontSize: 'var(--font-size-ui)', color: 'var(--text-3)' }}>No people tagged</div>
       )}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
         {activePhoto.faces.map(face => (
@@ -35,7 +35,7 @@ export default function PeopleList() {
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 4,
               background: 'var(--pill-bg)', border: '1px solid var(--pill-border)',
-              borderRadius: 12, padding: '2px 8px', fontSize: 11, color: 'var(--pill-text)',
+              borderRadius: 12, padding: '2px 8px', fontSize: 'var(--font-size-label)', color: 'var(--pill-text)',
             }}
           >
             <span

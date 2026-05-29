@@ -1,11 +1,15 @@
 // src/utils/people.ts
-import { Person } from '../context/types';
+import { FamilyChartPerson, Person } from '../context/types';
 import { dataPath } from './paths';
 
 const fs = (window as any).require('fs') as typeof import('fs');
 const path = (window as any).require('path') as typeof import('path');
 
 const PEOPLE_PATH = path.join(dataPath, 'people.json');
+
+export function fcName(fc: FamilyChartPerson): string {
+  return [fc.data['first name'], fc.data['last name']].filter(Boolean).join(' ');
+}
 
 export async function readPeopleJson(): Promise<Person[]> {
   try {
