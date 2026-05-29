@@ -7,10 +7,11 @@ import { generateMapThumbnail, getMapUrl, ensureMapThumbnail, deleteMapIfUnshare
 const path = (window as any).require('path') as typeof import('path');
 
 function getMapsDir(photo: Pick<Photo, 'fsPath' | 'album'>): string {
-  // Photos in an album live one subdirectory below the images root; go up an extra level.
-  const imagesDir = photo.album
-    ? path.dirname(path.dirname(photo.fsPath))
-    : path.dirname(photo.fsPath);
+  // album is the full relative path from images root, e.g. 'vacation/2023'.
+  // Go up one level per album segment so we always land at the images root.
+  const depth = photo.album ? photo.album.split('/').length : 0;
+  let imagesDir = path.dirname(photo.fsPath);
+  for (let i = 0; i < depth; i++) imagesDir = path.dirname(imagesDir);
   return path.join(imagesDir, '.maps');
 }
 
