@@ -41,6 +41,11 @@ Show the following EXIF fields in the side panel when viewing a photo:
 
 
 # Features to add/Bugs
-- nested albums??
-- data backups?
+- data backups - should just backup metadata to a compressed file with ext .ff
 - data resets?
+- Slideshows - Immersive/basic
+- Extract metadata on person (Has all image they are in, notes, family tree data ect)
+- Satellite view of map option
+- AI ask local
+- map showing locations people have been in
+- map of all photos
