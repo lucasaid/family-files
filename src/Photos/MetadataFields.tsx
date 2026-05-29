@@ -341,9 +341,13 @@ export default function MetadataFields({ readOnly, alwaysEdit, saveOnNavigate, o
 
       if (newLocation) {
         if (navigator.onLine) {
-          await ensureMapThumbnail(newLocation.lat, newLocation.lng, mapsDir);
+          // Fire-and-forget: don't block the save spinner on tile fetches
+          ensureMapThumbnail(newLocation.lat, newLocation.lng, mapsDir).then(() => {
+            setMapUrl(getMapUrl(mapsDir, newLocation.lat, newLocation.lng));
+          });
+        } else {
+          setMapUrl(getMapUrl(mapsDir, newLocation.lat, newLocation.lng));
         }
-        setMapUrl(getMapUrl(mapsDir, newLocation.lat, newLocation.lng));
       } else {
         setMapUrl(null);
       }
