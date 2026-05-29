@@ -231,7 +231,7 @@ export default function PhotoViewer() {
       setImgDims(null);
       resetZoom();
     }
-  }, [activePhoto, activePhoto?.path, resetZoom]);
+  }, [activePhoto?.fsPath]);
 
   if (!activePhoto) return null;
 
