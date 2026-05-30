@@ -28,19 +28,21 @@ export function parseKeywords(response: string, existing: string[]): string[] {
   // Strip a leading "Keywords:" label the model may echo back
   const cleaned = response.replace(/^keywords?:?\s*/i, '');
   return cleaned
-    .split(/[,\n]/)
+    .split(/[,\n;]/)
     .map(k =>
       k.trim().toLowerCase()
-        .replace(/^["']|["']$/g, '')   // strip surrounding quotes
-        .replace(/[\[\]×(){}]/g, '')   // strip brackets and × symbols
+        .replace(/^["']|["']$/g, '')     // strip surrounding quotes
+        .replace(/^\d+[.)]\s*/, '')      // strip "1. " / "1) " list numbering
+        .replace(/^[•\-*]\s*/, '')       // strip bullet points
+        .replace(/[\[\]×(){}]/g, '')     // strip brackets and × symbols
         .trim()
     )
     .filter(k =>
       k.length > 1 &&
       k.length <= 60 &&
       !existingSet.has(k) &&
-      !/^\d/.test(k) &&              // reject tokens starting with a digit
-      !/\d{2,}/.test(k)              // reject tokens containing 2+ consecutive digits
+      !/^\d+$/.test(k) &&              // reject pure numbers ("0.39", "42")
+      !/^\d+[×x]\d*$/.test(k)          // reject bare scale tokens ("2×", "0.5x")
     );
 }
 
@@ -172,6 +174,7 @@ export function createOllamaProvider(baseUrl: string): AIProvider {
           model: modelId, prompt, images: [input.imageBase64], stream: false,
         });
         const data = JSON.parse(raw);
+        console.log('[AI keywords] raw response:', JSON.stringify(data.response));
         return parseKeywords(data.response ?? '', input.existingKeywords);
       } catch (e) {
         if (e instanceof AIError) throw e;

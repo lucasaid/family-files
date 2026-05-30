@@ -86,8 +86,21 @@ test('parseKeywords: strips brackets and × symbols from coordinate-like tokens'
   expect(result).not.toContain('[0.39');
 });
 
-test('parseKeywords: rejects tokens starting with a digit', () => {
-  expect(parseKeywords('0.39, outdoor, 12px', [])).toEqual(['outdoor']);
+test('parseKeywords: rejects pure numbers', () => {
+  expect(parseKeywords('0.39, outdoor, 42', [])).toEqual(['outdoor']);
+});
+
+test('parseKeywords: keeps decade keywords like 1950s', () => {
+  expect(parseKeywords('1950s, outdoor, black-and-white', [])).toContain('1950s');
+});
+
+test('parseKeywords: strips numbered list prefixes', () => {
+  const result = parseKeywords('1. outdoor\n2. family\n3. summer', []);
+  expect(result).toEqual(['outdoor', 'family', 'summer']);
+});
+
+test('parseKeywords: rejects bare scale tokens like 2×', () => {
+  expect(parseKeywords('outdoor, 2×, 0.5x, family', [])).toEqual(['outdoor', 'family']);
 });
 
 test('parseKeywords: strips "Keywords:" label if model echoes it', () => {
