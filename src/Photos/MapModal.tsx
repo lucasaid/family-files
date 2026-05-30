@@ -28,10 +28,22 @@ export default function MapModal({ lat, lng, onClose }: Props) {
     const map = L.map(containerRef.current).setView([lat, lng], 13);
     mapRef.current = map;
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    const street = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       maxZoom: 19,
-    }).addTo(map);
+    });
+
+    const satellite = L.tileLayer(
+      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+      {
+        attribution: '&copy; <a href="https://www.esri.com/">Esri</a> — Esri, Maxar, Earthstar Geographics',
+        maxZoom: 19,
+      }
+    );
+
+    street.addTo(map);
+
+    L.control.layers({ 'Map': street, 'Satellite': satellite }, {}, { position: 'topright' }).addTo(map);
 
     L.marker([lat, lng]).addTo(map);
 
