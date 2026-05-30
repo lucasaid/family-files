@@ -380,9 +380,10 @@ export default function MetadataFields({ readOnly, alwaysEdit, saveOnNavigate, o
     setKeywordsError(null);
     try {
       const fs = (window as any).require('fs') as typeof import('fs');
-      const buf: Buffer = fs.readFileSync(activePhoto.thumbnailPath);
+      const fsPath = activePhoto.thumbnailPath.replace(/^file:\/\//, '');
+      const buf: Buffer = fs.readFileSync(fsPath);
       const imageBase64 = buf.toString('base64');
-      const mimeType = activePhoto.thumbnailPath.endsWith('.png') ? 'image/png' : 'image/jpeg';
+      const mimeType = fsPath.endsWith('.png') ? 'image/png' : 'image/jpeg';
       const newKeywords = await provider.generateKeywords(
         { imageBase64, mimeType, existingKeywords: draft.keywords },
         modelId
