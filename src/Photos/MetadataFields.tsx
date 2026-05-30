@@ -4,6 +4,7 @@ import { writeMeta, normalizeExifDate, formatDisplayDate } from '../utils/exifto
 import { Photo } from '../context/types';
 import { generateMapThumbnail, getMapUrl, ensureMapThumbnail, deleteMapIfUnshared } from '../utils/mapThumbnail';
 import MapModal from './MapModal';
+import { getProvider, AIError } from '../utils/ai';
 
 const path = (window as any).require('path') as typeof import('path');
 
@@ -214,6 +215,8 @@ export default function MetadataFields({ readOnly, alwaysEdit, saveOnNavigate, o
   const [error, setError] = useState<string | null>(null);
   const [mapUrl, setMapUrl] = useState<string | null>(null);
   const [mapModalOpen, setMapModalOpen] = useState(false);
+  const [generatingKeywords, setGeneratingKeywords] = useState(false);
+  const [keywordsError, setKeywordsError] = useState<string | null>(null);
 
   const prevPhotoRef = useRef<typeof activePhoto>(null);
   const prevDraftRef = useRef<Draft | null>(null);
@@ -369,6 +372,29 @@ export default function MetadataFields({ readOnly, alwaysEdit, saveOnNavigate, o
     }
   };
 
+  const generateKeywords = async () => {
+    const provider = getProvider(state.settings);
+    const modelId = state.settings.aiOllamaKeywordsModel;
+    if (!provider || !modelId || !activePhoto.thumbnailPath) return;
+    setGeneratingKeywords(true);
+    setKeywordsError(null);
+    try {
+      const fs = (window as any).require('fs') as typeof import('fs');
+      const buf: Buffer = fs.readFileSync(activePhoto.thumbnailPath);
+      const imageBase64 = buf.toString('base64');
+      const mimeType = activePhoto.thumbnailPath.endsWith('.png') ? 'image/png' : 'image/jpeg';
+      const newKeywords = await provider.generateKeywords(
+        { imageBase64, mimeType, existingKeywords: draft.keywords },
+        modelId
+      );
+      if (newKeywords.length > 0) set({ keywords: [...draft.keywords, ...newKeywords] });
+    } catch (e) {
+      setKeywordsError(e instanceof AIError ? e.message : 'AI generation failed');
+    } finally {
+      setGeneratingKeywords(false);
+    }
+  };
+
   const cancel = () => { setDraft(photoDraft(activePhoto)); setError(null); onExitEdit?.(); };
   const set = (patch: Partial<Draft>) => setDraft(d => d ? { ...d, ...patch } : d);
 
@@ -429,6 +455,28 @@ export default function MetadataFields({ readOnly, alwaysEdit, saveOnNavigate, o
       <div>
         <div style={label}>Keywords</div>
         <KeywordInput keywords={draft.keywords} onChange={kw => set({ keywords: kw })} readOnly={readOnly} onNavigate={onNavigate} />
+        {!readOnly && state.settings.aiProvider && state.settings.aiOllamaKeywordsModel && activePhoto.thumbnailPath && (
+          <div style={{ marginTop: 5 }}>
+            <button
+              type="button"
+              onClick={generateKeywords}
+              disabled={generatingKeywords}
+              style={{
+                background: 'none', border: '1px solid var(--border-muted)', borderRadius: 3,
+                padding: '3px 9px', fontSize: 'var(--font-size-label)',
+                cursor: generatingKeywords ? 'default' : 'pointer',
+                color: generatingKeywords ? 'var(--text-4)' : 'var(--text-3)',
+              }}
+            >
+              {generatingKeywords ? 'Generating…' : 'Generate with AI'}
+            </button>
+            {keywordsError && (
+              <div style={{ fontSize: 'var(--font-size-label)', color: 'var(--color-error)', marginTop: 3 }}>
+                {keywordsError}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Location coords */}
