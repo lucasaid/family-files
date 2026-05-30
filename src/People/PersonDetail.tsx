@@ -7,6 +7,7 @@ import { FamilyChartPerson, Person } from '../context/types';
 import PersonPhotoGrid from './PersonPhotoGrid';
 import PersonDocList from './PersonDocList';
 import PersonAvatar from './PersonAvatar';
+import PersonDataExport from './PersonDataExport';
 
 // Chip for a single relative — links to their person page if they're linked in app
 function RelativeChip({ fc, linkedPerson }: { fc: FamilyChartPerson; linkedPerson: Person | null }) {
@@ -400,6 +401,7 @@ export default function PersonDetail() {
   const navigate = useNavigate();
 
   const [hasResearchProfile, setHasResearchProfile] = useState(false);
+  const [showExport, setShowExport] = useState(false);
   useEffect(() => {
     if (!id) return;
     try {
@@ -477,6 +479,18 @@ export default function PersonDetail() {
                 <span style={{ fontSize: 10 }}>📋</span> Research profile
               </button>
             )}
+            <button
+              onClick={() => setShowExport(true)}
+              className="btn-ghost-hover"
+              style={{
+                background: 'none', border: '1px solid var(--border-muted)', borderRadius: 5,
+                padding: '6px 12px', cursor: 'pointer',
+                fontSize: 'var(--font-size-ui)', color: 'var(--text-3)', letterSpacing: 'var(--tracking-wordmark)',
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+              }}
+            >
+              Export record
+            </button>
           </div>
         </div>
       </div>
@@ -511,6 +525,10 @@ export default function PersonDetail() {
         </div>
         <PersonDocList personId={person.id} />
       </div>
+
+      {showExport && (
+        <PersonDataExport person={person} onClose={() => setShowExport(false)} />
+      )}
     </div>
   );
 }
