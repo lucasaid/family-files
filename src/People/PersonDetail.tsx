@@ -409,6 +409,7 @@ export default function PersonDetail() {
   const [personMapUrl, setPersonMapUrl] = useState<string | null>(null);
   const [personMapPoints, setPersonMapPoints] = useState<MapPoint[]>([]);
   const [personMapModalOpen, setPersonMapModalOpen] = useState(false);
+  const [personMapGenerating, setPersonMapGenerating] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -425,9 +426,13 @@ export default function PersonDetail() {
     setPersonMapUrl(null);
     setPersonMapPoints([]);
     const photos = state.photos.filter(p => p.faces.some(f => f.personId === id));
+    const hasLocations = photos.some(p => p.location || (p.city && p.state && p.country));
+    if (hasLocations) setPersonMapGenerating(true);
     const mapsDir = path.join(dataPath, '.peoplemaps');
     ensurePersonMapThumbnail(photos, mapsDir).then(result => {
-      if (!cancelled && result) {
+      if (cancelled) return;
+      setPersonMapGenerating(false);
+      if (result) {
         setPersonMapUrl(result.url);
         setPersonMapPoints(result.points);
       }
@@ -543,34 +548,52 @@ export default function PersonDetail() {
       </div>
 
       {/* Locations map */}
-      {personMapUrl && (
+      {(personMapGenerating || personMapUrl) && (
         <div style={{ marginBottom: 36 }}>
           <div style={{ fontSize: 'var(--font-size-label)', fontWeight: 600, letterSpacing: 'var(--tracking-section)', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 14 }}>
             Locations
           </div>
-          <button
-            onClick={() => setPersonMapModalOpen(true)}
-            aria-label="View interactive location map"
-            style={{ display: 'block', padding: 0, border: 'none', background: 'none', cursor: 'pointer', width: '100%' }}
-          >
-            <img
-              src={personMapUrl}
-              alt={`Map of locations for ${person.name}`}
+
+          {personMapGenerating && !personMapUrl ? (
+            <div
+              className="skeleton-shimmer"
               style={{
-                display: 'block', width: '100%', height: 'auto',
+                width: '100%', aspectRatio: '720 / 396',
                 borderRadius: 6, border: '1px solid var(--border-muted)',
-                transition: 'opacity 0.15s',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}
-              onMouseEnter={e => (e.currentTarget.style.opacity = '0.85')}
-              onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
-            />
-          </button>
-          {personMapModalOpen && (
-            <MapModal
-              points={personMapPoints}
-              onClose={() => setPersonMapModalOpen(false)}
-            />
-          )}
+            >
+              <span style={{ fontSize: 'var(--font-size-ui)', color: 'var(--text-3)', letterSpacing: 'var(--tracking-wider)', textTransform: 'uppercase' }}>
+                Map is generating…
+              </span>
+            </div>
+          ) : personMapUrl ? (
+            <>
+              <button
+                onClick={() => setPersonMapModalOpen(true)}
+                aria-label="View interactive location map"
+                style={{ display: 'block', padding: 0, border: 'none', background: 'none', cursor: 'pointer', width: '100%' }}
+              >
+                <img
+                  src={personMapUrl}
+                  alt={`Map of locations for ${person.name}`}
+                  style={{
+                    display: 'block', width: '100%', height: 'auto',
+                    borderRadius: 6, border: '1px solid var(--border-muted)',
+                    transition: 'opacity 0.15s',
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.opacity = '0.85')}
+                  onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+                />
+              </button>
+              {personMapModalOpen && (
+                <MapModal
+                  points={personMapPoints}
+                  onClose={() => setPersonMapModalOpen(false)}
+                />
+              )}
+            </>
+          ) : null}
         </div>
       )}
 
