@@ -109,11 +109,16 @@ export async function geocodeLocation(
 
 async function geocodeAll(
   inputs: TextInput[]
-): Promise<{ lat: number; lng: number }[]> {
-  const results: { lat: number; lng: number }[] = [];
+): Promise<{ lat: number; lng: number; label: string }[]> {
+  const results: { lat: number; lng: number; label: string }[] = [];
   for (const input of inputs) {
     const result = await geocodeLocation(input.city, input.state, input.country);
-    if (result) results.push(result);
+    if (result) {
+      results.push({
+        ...result,
+        label: [input.city, input.state, input.country].filter(Boolean).join(', '),
+      });
+    }
     // Nominatim usage policy: max 1 request per second
     await new Promise(r => setTimeout(r, 1100));
   }
@@ -296,10 +301,12 @@ export async function generatePersonMapThumbnail(
 
 // ── Top-level entry point ─────────────────────────────────────────────────────
 
+type ResolvedPoint = { lat: number; lng: number; label: string };
+
 export async function ensurePersonMapThumbnail(
   photos: Photo[],
   mapsDir: string
-): Promise<{ url: string; points: { lat: number; lng: number }[] } | null> {
+): Promise<{ url: string; points: ResolvedPoint[] } | null> {
   if (!navigator.onLine) return null;
 
   const inputs = collectLocationInputs(photos);
@@ -312,20 +319,27 @@ export async function ensurePersonMapThumbnail(
   // Cache hit: return immediately from saved points sidecar
   if (fs.existsSync(filePath) && fs.existsSync(jsonPath)) {
     try {
-      const points = JSON.parse(fs.readFileSync(jsonPath, 'utf8')) as { lat: number; lng: number }[];
+      const points = JSON.parse(fs.readFileSync(jsonPath, 'utf8')) as ResolvedPoint[];
       return { url: `file://${filePath}`, points };
     } catch {
       // sidecar corrupt — fall through and regenerate
     }
   }
 
-  const gpsPoints = inputs
+  const gpsPoints: ResolvedPoint[] = inputs
     .filter((i): i is GpsInput => i.type === 'gps')
-    .map(i => ({ lat: i.lat, lng: i.lng }));
+    .map(i => {
+      const photo = photos.find(p => p.location?.lat === i.lat && p.location?.lng === i.lng);
+      const parts = [photo?.city, photo?.state, photo?.country].filter(Boolean);
+      return {
+        lat: i.lat, lng: i.lng,
+        label: parts.length > 0 ? parts.join(', ') : `${i.lat.toFixed(4)}, ${i.lng.toFixed(4)}`,
+      };
+    });
 
   const textInputs = inputs.filter((i): i is TextInput => i.type === 'text');
   const geocoded = textInputs.length > 0 ? await geocodeAll(textInputs) : [];
-  const allPoints = [...gpsPoints, ...geocoded];
+  const allPoints: ResolvedPoint[] = [...gpsPoints, ...geocoded];
 
   if (allPoints.length === 0) return null;
 

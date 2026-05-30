@@ -9,7 +9,7 @@ import PersonDocList from './PersonDocList';
 import PersonAvatar from './PersonAvatar';
 import PersonDataExport from './PersonDataExport';
 import { ensurePersonMapThumbnail } from '../utils/personMapThumbnail';
-import MapModal from '../Photos/MapModal';
+import MapModal, { MapPoint } from '../Photos/MapModal';
 
 const path = (window as any).require('path') as typeof import('path');
 
@@ -407,7 +407,7 @@ export default function PersonDetail() {
   const [hasResearchProfile, setHasResearchProfile] = useState(false);
   const [showExport, setShowExport] = useState(false);
   const [personMapUrl, setPersonMapUrl] = useState<string | null>(null);
-  const [personMapPoints, setPersonMapPoints] = useState<{ lat: number; lng: number }[]>([]);
+  const [personMapPoints, setPersonMapPoints] = useState<MapPoint[]>([]);
   const [personMapModalOpen, setPersonMapModalOpen] = useState(false);
 
   useEffect(() => {

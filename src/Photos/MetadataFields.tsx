@@ -461,7 +461,12 @@ export default function MetadataFields({ readOnly, alwaysEdit, saveOnNavigate, o
         )}
         {mapModalOpen && activePhoto.location && (
           <MapModal
-            points={[{ lat: activePhoto.location.lat, lng: activePhoto.location.lng }]}
+            points={[{
+              lat: activePhoto.location.lat,
+              lng: activePhoto.location.lng,
+              label: [activePhoto.city, activePhoto.state, activePhoto.country].filter(Boolean).join(', ')
+                || `${activePhoto.location.lat.toFixed(6)}, ${activePhoto.location.lng.toFixed(6)}`,
+            }]}
             onClose={() => setMapModalOpen(false)}
           />
         )}

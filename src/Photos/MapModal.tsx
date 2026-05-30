@@ -10,8 +10,14 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
+export interface MapPoint {
+  lat: number;
+  lng: number;
+  label?: string;
+}
+
 interface Props {
-  points: { lat: number; lng: number }[];
+  points: MapPoint[];
   onClose: () => void;
 }
 
@@ -42,13 +48,18 @@ export default function MapModal({ points, onClose }: Props) {
     street.addTo(map);
     L.control.layers({ 'Map': street, 'Satellite': satellite }, {}, { position: 'topright' }).addTo(map);
 
+    const addMarker = (p: MapPoint) => {
+      const m = L.marker([p.lat, p.lng]).addTo(map);
+      if (p.label) m.bindPopup(`<span style="font-size:13px;line-height:1.5">${p.label}</span>`);
+    };
+
     if (points.length === 1) {
       map.setView([points[0].lat, points[0].lng], 13);
-      L.marker([points[0].lat, points[0].lng]).addTo(map);
+      addMarker(points[0]);
     } else {
       const bounds = L.latLngBounds(points.map(p => [p.lat, p.lng] as L.LatLngTuple));
       map.fitBounds(bounds, { padding: [40, 40] });
-      points.forEach(p => L.marker([p.lat, p.lng]).addTo(map));
+      points.forEach(addMarker);
     }
 
     return () => {
