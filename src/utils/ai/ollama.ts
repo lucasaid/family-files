@@ -25,10 +25,23 @@ export function parseModels(json: string): AIModel[] {
 
 export function parseKeywords(response: string, existing: string[]): string[] {
   const existingSet = new Set(existing.map(k => k.toLowerCase()));
-  return response
+  // Strip a leading "Keywords:" label the model may echo back
+  const cleaned = response.replace(/^keywords?:?\s*/i, '');
+  return cleaned
     .split(/[,\n]/)
-    .map(k => k.trim().toLowerCase().replace(/^["']|["']$/g, ''))
-    .filter(k => k.length > 0 && !existingSet.has(k));
+    .map(k =>
+      k.trim().toLowerCase()
+        .replace(/^["']|["']$/g, '')   // strip surrounding quotes
+        .replace(/[\[\]×(){}]/g, '')   // strip brackets and × symbols
+        .trim()
+    )
+    .filter(k =>
+      k.length > 1 &&
+      k.length <= 60 &&
+      !existingSet.has(k) &&
+      !/^\d/.test(k) &&              // reject tokens starting with a digit
+      !/\d{2,}/.test(k)              // reject tokens containing 2+ consecutive digits
+    );
 }
 
 // ── Curated download list ─────────────────────────────────────────────────────
@@ -153,7 +166,7 @@ export function createOllamaProvider(baseUrl: string): AIProvider {
         throw new AIError('VISION_REQUIRED', 'This model does not support images — choose a vision model in Settings');
       }
       const existing = input.existingKeywords.join(', ');
-      const prompt = `List up to 10 descriptive keywords for this photo. Include activities, emotions, setting type (indoor/outdoor), era or decade if apparent, and notable objects.${existing ? ` Do not include: ${existing}.` : ''} Return only a comma-separated list. No explanation.`;
+      const prompt = `Describe this photo using up to 10 keywords. Reply with ONLY a comma-separated list of plain English words or short phrases — nothing else. No numbers, no coordinates, no explanations, no bullet points. Example format: family, outdoor, summer, children, smiling, garden${existing ? `\n\nDo not include these already-present keywords: ${existing}` : ''}\n\nKeywords:`;
       try {
         const raw = await httpPost(new URL('/api/generate', baseUrl), {
           model: modelId, prompt, images: [input.imageBase64], stream: false,

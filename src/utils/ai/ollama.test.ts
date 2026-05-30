@@ -77,3 +77,22 @@ test('parseKeywords: filters empty strings', () => {
   const result = parseKeywords('outdoor,,family', []);
   expect(result).toEqual(['outdoor', 'family']);
 });
+
+test('parseKeywords: strips brackets and × symbols from coordinate-like tokens', () => {
+  const result = parseKeywords('outdoor, [0.39×, 0.42×], family', []);
+  expect(result).toContain('outdoor');
+  expect(result).toContain('family');
+  expect(result).not.toContain('0.39×');
+  expect(result).not.toContain('[0.39');
+});
+
+test('parseKeywords: rejects tokens starting with a digit', () => {
+  expect(parseKeywords('0.39, outdoor, 12px', [])).toEqual(['outdoor']);
+});
+
+test('parseKeywords: strips "Keywords:" label if model echoes it', () => {
+  const result = parseKeywords('Keywords: outdoor, family, summer', []);
+  expect(result).not.toContain('keywords:');
+  expect(result).toContain('outdoor');
+  expect(result).toContain('family');
+});
