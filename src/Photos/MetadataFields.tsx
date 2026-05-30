@@ -142,10 +142,9 @@ function KeywordInput({ keywords, onChange, readOnly, onNavigate }: {
   const [input, setInput] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const add = (raw: string) => {
-    const trimmed = raw.trim();
-    if (!trimmed || keywords.includes(trimmed)) { setInput(''); return; }
-    onChange([...keywords, trimmed]);
+  const addMany = (raw: string) => {
+    const parts = raw.split(',').map(s => s.trim()).filter(s => s && !keywords.includes(s));
+    if (parts.length) onChange([...keywords, ...parts]);
     setInput('');
   };
 
@@ -175,17 +174,27 @@ function KeywordInput({ keywords, onChange, readOnly, onNavigate }: {
         <input
           ref={inputRef}
           value={input}
-          onChange={e => setInput(e.target.value)}
+          onChange={e => {
+            const val = e.target.value;
+            if (val.includes(',')) {
+              const parts = val.split(',');
+              const toAdd = parts.slice(0, -1).map(s => s.trim()).filter(s => s && !keywords.includes(s));
+              if (toAdd.length) onChange([...keywords, ...toAdd]);
+              setInput(parts[parts.length - 1].trimStart());
+            } else {
+              setInput(val);
+            }
+          }}
           onKeyDown={e => {
             if (e.altKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
               e.preventDefault();
               onNavigate?.(e.key === 'ArrowRight' ? 'next' : 'prev');
               return;
             }
-            if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); add(input); }
+            if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addMany(input); }
             if (e.key === 'Backspace' && !input && keywords.length) remove(keywords[keywords.length - 1]);
           }}
-          onBlur={() => { if (input.trim()) add(input); }}
+          onBlur={() => { if (input.trim()) addMany(input); }}
           placeholder={keywords.length === 0 ? 'Add keywords…' : ''}
           style={{ ...fieldBase, width: '100%' }}
         />
