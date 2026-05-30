@@ -196,6 +196,22 @@ export async function generatePersonMapThumbnail(
   while (x1 - x0 + 1 < minCols) { x0 = Math.max(0, x0 - 1); x1++; }
   while (y1 - y0 + 1 < minRows) { y0 = Math.max(0, y0 - 1); y1++; }
 
+  // Pad tile range to match output aspect ratio so scale is uniform (no stretch)
+  const targetAR = OUTPUT_W / OUTPUT_H;
+  const curCols = x1 - x0 + 1;
+  const curRows = y1 - y0 + 1;
+  if (curCols / curRows < targetAR) {
+    const want = Math.round(curRows * targetAR);
+    const extra = want - curCols;
+    x0 -= Math.floor(extra / 2);
+    x1 += Math.ceil(extra / 2);
+  } else {
+    const want = Math.round(curCols / targetAR);
+    const extra = want - curRows;
+    y0 -= Math.floor(extra / 2);
+    y1 += Math.ceil(extra / 2);
+  }
+
   const cols = x1 - x0 + 1;
   const rows = y1 - y0 + 1;
 
@@ -223,7 +239,7 @@ export async function generatePersonMapThumbnail(
   });
 
   // Scale pin/text sizes to remain visible after canvas→output downscaling
-  const drawScale = Math.max(canvas.width / OUTPUT_W, canvas.height / OUTPUT_H);
+  const drawScale = canvas.width / OUTPUT_W;
   const pinRadius = Math.round(5 * drawScale);
   const strokeWidth = Math.max(1, 1.5 * drawScale);
   const shadowBlur = 4 * drawScale;
