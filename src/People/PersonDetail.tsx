@@ -8,6 +8,10 @@ import PersonPhotoGrid from './PersonPhotoGrid';
 import PersonDocList from './PersonDocList';
 import PersonAvatar from './PersonAvatar';
 import PersonDataExport from './PersonDataExport';
+import { ensurePersonMapThumbnail } from '../utils/personMapThumbnail';
+import MapModal from '../Photos/MapModal';
+
+const path = (window as any).require('path') as typeof import('path');
 
 // Chip for a single relative — links to their person page if they're linked in app
 function RelativeChip({ fc, linkedPerson }: { fc: FamilyChartPerson; linkedPerson: Person | null }) {
@@ -402,6 +406,10 @@ export default function PersonDetail() {
 
   const [hasResearchProfile, setHasResearchProfile] = useState(false);
   const [showExport, setShowExport] = useState(false);
+  const [personMapUrl, setPersonMapUrl] = useState<string | null>(null);
+  const [personMapPoints, setPersonMapPoints] = useState<{ lat: number; lng: number }[]>([]);
+  const [personMapModalOpen, setPersonMapModalOpen] = useState(false);
+
   useEffect(() => {
     if (!id) return;
     try {
@@ -410,6 +418,22 @@ export default function PersonDetail() {
       setHasResearchProfile(fs.existsSync(path.join(dataPath, 'research', `${id}.json`)));
     } catch { setHasResearchProfile(false); }
   }, [id]);
+
+  useEffect(() => {
+    if (!id) return;
+    let cancelled = false;
+    setPersonMapUrl(null);
+    setPersonMapPoints([]);
+    const photos = state.photos.filter(p => p.faces.some(f => f.personId === id));
+    const mapsDir = path.join(dataPath, '.peoplemaps');
+    ensurePersonMapThumbnail(photos, mapsDir).then(result => {
+      if (!cancelled && result) {
+        setPersonMapUrl(result.url);
+        setPersonMapPoints(result.points);
+      }
+    });
+    return () => { cancelled = true; };
+  }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!id) return <div style={{ padding: 24, color: 'var(--text-3)' }}>Invalid URL.</div>;
   const person = state.people.find(p => p.id === id);
@@ -517,6 +541,38 @@ export default function PersonDetail() {
           }}
         />
       </div>
+
+      {/* Locations map */}
+      {personMapUrl && (
+        <div style={{ marginBottom: 36 }}>
+          <div style={{ fontSize: 'var(--font-size-label)', fontWeight: 600, letterSpacing: 'var(--tracking-section)', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 14 }}>
+            Locations
+          </div>
+          <button
+            onClick={() => setPersonMapModalOpen(true)}
+            aria-label="View interactive location map"
+            style={{ display: 'block', padding: 0, border: 'none', background: 'none', cursor: 'pointer', width: '100%' }}
+          >
+            <img
+              src={personMapUrl}
+              alt={`Map of locations for ${person.name}`}
+              style={{
+                display: 'block', width: '100%', height: 'auto',
+                borderRadius: 6, border: '1px solid var(--border-muted)',
+                transition: 'opacity 0.15s',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.opacity = '0.85')}
+              onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+            />
+          </button>
+          {personMapModalOpen && (
+            <MapModal
+              points={personMapPoints}
+              onClose={() => setPersonMapModalOpen(false)}
+            />
+          )}
+        </div>
+      )}
 
       {/* Documents section */}
       <div>
