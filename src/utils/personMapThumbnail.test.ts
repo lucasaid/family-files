@@ -20,11 +20,20 @@ test('collectLocationInputs: photo with GPS produces a gps entry', () => {
   expect(result[0]).toEqual({ type: 'gps', lat: 48.8566, lng: 2.3522 });
 });
 
-test('collectLocationInputs: photo with text-only location produces a text entry', () => {
-  const photos = [makePhoto({ city: 'Paris', state: '', country: 'France' })];
+test('collectLocationInputs: photo with city + state + country produces a text entry', () => {
+  const photos = [makePhoto({ city: 'Paris', state: 'Île-de-France', country: 'France' })];
   const result = collectLocationInputs(photos);
   expect(result).toHaveLength(1);
-  expect(result[0]).toEqual({ type: 'text', city: 'Paris', state: '', country: 'France' });
+  expect(result[0]).toEqual({ type: 'text', city: 'Paris', state: 'Île-de-France', country: 'France' });
+});
+
+test('collectLocationInputs: photo missing state or country is skipped', () => {
+  const cityOnly = [makePhoto({ city: 'Paris', state: null, country: null })];
+  const noState   = [makePhoto({ city: 'Paris', state: null, country: 'France' })];
+  const noCity    = [makePhoto({ city: null,    state: 'CA',  country: 'USA' })];
+  expect(collectLocationInputs(cityOnly)).toHaveLength(0);
+  expect(collectLocationInputs(noState)).toHaveLength(0);
+  expect(collectLocationInputs(noCity)).toHaveLength(0);
 });
 
 test('collectLocationInputs: photo with GPS and text fields uses GPS, not text', () => {
@@ -49,8 +58,8 @@ test('collectLocationInputs: duplicate GPS coordinates are deduplicated', () => 
 
 test('collectLocationInputs: duplicate text locations are deduplicated', () => {
   const photos = [
-    makePhoto({ file: 'a.jpg', city: 'Paris', country: 'France' }),
-    makePhoto({ file: 'b.jpg', city: 'Paris', country: 'France' }),
+    makePhoto({ file: 'a.jpg', city: 'Paris', state: 'Île-de-France', country: 'France' }),
+    makePhoto({ file: 'b.jpg', city: 'Paris', state: 'Île-de-France', country: 'France' }),
   ];
   expect(collectLocationInputs(photos)).toHaveLength(1);
 });
@@ -58,7 +67,7 @@ test('collectLocationInputs: duplicate text locations are deduplicated', () => {
 test('collectLocationInputs: mixed GPS and text photos both appear', () => {
   const photos = [
     makePhoto({ file: 'a.jpg', location: { lat: 48.8566, lng: 2.3522 } }),
-    makePhoto({ file: 'b.jpg', city: 'London', country: 'UK' }),
+    makePhoto({ file: 'b.jpg', city: 'London', state: 'England', country: 'UK' }),
   ];
   const result = collectLocationInputs(photos);
   expect(result).toHaveLength(2);
@@ -88,7 +97,7 @@ test('personMapHash: adding a text location changes the hash', () => {
   const gpsOnly = [makePhoto({ location: { lat: 48.8566, lng: 2.3522 } })];
   const withText = [
     makePhoto({ location: { lat: 48.8566, lng: 2.3522 } }),
-    makePhoto({ file: 'b.jpg', city: 'London', country: 'UK' }),
+    makePhoto({ file: 'b.jpg', city: 'London', state: 'England', country: 'UK' }),
   ];
   expect(personMapHash(gpsOnly)).not.toBe(personMapHash(withText));
 });

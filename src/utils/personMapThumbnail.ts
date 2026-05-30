@@ -7,8 +7,8 @@ import { Photo } from '../context/types';
 import { latLngToTile } from './mapThumbnail';
 
 const TILE_SIZE = 256;
-const OUTPUT_W = 400;
-const OUTPUT_H = 220;
+const OUTPUT_W = 720;
+const OUTPUT_H = 396;
 
 // ── Location input types ──────────────────────────────────────────────────────
 
@@ -39,10 +39,10 @@ export function collectLocationInputs(photos: Photo[]): LocationInput[] {
       if (!gpsMap.has(key)) {
         gpsMap.set(key, { type: 'gps', lat: p.location.lat, lng: p.location.lng });
       }
-    } else if (p.city || p.state || p.country) {
-      const key = `${p.city ?? ''}|${p.state ?? ''}|${p.country ?? ''}`;
+    } else if (p.city && p.state && p.country) {
+      const key = `${p.city}|${p.state}|${p.country}`;
       if (!textMap.has(key)) {
-        textMap.set(key, { type: 'text', city: p.city ?? '', state: p.state ?? '', country: p.country ?? '' });
+        textMap.set(key, { type: 'text', city: p.city, state: p.state, country: p.country });
       }
     }
   }
