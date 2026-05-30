@@ -88,3 +88,17 @@ test('REMOVE_DOCUMENT removes from documents', () => {
   const s1 = appReducer(s0, { type: 'REMOVE_DOCUMENT', id: 'd1' });
   expect(s1.documents).toHaveLength(0);
 });
+
+test('UPDATE_PERSON_SUMMARY: sets summary on the matching person', () => {
+  const s0 = appReducer(initialState, { type: 'SET_PEOPLE', people: [person] });
+  const s1 = appReducer(s0, { type: 'UPDATE_PERSON_SUMMARY', id: 'p1', summary: 'Alice was born...' });
+  expect(s1.people.find(p => p.id === 'p1')?.summary).toBe('Alice was born...');
+});
+
+test('UPDATE_PERSON_SUMMARY: does not affect other people', () => {
+  const alice = { id: 'p1', name: 'Alice' };
+  const bob   = { id: 'p2', name: 'Bob' };
+  const s0 = appReducer(initialState, { type: 'SET_PEOPLE', people: [alice, bob] });
+  const s1 = appReducer(s0, { type: 'UPDATE_PERSON_SUMMARY', id: 'p1', summary: 'Alice...' });
+  expect(s1.people.find(p => p.id === 'p2')?.summary).toBeUndefined();
+});

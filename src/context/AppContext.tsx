@@ -132,6 +132,13 @@ export function appReducer(state: AppState, action: AppAction): AppState {
       return { ...state, people: [...state.people, action.person] };
     case 'UPDATE_PERSON':
       return { ...state, people: state.people.map(p => p.id === action.person.id ? action.person : p) };
+    case 'UPDATE_PERSON_SUMMARY':
+      return {
+        ...state,
+        people: state.people.map(p =>
+          p.id === action.id ? { ...p, summary: action.summary } : p
+        ),
+      };
     case 'REMOVE_PERSON':
       return { ...state, people: state.people.filter(p => p.id !== action.id) };
     case 'SET_PHOTO_THUMBNAIL': {

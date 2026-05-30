@@ -47,8 +47,9 @@ export interface FamilyDocument {
 export interface Person {
   id: string;
   name: string;
-  familyTreeId?: string;    // id of linked FamilyChartPerson
-  primaryPhotoFile?: string; // photo.file of the chosen avatar photo
+  familyTreeId?: string;
+  primaryPhotoFile?: string;
+  summary?: string;
 }
 
 export interface FamilyChartMarriage {
@@ -103,9 +104,13 @@ export interface FamilyChartPerson {
 }
 
 export interface AppSettings {
-  familyTreeStartId?: string; // FamilyChartPerson.id
+  familyTreeStartId?: string;
   photosAlwaysEdit?: boolean;
   photosSaveOnNavigate?: boolean;
+  aiProvider?: string | null;
+  aiOllamaUrl?: string;
+  aiOllamaKeywordsModel?: string;
+  aiOllamaSummaryModel?: string;
 }
 
 export interface AppState {
@@ -151,4 +156,5 @@ export type AppAction =
   | { type: 'SET_CATEGORIES'; categories: DocumentCategory[] }
   | { type: 'ADD_CATEGORY'; category: DocumentCategory }
   | { type: 'UPDATE_CATEGORY'; category: DocumentCategory }
-  | { type: 'REMOVE_CATEGORY'; id: string };
+  | { type: 'REMOVE_CATEGORY'; id: string }
+  | { type: 'UPDATE_PERSON_SUMMARY'; id: string; summary: string };
