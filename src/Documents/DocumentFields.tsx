@@ -3,7 +3,7 @@ import { useAppContext } from '../context/AppContext';
 import { writeDocumentsJson, writeCategoriesJson } from '../utils/documents';
 import { FamilyDocument, DocumentCategory } from '../context/types';
 
-type Draft = Pick<FamilyDocument, 'title' | 'date' | 'description' | 'content' | 'categoryId'>;
+type Draft = Pick<FamilyDocument, 'title' | 'date' | 'description' | 'transcription' | 'content' | 'categoryId'>;
 
 const labelStyle: React.CSSProperties = {
   fontSize: 'var(--font-size-label)', textTransform: 'uppercase', color: 'var(--text-4)', marginBottom: 3,
@@ -35,6 +35,7 @@ export default function DocumentFields() {
   const [draft, setDraft] = useState<Draft | null>(null);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [showTranscription, setShowTranscription] = useState(false);
   const [newCatName, setNewCatName] = useState('');
   const [newCatParent, setNewCatParent] = useState('');
   const [showNewCat, setShowNewCat] = useState(false);
@@ -45,10 +46,12 @@ export default function DocumentFields() {
       title: activeDocument.title,
       date: activeDocument.date ?? '',
       description: activeDocument.description,
+      transcription: activeDocument.transcription ?? '',
       content: activeDocument.content ?? '',
       categoryId: activeDocument.categoryId ?? null,
     });
     setEditing(false);
+    setShowTranscription(false);
   }, [activeDocument, activeDocument?.id]);
 
   if (!activeDocument || !draft) return null;
@@ -60,6 +63,7 @@ export default function DocumentFields() {
       title: draft.title,
       date: draft.date || null,
       description: draft.description,
+      transcription: draft.transcription || undefined,
       categoryId: draft.categoryId ?? null,
       ...(activeDocument.type === 'note' ? { content: draft.content } : {}),
     };
@@ -81,6 +85,7 @@ export default function DocumentFields() {
       title: activeDocument.title,
       date: activeDocument.date ?? '',
       description: activeDocument.description,
+      transcription: activeDocument.transcription ?? '',
       content: activeDocument.content ?? '',
       categoryId: activeDocument.categoryId ?? null,
     });
@@ -143,6 +148,30 @@ export default function DocumentFields() {
 
         <div style={labelStyle}>Description</div>
         <div style={activeDocument.description ? valueStyle : emptyStyle}>{activeDocument.description || 'No description'}</div>
+
+        {activeDocument.transcription && (
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 }}>
+              <div style={labelStyle}>Transcription</div>
+              <button
+                onClick={() => setShowTranscription(s => !s)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 'var(--font-size-label)', color: 'var(--text-4)', padding: 0, marginBottom: 3 }}
+              >
+                {showTranscription ? 'Hide' : 'Show'}
+              </button>
+            </div>
+            {showTranscription && (
+              <div style={{ ...valueStyle, fontFamily: 'var(--font-mono)', fontSize: 'var(--font-size-label)', background: 'var(--bg-elevated)', borderRadius: 4, padding: '8px 10px', maxHeight: 320, overflowY: 'auto' }}>
+                {activeDocument.transcription}
+              </div>
+            )}
+            {!showTranscription && (
+              <div style={{ ...emptyStyle, marginBottom: 12 }}>
+                {activeDocument.transcription.slice(0, 80).trimEnd()}{activeDocument.transcription.length > 80 ? '…' : ''}
+              </div>
+            )}
+          </div>
+        )}
 
         {activeDocument.type === 'note' && (
           <>
@@ -234,6 +263,14 @@ export default function DocumentFields() {
       <div style={labelStyle}>Description</div>
       <textarea style={{ ...inputStyle, minHeight: 80, resize: 'vertical', fontFamily: 'inherit' }}
         value={draft.description} onChange={e => setDraft(d => d && ({ ...d, description: e.target.value }))} />
+
+      <div style={labelStyle}>Transcription</div>
+      <textarea
+        style={{ ...inputStyle, minHeight: 120, resize: 'vertical', fontFamily: 'var(--font-mono)', fontSize: 'var(--font-size-label)' }}
+        value={draft.transcription ?? ''}
+        placeholder="Verbatim text extracted from the document…"
+        onChange={e => setDraft(d => d && ({ ...d, transcription: e.target.value }))}
+      />
 
       {activeDocument.type === 'note' && (
         <>

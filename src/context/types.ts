@@ -37,6 +37,7 @@ export interface FamilyDocument {
   title: string;
   date: string | null;
   description: string;
+  transcription?: string; // verbatim text extracted from the document
   personIds: string[];
   categoryId?: string | null;
   type: 'file' | 'note';
