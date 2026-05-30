@@ -170,12 +170,16 @@ export function createOllamaProvider(baseUrl: string): AIProvider {
       const existing = input.existingKeywords.join(', ');
       const prompt = `Describe this photo using up to 10 keywords. Reply with ONLY a comma-separated list of plain English words or short phrases — nothing else. No numbers, no coordinates, no explanations, no bullet points. Example format: family, outdoor, summer, children, smiling, garden${existing ? `\n\nDo not include these already-present keywords: ${existing}` : ''}\n\nKeywords:`;
       try {
-        const raw = await httpPost(new URL('/api/generate', baseUrl), {
-          model: modelId, prompt, images: [input.imageBase64], stream: false,
+        // Use /api/chat for vision queries — better multimodal support across models
+        const raw = await httpPost(new URL('/api/chat', baseUrl), {
+          model: modelId,
+          messages: [{ role: 'user', content: prompt, images: [input.imageBase64] }],
+          stream: false,
         });
         const data = JSON.parse(raw);
-        console.log('[AI keywords] raw response:', JSON.stringify(data.response));
-        return parseKeywords(data.response ?? '', input.existingKeywords);
+        console.log('[AI keywords] full response:', JSON.stringify(data));
+        const text = data.message?.content ?? data.response ?? '';
+        return parseKeywords(text, input.existingKeywords);
       } catch (e) {
         if (e instanceof AIError) throw e;
         if ((e as any).code === 'ECONNREFUSED') throw new AIError('NOT_RUNNING', 'Ollama is not running');
