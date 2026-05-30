@@ -222,6 +222,13 @@ export async function generatePersonMapThumbnail(
     ctx.drawImage(bm, (i % cols) * TILE_SIZE, Math.floor(i / cols) * TILE_SIZE);
   });
 
+  // Scale pin/text sizes to remain visible after canvas→output downscaling
+  const drawScale = Math.max(canvas.width / OUTPUT_W, canvas.height / OUTPUT_H);
+  const pinRadius = Math.round(5 * drawScale);
+  const strokeWidth = Math.max(1, 1.5 * drawScale);
+  const shadowBlur = 4 * drawScale;
+  const shadowOffsetY = 2 * drawScale;
+
   for (const { lat, lng } of points) {
     const { x, y, fracX, fracY } = latLngToTile(lat, lng, zoom);
     const px = (x - x0) * TILE_SIZE + fracX * TILE_SIZE;
@@ -229,42 +236,35 @@ export async function generatePersonMapThumbnail(
 
     ctx.save();
     ctx.shadowColor = 'rgba(0,0,0,0.4)';
-    ctx.shadowBlur = 4;
-    ctx.shadowOffsetY = 2;
+    ctx.shadowBlur = shadowBlur;
+    ctx.shadowOffsetY = shadowOffsetY;
     ctx.beginPath();
-    ctx.arc(px, py, 5, 0, Math.PI * 2);
+    ctx.arc(px, py, pinRadius, 0, Math.PI * 2);
     ctx.fillStyle = '#ee0055';
     ctx.fill();
     ctx.shadowColor = 'transparent';
     ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 1.5;
+    ctx.lineWidth = strokeWidth;
     ctx.stroke();
     ctx.restore();
   }
 
   // OSM attribution (required by tile usage policy)
   const attribution = '© OpenStreetMap contributors';
-  ctx.font = '10px sans-serif';
+  const fontSize = Math.round(10 * drawScale);
+  ctx.font = `${fontSize}px sans-serif`;
   const tw = ctx.measureText(attribution).width;
   ctx.fillStyle = 'rgba(0,0,0,0.55)';
-  ctx.fillRect(canvas.width - tw - 8, canvas.height - 16, tw + 6, 14);
+  ctx.fillRect(canvas.width - tw - 8 * drawScale, canvas.height - fontSize * 1.6, tw + 6 * drawScale, fontSize * 1.4);
   ctx.fillStyle = 'rgba(255,255,255,0.9)';
-  ctx.fillText(attribution, canvas.width - tw - 5, canvas.height - 5);
+  ctx.fillText(attribution, canvas.width - tw - 5 * drawScale, canvas.height - fontSize * 0.4);
 
-  // Crop to OUTPUT_W × OUTPUT_H centered on bbox center
-  const centerLat = (minLat + maxLat) / 2;
-  const centerLng = (minLng + maxLng) / 2;
-  const { x: cx, y: cy, fracX: cfX, fracY: cfY } = latLngToTile(centerLat, centerLng, zoom);
-  const centerPx = (cx - x0) * TILE_SIZE + cfX * TILE_SIZE;
-  const centerPy = (cy - y0) * TILE_SIZE + cfY * TILE_SIZE;
-
+  // Scale the full tile canvas down to OUTPUT_W × OUTPUT_H so all pins remain visible
   const out = document.createElement('canvas');
   out.width = OUTPUT_W;
   out.height = OUTPUT_H;
   const octx = out.getContext('2d')!;
-  const srcX = Math.max(0, Math.min(centerPx - OUTPUT_W / 2, canvas.width - OUTPUT_W));
-  const srcY = Math.max(0, Math.min(centerPy - OUTPUT_H / 2, canvas.height - OUTPUT_H));
-  octx.drawImage(canvas, srcX, srcY, OUTPUT_W, OUTPUT_H, 0, 0, OUTPUT_W, OUTPUT_H);
+  octx.drawImage(canvas, 0, 0, canvas.width, canvas.height, 0, 0, OUTPUT_W, OUTPUT_H);
 
   const buf = Buffer.from(
     out.toDataURL('image/png').replace(/^data:image\/png;base64,/, ''),
