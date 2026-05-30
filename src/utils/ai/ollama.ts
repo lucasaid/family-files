@@ -23,59 +23,12 @@ export function parseModels(json: string): AIModel[] {
   }
 }
 
-// Stop-words to strip when extracting keywords from prose descriptions
-const STOP_WORDS = new Set([
-  'a','an','the','and','or','but','in','on','at','to','for','of','with',
-  'is','are','was','were','be','been','being','have','has','had','do','does',
-  'did','will','would','could','should','may','might','shall','can',
-  'i','you','he','she','it','we','they','this','that','these','those',
-  'what','who','which','how','when','where','there','here','so','as',
-  'see','seen','looking','looks','shows','showing','appears','appears',
-  'also','some','any','all','very','quite','just','more','most','than',
-  'into','from','by','about','out','up','down','not','no','yes',
-]);
-
 export function parseKeywords(response: string, existing: string[]): string[] {
   const existingSet = new Set(existing.map(k => k.toLowerCase()));
-  const cleaned = response.replace(/^keywords?:?\s*/i, '');
-
-  // First try comma/newline splitting (keyword-list format)
-  const commaTokens = cleaned.split(/[,\n;]/)
-    .map(k =>
-      k.trim().toLowerCase()
-        .replace(/^["']|["']$/g, '')
-        .replace(/^\d+[.)]\s*/, '')
-        .replace(/^[•\-*]\s*/, '')
-        .replace(/[\[\]×(){}]/g, '')
-        .trim()
-    )
-    .filter(k =>
-      k.length > 1 && k.length <= 40 &&
-      !existingSet.has(k) &&
-      !STOP_WORDS.has(k) &&
-      !/^\d+$/.test(k) &&
-      !/^\d+[×x]\d*$/.test(k)
-    );
-
-  // If comma-splitting produced multiple meaningful tokens, use them
-  if (commaTokens.length >= 2) return commaTokens.slice(0, 10);
-
-  // Otherwise treat as prose — extract meaningful words/short-phrases
-  const words = cleaned
-    .toLowerCase()
-    .replace(/[^a-z0-9\s'-]/g, ' ')
-    .split(/\s+/)
-    .map(w => w.replace(/^'+|'+$/g, '').trim())
-    .filter(w =>
-      w.length > 2 && w.length <= 20 &&
-      !existingSet.has(w) &&
-      !STOP_WORDS.has(w) &&
-      !/^\d+$/.test(w)
-    );
-
-  // Deduplicate while preserving order
-  const seen = new Set<string>();
-  return words.filter(w => seen.has(w) ? false : (seen.add(w), true)).slice(0, 10);
+  return response
+    .split(/[,\n]/)
+    .map(k => k.trim().toLowerCase().replace(/^["']|["']$/g, ''))
+    .filter(k => k.length > 0 && !existingSet.has(k));
 }
 
 // ── Curated download list ─────────────────────────────────────────────────────
@@ -199,10 +152,8 @@ export function createOllamaProvider(baseUrl: string): AIProvider {
       if (!supportsVision(modelId)) {
         throw new AIError('VISION_REQUIRED', 'This model does not support images — choose a vision model in Settings');
       }
-      const existing = input.existingKeywords.length
-        ? ` Do not repeat: ${input.existingKeywords.join(', ')}.`
-        : '';
-      const prompt = `Describe what you see in this photo. What are the people, setting, objects, activities, and mood?${existing}`;
+      const existing = input.existingKeywords.join(', ');
+      const prompt = `List up to 10 descriptive keywords for this photo. Include activities, emotions, setting type (indoor/outdoor), era or decade if apparent, and notable objects.${existing ? ` Do not include: ${existing}.` : ''} Return only a comma-separated list. No explanation.`;
       try {
         // Use /api/chat for vision queries — better multimodal support across models
         const raw = await httpPost(new URL('/api/chat', baseUrl), {
@@ -211,7 +162,6 @@ export function createOllamaProvider(baseUrl: string): AIProvider {
           stream: false,
         });
         const data = JSON.parse(raw);
-        console.log('[AI keywords] full response:', JSON.stringify(data));
         const text = data.message?.content ?? data.response ?? '';
         return parseKeywords(text, input.existingKeywords);
       } catch (e) {
