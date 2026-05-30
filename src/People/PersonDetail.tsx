@@ -551,7 +551,7 @@ export default function PersonDetail() {
       {(personMapGenerating || personMapUrl) && (
         <div style={{ marginBottom: 36 }}>
           <div style={{ fontSize: 'var(--font-size-label)', fontWeight: 600, letterSpacing: 'var(--tracking-section)', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 14 }}>
-            Locations
+            Where have they been?
           </div>
 
           {personMapGenerating && !personMapUrl ? (
@@ -572,13 +572,13 @@ export default function PersonDetail() {
               <button
                 onClick={() => setPersonMapModalOpen(true)}
                 aria-label="View interactive location map"
-                style={{ display: 'block', padding: 0, border: 'none', background: 'none', cursor: 'pointer', width: '100%' }}
+                style={{ display: 'block', padding: 0, border: 'none', background: 'none', cursor: 'pointer', width: '100%', aspectRatio: '720 / 396' }}
               >
                 <img
                   src={personMapUrl}
                   alt={`Map of locations for ${person.name}`}
                   style={{
-                    display: 'block', width: '100%', height: 'auto',
+                    display: 'block', width: '100%', aspectRatio: '720 / 396',
                     borderRadius: 6, border: '1px solid var(--border-muted)',
                     transition: 'opacity 0.15s',
                   }}
