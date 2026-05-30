@@ -3,15 +3,50 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 import { fcName, writePeopleJson } from '../utils/people';
 import { dataPath } from '../utils/paths';
-import { FamilyChartPerson, Person } from '../context/types';
+import { FamilyChartPerson, Person, FamilyDocument, Photo } from '../context/types';
 import PersonPhotoGrid from './PersonPhotoGrid';
 import PersonDocList from './PersonDocList';
 import PersonAvatar from './PersonAvatar';
 import PersonDataExport from './PersonDataExport';
 import { ensurePersonMapThumbnail } from '../utils/personMapThumbnail';
 import MapModal, { MapPoint } from '../Photos/MapModal';
+import Modal from '../components/Modal';
+import { getProvider, AIError } from '../utils/ai';
+import type { SummaryInput } from '../utils/ai';
 
 const path = (window as any).require('path') as typeof import('path');
+
+function buildSummaryInput(
+  person: Person,
+  photos: Photo[],
+  documents: FamilyDocument[],
+  fc: FamilyChartPerson | null,
+  chart: FamilyChartPerson[]
+): SummaryInput {
+  const d = fc?.data;
+  const resolveName = (id: string) => {
+    const p = chart.find(c => c.id === id);
+    return p ? fcName(p) : id;
+  };
+  const locationNames = [...new Set(
+    photos.map(p => [p.city, p.country].filter(Boolean).join(', ')).filter(Boolean)
+  )];
+  const documentTypes = [...new Set(documents.map(doc => doc.title))];
+  return {
+    name: person.name,
+    birthYear: d?.birthday?.slice(0, 4),
+    deathYear: d?.death?.slice(0, 4),
+    birthPlace: d?.birthPlace,
+    occupation: d?.occupation,
+    nationality: d?.nationality,
+    spouses: (fc?.rels.spouses ?? []).map(resolveName),
+    children: (fc?.rels.children ?? []).map(resolveName),
+    parents: (fc?.rels.parents ?? []).map(resolveName),
+    photoCount: photos.length,
+    documentTypes,
+    locationNames,
+  };
+}
 
 // Chip for a single relative — links to their person page if they're linked in app
 function RelativeChip({ fc, linkedPerson }: { fc: FamilyChartPerson; linkedPerson: Person | null }) {
@@ -410,6 +445,10 @@ export default function PersonDetail() {
   const [personMapPoints, setPersonMapPoints] = useState<MapPoint[]>([]);
   const [personMapModalOpen, setPersonMapModalOpen] = useState(false);
   const [personMapGenerating, setPersonMapGenerating] = useState(false);
+  const [summaryGenerating, setSummaryGenerating] = useState(false);
+  const [summaryModalOpen, setSummaryModalOpen] = useState(false);
+  const [summaryDraft, setSummaryDraft] = useState('');
+  const [summaryError, setSummaryError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -439,6 +478,39 @@ export default function PersonDetail() {
     });
     return () => { cancelled = true; };
   }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const generateSummary = async () => {
+    if (!id) return;
+    const provider = getProvider(state.settings);
+    const modelId = state.settings.aiOllamaSummaryModel;
+    if (!provider || !modelId) return;
+    setSummaryGenerating(true);
+    setSummaryError(null);
+    try {
+      const photos = state.photos.filter(p => p.faces.some(f => f.personId === id));
+      const documents = state.documents.filter(d => d.personIds.includes(id));
+      const personRecord = state.people.find(p => p.id === id)!;
+      const fc = personRecord.familyTreeId
+        ? (state.familyChart?.find(f => f.id === personRecord.familyTreeId) ?? null)
+        : null;
+      const input = buildSummaryInput(personRecord, photos, documents, fc, state.familyChart ?? []);
+      const result = await provider.generatePersonSummary(input, modelId);
+      setSummaryDraft(result);
+      setSummaryModalOpen(true);
+    } catch (e) {
+      setSummaryError(e instanceof AIError ? e.message : 'AI generation failed');
+    } finally {
+      setSummaryGenerating(false);
+    }
+  };
+
+  const saveSummary = async () => {
+    if (!id) return;
+    dispatch({ type: 'UPDATE_PERSON_SUMMARY', id, summary: summaryDraft });
+    const updated = state.people.map(p => p.id === id ? { ...p, summary: summaryDraft } : p);
+    await writePeopleJson(updated);
+    setSummaryModalOpen(false);
+  };
 
   if (!id) return <div style={{ padding: 24, color: 'var(--text-3)' }}>Invalid URL.</div>;
   const person = state.people.find(p => p.id === id);
@@ -520,9 +592,42 @@ export default function PersonDetail() {
             >
               Export record
             </button>
+            {state.settings.aiProvider && state.settings.aiOllamaSummaryModel && (
+              <button
+                onClick={generateSummary}
+                disabled={summaryGenerating}
+                className="btn-ghost-hover"
+                style={{
+                  background: 'none', border: '1px solid var(--border-muted)', borderRadius: 5,
+                  padding: '6px 12px', cursor: summaryGenerating ? 'default' : 'pointer',
+                  fontSize: 'var(--font-size-ui)', color: summaryGenerating ? 'var(--text-4)' : 'var(--text-3)',
+                  letterSpacing: 'var(--tracking-wordmark)',
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                }}
+              >
+                {summaryGenerating ? 'Generating…' : person.summary ? 'Regenerate summary' : 'Generate summary'}
+              </button>
+            )}
+            {summaryError && (
+              <span style={{ fontSize: 'var(--font-size-label)', color: 'var(--color-error)', alignSelf: 'center' }}>
+                {summaryError}
+              </span>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Summary section */}
+      {person.summary && (
+        <div style={{ marginBottom: 36, paddingBottom: 36, borderBottom: '1px solid var(--border)' }}>
+          <h2 style={{ fontSize: 'var(--font-size-label)', fontWeight: 600, letterSpacing: 'var(--tracking-section)', textTransform: 'uppercase', color: 'var(--text-3)', margin: '0 0 12px', paddingBottom: 6, borderBottom: '1px solid var(--border-muted)' }}>
+            Summary
+          </h2>
+          <p style={{ fontSize: 'var(--font-size-body)', color: 'var(--text-2)', lineHeight: 1.7, margin: 0, whiteSpace: 'pre-wrap' }}>
+            {person.summary}
+          </p>
+        </div>
+      )}
 
       {/* Family Tree section */}
       {state.familyChart && (
@@ -607,6 +712,49 @@ export default function PersonDetail() {
 
       {showExport && (
         <PersonDataExport person={person} onClose={() => setShowExport(false)} />
+      )}
+
+      {summaryModalOpen && (
+        <Modal title="Review Generated Summary" onClose={() => setSummaryModalOpen(false)} width={620} maxHeight="80vh">
+          <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, padding: 20, gap: 14 }}>
+            <div style={{ fontSize: 'var(--font-size-label)', color: 'var(--text-4)' }}>
+              Review and edit the summary before saving. It will be stored on {person.name}'s profile.
+            </div>
+            <textarea
+              value={summaryDraft}
+              onChange={e => setSummaryDraft(e.target.value)}
+              style={{
+                flex: 1, minHeight: 280, resize: 'vertical',
+                background: 'var(--input-bg)', border: '1px solid var(--input-border)',
+                borderRadius: 4, padding: '10px 12px',
+                color: 'var(--input-text)', fontSize: 'var(--font-size-body)',
+                fontFamily: 'var(--font-sans)', lineHeight: 1.7,
+              }}
+            />
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => setSummaryModalOpen(false)}
+                style={{
+                  background: 'var(--btn-cancel-bg)', border: '1px solid var(--btn-cancel-border)',
+                  borderRadius: 4, padding: '5px 14px', fontSize: 'var(--font-size-ui)',
+                  cursor: 'pointer', color: 'var(--btn-cancel-text)',
+                }}
+              >
+                Discard
+              </button>
+              <button
+                onClick={saveSummary}
+                style={{
+                  background: 'var(--btn-save-bg)', border: '1px solid var(--btn-save-border)',
+                  borderRadius: 4, padding: '5px 14px', fontSize: 'var(--font-size-ui)',
+                  cursor: 'pointer', color: 'var(--btn-save-text)', fontWeight: 500,
+                }}
+              >
+                Save summary
+              </button>
+            </div>
+          </div>
+        </Modal>
       )}
     </div>
   );
