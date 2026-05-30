@@ -3,6 +3,8 @@ import { useAppContext } from '../context/AppContext';
 import { writeSettings } from '../utils/settings';
 import { fcName } from '../utils/people';
 import Modal from '../components/Modal';
+import { getProvider, RECOMMENDED_MODELS, pullModel, deleteModel } from '../utils/ai';
+import type { AIModel } from '../utils/ai';
 
 function Tip({ kbd, children }: { kbd: string; children: React.ReactNode }) {
   return (
@@ -24,6 +26,209 @@ function Tip({ kbd, children }: { kbd: string; children: React.ReactNode }) {
 
 interface Props {
   onClose: () => void;
+}
+
+function AISettingsSection() {
+  const { state, dispatch } = useAppContext();
+  const s = state.settings;
+  const isOllama = s.aiProvider === 'ollama';
+  const ollamaUrl = s.aiOllamaUrl ?? 'http://localhost:11434';
+
+  const [installedModels, setInstalledModels] = useState<AIModel[] | null>(null);
+  const [testStatus, setTestStatus] = useState<'idle' | 'testing' | 'ok' | 'error'>('idle');
+  const [downloadId, setDownloadId] = useState('');
+  const [downloadProgress, setDownloadProgress] = useState<number | null>(null);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
+  const isOnline = navigator.onLine;
+
+  async function save(patch: Partial<typeof s>) {
+    const updated = { ...s, ...patch };
+    dispatch({ type: 'SET_SETTINGS', settings: updated });
+    await writeSettings(updated);
+  }
+
+  async function loadModels() {
+    try {
+      const provider = getProvider({ ...s, aiProvider: 'ollama' });
+      const models = await provider!.listModels();
+      setInstalledModels(models);
+    } catch {
+      setInstalledModels([]);
+    }
+  }
+
+  React.useEffect(() => {
+    if (isOllama) loadModels();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOllama, ollamaUrl]);
+
+  async function testConnection() {
+    setTestStatus('testing');
+    try {
+      const provider = getProvider({ ...s, aiProvider: 'ollama' });
+      setTestStatus((await provider!.isAvailable()) ? 'ok' : 'error');
+    } catch {
+      setTestStatus('error');
+    }
+    setTimeout(() => setTestStatus('idle'), 3000);
+  }
+
+  async function handleDownload() {
+    if (!downloadId) return;
+    setDownloadProgress(0);
+    setDownloadError(null);
+    try {
+      await pullModel(ollamaUrl, downloadId, pct => setDownloadProgress(pct));
+      setDownloadProgress(null);
+      setDownloadId('');
+      await loadModels();
+    } catch (e) {
+      setDownloadError((e as Error).message);
+      setDownloadProgress(null);
+    }
+  }
+
+  async function handleDelete(modelId: string) {
+    try {
+      await deleteModel(ollamaUrl, modelId);
+      await loadModels();
+    } catch { /* best-effort */ }
+  }
+
+  const visionModels = (installedModels ?? []).filter(m => m.supportsVision);
+  const downloadable = RECOMMENDED_MODELS.filter(
+    rm => !(installedModels ?? []).some(
+      im => im.id === rm.id || im.id.split(':')[0] === rm.id.split(':')[0]
+    )
+  );
+
+  const row: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 8 };
+  const fieldLbl: React.CSSProperties = { fontSize: 'var(--font-size-ui)', color: 'var(--text-3)', minWidth: 100, flexShrink: 0 };
+  const inp: React.CSSProperties = {
+    flex: 1, background: 'var(--input-bg)', border: '1px solid var(--input-border)',
+    borderRadius: 3, padding: '3px 7px', color: 'var(--input-text)',
+    fontSize: 'var(--font-size-ui)', fontFamily: 'inherit',
+  };
+  const sel: React.CSSProperties = { ...inp, flex: 'none', minWidth: 160 };
+  const btnSm: React.CSSProperties = {
+    background: 'var(--btn-cancel-bg)', border: '1px solid var(--btn-cancel-border)',
+    borderRadius: 3, padding: '3px 9px', fontSize: 'var(--font-size-label)',
+    cursor: 'pointer', color: 'var(--btn-cancel-text)', flexShrink: 0,
+  };
+
+  return (
+    <div>
+      <div style={{ fontSize: 'var(--font-size-label)', fontWeight: 600, letterSpacing: 'var(--tracking-label)', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 8 }}>
+        AI Integration
+      </div>
+
+      {/* Provider selector */}
+      <div style={{ ...row, marginBottom: 14 }}>
+        <span style={fieldLbl}>Provider</span>
+        <select style={sel} value={s.aiProvider ?? ''} onChange={e => save({ aiProvider: e.target.value || null })}>
+          <option value="">Disabled</option>
+          <option value="ollama">Ollama (local)</option>
+        </select>
+        <span style={{ fontSize: 'var(--font-size-label)', color: 'var(--text-4)', opacity: 0.45 }}>
+          Claude API — coming soon
+        </span>
+      </div>
+
+      {isOllama && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, paddingLeft: 10, borderLeft: '2px solid var(--border-muted)' }}>
+
+          {/* URL + Test */}
+          <div style={row}>
+            <span style={fieldLbl}>URL</span>
+            <input style={inp} value={ollamaUrl} onChange={e => save({ aiOllamaUrl: e.target.value })} placeholder="http://localhost:11434" />
+            <button style={btnSm} onClick={testConnection} disabled={testStatus === 'testing'}>
+              {testStatus === 'testing' ? 'Testing…' : testStatus === 'ok' ? '✓ OK' : testStatus === 'error' ? '✗ Error' : 'Test'}
+            </button>
+          </div>
+
+          {/* Keywords model (vision only) */}
+          <div style={row}>
+            <span style={fieldLbl}>Keywords model</span>
+            <select style={sel} value={s.aiOllamaKeywordsModel ?? ''} onChange={e => save({ aiOllamaKeywordsModel: e.target.value || undefined })}>
+              <option value="">— select —</option>
+              {visionModels.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+            </select>
+            <span style={{ fontSize: 'var(--font-size-label)', color: 'var(--text-4)' }}>vision only</span>
+          </div>
+
+          {/* Summary model (all) */}
+          <div style={row}>
+            <span style={fieldLbl}>Summary model</span>
+            <select style={sel} value={s.aiOllamaSummaryModel ?? ''} onChange={e => save({ aiOllamaSummaryModel: e.target.value || undefined })}>
+              <option value="">— select —</option>
+              {(installedModels ?? []).map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+            </select>
+          </div>
+
+          {/* Installed models */}
+          {installedModels && installedModels.length > 0 && (
+            <div>
+              <div style={{ fontSize: 'var(--font-size-label)', color: 'var(--text-4)', marginBottom: 5 }}>Installed</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                {installedModels.map(m => (
+                  <div key={m.id} style={row}>
+                    <span style={{ flex: 1, fontSize: 'var(--font-size-ui)', color: 'var(--text-2)' }}>{m.name}</span>
+                    {m.sizeGb && <span style={{ fontSize: 'var(--font-size-label)', color: 'var(--text-4)' }}>{m.sizeGb.toFixed(1)} GB</span>}
+                    {m.supportsVision && (
+                      <span style={{ fontSize: 9, background: 'var(--tag-bg)', border: '1px solid var(--tag-border)', borderRadius: 8, padding: '1px 6px', color: 'var(--accent)' }}>vision</span>
+                    )}
+                    <button style={btnSm} onClick={() => handleDelete(m.id)}>Delete</button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Download */}
+          {downloadable.length > 0 && (
+            <div>
+              <div style={{ fontSize: 'var(--font-size-label)', color: 'var(--text-4)', marginBottom: 5 }}>Download a model</div>
+              <div style={row}>
+                <select style={sel} value={downloadId} onChange={e => setDownloadId(e.target.value)}>
+                  <option value="">— select —</option>
+                  {downloadable.map(m => (
+                    <option key={m.id} value={m.id}>
+                      {m.name} ({m.sizeGb?.toFixed(1)} GB){m.supportsVision ? ' · vision' : ''}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  style={{ ...btnSm, background: 'var(--btn-primary-bg)', border: '1px solid var(--btn-primary-border)', color: 'var(--btn-primary-text)' }}
+                  onClick={handleDownload}
+                  disabled={!downloadId || downloadProgress !== null || !isOnline}
+                >
+                  {downloadProgress !== null ? 'Downloading…' : 'Download'}
+                </button>
+              </div>
+              {downloadProgress !== null && (
+                <div style={{ marginTop: 6 }}>
+                  <div style={{ background: 'var(--bg-elevated)', borderRadius: 4, height: 6, overflow: 'hidden' }}>
+                    <div style={{ background: 'var(--accent)', height: '100%', width: `${downloadProgress}%`, transition: 'width 0.3s' }} />
+                  </div>
+                  <div style={{ fontSize: 'var(--font-size-label)', color: 'var(--text-4)', marginTop: 3 }}>{downloadProgress}%</div>
+                </div>
+              )}
+              {downloadError && (
+                <div style={{ fontSize: 'var(--font-size-label)', color: 'var(--color-error)', marginTop: 4 }}>{downloadError}</div>
+              )}
+            </div>
+          )}
+
+          {/* Connectivity notice */}
+          {!isOnline && (
+            <div style={{ fontSize: 'var(--font-size-label)', color: 'var(--text-3)', background: 'var(--bg-elevated)', borderRadius: 4, padding: '8px 10px', lineHeight: 1.5 }}>
+              ⚠ You are offline. Ollama inference works without internet. Model downloads require a connection.
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default function SettingsModal({ onClose }: Props) {
@@ -228,6 +433,11 @@ export default function SettingsModal({ onClose }: Props) {
               No family tree loaded — add a family-tree.ged file to enable this setting.
             </div>
           )}
+        </div>
+
+        {/* AI Integration */}
+        <div style={{ borderTop: '1px solid var(--border-muted)', paddingTop: 20 }}>
+          <AISettingsSection />
         </div>
       </div>
     </Modal>
