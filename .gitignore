@@ -21,6 +21,7 @@ documents.json
 people.json
 family-tree.ged
 settings.json
+.peoplemaps/
 
 # misc
 .DS_Store
