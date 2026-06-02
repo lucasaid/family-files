@@ -49,3 +49,4 @@ Show the following EXIF fields in the side panel when viewing a photo:
 - map of all photos
 - tag people who are not in family tree
 - update json files to be sqllite db
+- tests
