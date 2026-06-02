@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 import { Photo } from '../context/types';
 import { createAlbum } from '../utils/albums';
+import LazyCell from '../components/LazyCell';
 
 type SearchField = 'all' | 'title' | 'caption' | 'date' | 'location' | 'camera' | 'keywords' | 'people';
 
@@ -50,6 +51,7 @@ interface AlbumCellProps {
 
 const AlbumCell = memo(function AlbumCell({ name, count, coverPhoto, onClick }: AlbumCellProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const [loaded, setLoaded] = useState(false);
   return (
     <div
       role="button"
@@ -67,10 +69,12 @@ const AlbumCell = memo(function AlbumCell({ name, count, coverPhoto, onClick }: 
           alt={name}
           loading="lazy"
           decoding="async"
+          onLoad={() => setLoaded(true)}
           style={{
             width: '100%', height: '100%', objectFit: 'cover', display: 'block',
+            opacity: loaded ? 1 : 0,
             transform: isHovered ? 'scale(1.05)' : 'scale(1)',
-            transition: 'transform 0.25s ease-out',
+            transition: 'opacity 0.15s ease-out, transform 0.25s ease-out',
           }}
         />
       ) : (
@@ -275,13 +279,14 @@ export default function AlbumList() {
       {/* Album grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 3 }}>
         {filteredAlbums.map(name => (
-          <AlbumCell
-            key={name}
-            name={name}
-            count={albumPhotos(name).length}
-            coverPhoto={cover(name)}
-            onClick={handleAlbumClick}
-          />
+          <LazyCell key={name}>
+            <AlbumCell
+              name={name}
+              count={albumPhotos(name).length}
+              coverPhoto={cover(name)}
+              onClick={handleAlbumClick}
+            />
+          </LazyCell>
         ))}
       </div>
     </div>

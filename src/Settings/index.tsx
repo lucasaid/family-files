@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { writeSettings } from '../utils/settings';
+import { writeSettings, AI_ENABLED } from '../utils/settings';
 import { fcName } from '../utils/people';
 import Modal from '../components/Modal';
 import { getProvider, RECOMMENDED_MODELS, pullModel, deleteModel } from '../utils/ai';
@@ -95,11 +95,17 @@ function AISettingsSection() {
     } catch { /* best-effort */ }
   }
 
-  const visionModels = (installedModels ?? []).filter(m => m.supportsVision);
-  const downloadable = RECOMMENDED_MODELS.filter(
-    rm => !(installedModels ?? []).some(
-      im => im.id === rm.id || im.id.split(':')[0] === rm.id.split(':')[0]
-    )
+  const visionModels = useMemo(
+    () => (installedModels ?? []).filter(m => m.supportsVision),
+    [installedModels]
+  );
+  const downloadable = useMemo(
+    () => RECOMMENDED_MODELS.filter(
+      rm => !(installedModels ?? []).some(
+        im => im.id === rm.id || im.id.split(':')[0] === rm.id.split(':')[0]
+      )
+    ),
+    [installedModels]
   );
 
   const row: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 8 };
@@ -436,9 +442,11 @@ export default function SettingsModal({ onClose }: Props) {
         </div>
 
         {/* AI Integration */}
-        <div style={{ borderTop: '1px solid var(--border-muted)', paddingTop: 20 }}>
-          <AISettingsSection />
-        </div>
+        {AI_ENABLED && (
+          <div style={{ borderTop: '1px solid var(--border-muted)', paddingTop: 20 }}>
+            <AISettingsSection />
+          </div>
+        )}
       </div>
     </Modal>
   );

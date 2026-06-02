@@ -22,6 +22,7 @@ export interface KeywordsInput {
   imageBase64: string;
   mimeType: string;
   existingKeywords: string[];
+  allLibraryKeywords: string[];
 }
 
 export interface SummaryInput {

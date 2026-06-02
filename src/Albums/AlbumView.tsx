@@ -2,6 +2,7 @@ import React, { useState, useCallback, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 import { Photo } from '../context/types';
+import LazyCell from '../components/LazyCell';
 
 interface CellProps {
   photo: Photo;
@@ -10,6 +11,7 @@ interface CellProps {
 
 const PhotoCell = memo(function PhotoCell({ photo, onClick }: CellProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const [loaded, setLoaded] = useState(false);
   return (
     <div
       role="button"
@@ -21,7 +23,7 @@ const PhotoCell = memo(function PhotoCell({ photo, onClick }: CellProps) {
       aria-label={`Open ${photo.file}`}
       style={{ position: 'relative', aspectRatio: '1', cursor: 'pointer', overflow: 'hidden', borderRadius: 2, background: 'var(--bg-card)' }}
     >
-      <img src={photo.thumbnailPath ?? photo.path} alt={photo.file} loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transform: isHovered ? 'scale(1.05)' : 'scale(1)', transition: 'transform 0.25s ease-out' }} />
+      <img src={photo.thumbnailPath ?? photo.path} alt={photo.file} loading="lazy" decoding="async" onLoad={() => setLoaded(true)} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', opacity: loaded ? 1 : 0, transform: isHovered ? 'scale(1.05)' : 'scale(1)', transition: 'opacity 0.15s ease-out, transform 0.25s ease-out' }} />
       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,.75) 0%, rgba(0,0,0,.1) 45%, transparent 100%)', opacity: isHovered ? 1 : 0, transition: 'opacity 0.2s ease-out', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '10px 10px 8px', pointerEvents: 'none' }}>
         {photo.date && <span style={{ fontSize: 10, color: 'rgba(255,255,255,.5)', letterSpacing: 'var(--tracking-wide)', textTransform: 'uppercase', marginBottom: 2 }}>{photo.date.slice(0, 10).replace(/:/g, '–')}</span>}
         <span style={{ fontSize: 'var(--font-size-label)', color: 'rgba(255,255,255,.85)', letterSpacing: 'var(--tracking-tight)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{photo.file}</span>
@@ -46,6 +48,7 @@ interface SubAlbumCellProps {
 
 const SubAlbumCell = memo(function SubAlbumCell({ albumPath, label, count, coverPhoto, onClick }: SubAlbumCellProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const [loaded, setLoaded] = useState(false);
   return (
     <div
       role="button"
@@ -63,7 +66,8 @@ const SubAlbumCell = memo(function SubAlbumCell({ albumPath, label, count, cover
           alt={label}
           loading="lazy"
           decoding="async"
-          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transform: isHovered ? 'scale(1.05)' : 'scale(1)', transition: 'transform 0.25s ease-out' }}
+          onLoad={() => setLoaded(true)}
+          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', opacity: loaded ? 1 : 0, transform: isHovered ? 'scale(1.05)' : 'scale(1)', transition: 'opacity 0.15s ease-out, transform 0.25s ease-out' }}
         />
       ) : (
         <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--border-muted)', fontSize: 32 }}>▦</div>
@@ -172,14 +176,15 @@ export default function AlbumView({ albumPath }: { albumPath: string }) {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 3 }}>
             {subAlbums.map(subPath => (
-              <SubAlbumCell
-                key={subPath}
-                albumPath={subPath}
-                label={subPath.split('/').pop()!}
-                count={countForAlbum(subPath)}
-                coverPhoto={coverForAlbum(subPath)}
-                onClick={openSubAlbum}
-              />
+              <LazyCell key={subPath}>
+                <SubAlbumCell
+                  albumPath={subPath}
+                  label={subPath.split('/').pop()!}
+                  count={countForAlbum(subPath)}
+                  coverPhoto={coverForAlbum(subPath)}
+                  onClick={openSubAlbum}
+                />
+              </LazyCell>
             ))}
           </div>
         </div>
@@ -200,7 +205,9 @@ export default function AlbumView({ albumPath }: { albumPath: string }) {
           )}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 3 }}>
             {photos.map(photo => (
-              <PhotoCell key={photo.path} photo={photo} onClick={openPhoto} />
+              <LazyCell key={photo.path}>
+                <PhotoCell photo={photo} onClick={openPhoto} />
+              </LazyCell>
             ))}
           </div>
         </>

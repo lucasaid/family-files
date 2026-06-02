@@ -1,6 +1,8 @@
 import { AppSettings } from '../context/types';
 import { dataPath } from './paths';
 
+export const AI_ENABLED = import.meta.env.VITE_AI_ENABLED !== 'false';
+
 const fs   = (window as any).require('fs')   as typeof import('fs');
 const path = (window as any).require('path') as typeof import('path');
 

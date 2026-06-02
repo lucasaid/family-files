@@ -276,12 +276,36 @@ export default function PhotoViewer() {
         willChange: 'transform',
         userSelect: 'none',
       }}>
+        {activePhoto.thumbnailPath && (
+          <img
+            src={activePhoto.thumbnailPath}
+            alt=""
+            aria-hidden="true"
+            draggable={false}
+            style={{
+              position: 'absolute',
+              inset: 0,
+              width: '100%', height: '100%',
+              objectFit: 'contain',
+              filter: 'blur(2px)',
+              opacity: isLoading ? 1 : 0,
+              transition: isLoading ? 'none' : 'opacity 0.35s ease-out',
+              pointerEvents: 'none',
+            }}
+          />
+        )}
+
         <img
           src={activePhoto.path}
           alt={activePhoto.file}
           onLoad={handleImgLoad}
           draggable={false}
-          style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', display: 'block' }}
+          style={{
+            maxWidth: '100%', maxHeight: '100%',
+            objectFit: 'contain', display: 'block',
+            opacity: isLoading ? 0 : 1,
+            transition: isLoading ? 'none' : 'opacity 0.35s ease-out',
+          }}
         />
 
         {imgDims && containerSize && (() => {

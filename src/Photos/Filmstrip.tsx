@@ -46,7 +46,7 @@ export default function Filmstrip({ photos, activePhoto, onSelect }: Props) {
     const idx = photos.findIndex(p => p.file === activePhoto.file);
     if (idx === -1) return;
     const item = container.children[idx] as HTMLElement | undefined;
-    item?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    item?.scrollIntoView({ behavior: 'instant', inline: 'center', block: 'nearest' });
   }, [activePhoto, activePhoto?.file, photos]);
 
   return (

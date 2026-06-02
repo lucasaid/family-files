@@ -2,6 +2,7 @@ import React, { useState, useCallback, useMemo, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from './context/AppContext';
 import { Photo } from './context/types';
+import LazyCell from './components/LazyCell';
 
 type SearchField = 'all' | 'title' | 'caption' | 'date' | 'location' | 'camera' | 'keywords' | 'people';
 
@@ -43,6 +44,7 @@ interface CellProps {
 
 const PhotoCell = memo(function PhotoCell({ photo, onClick }: CellProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const [loaded, setLoaded] = useState(false);
   return (
     <div
       role="button"
@@ -63,11 +65,13 @@ const PhotoCell = memo(function PhotoCell({ photo, onClick }: CellProps) {
         alt={photo.file}
         loading="lazy"
         decoding="async"
+        onLoad={() => setLoaded(true)}
         style={{
           width: '100%', height: '100%',
           objectFit: 'cover', display: 'block',
+          opacity: loaded ? 1 : 0,
           transform: isHovered ? 'scale(1.05)' : 'scale(1)',
-          transition: 'transform 0.25s ease-out',
+          transition: 'opacity 0.15s ease-out, transform 0.25s ease-out',
         }}
       />
       <div style={{
@@ -236,7 +240,9 @@ export default function Home() {
           gap: 3,
         }}>
           {filteredPhotos.map(photo => (
-            <PhotoCell key={photo.path} photo={photo} onClick={openPhoto} />
+            <LazyCell key={photo.path}>
+              <PhotoCell photo={photo} onClick={openPhoto} />
+            </LazyCell>
           ))}
         </div>
       )}

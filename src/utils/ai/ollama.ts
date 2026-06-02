@@ -28,7 +28,8 @@ export function parseKeywords(response: string, existing: string[]): string[] {
   return response
     .split(/[,\n]/)
     .map(k => k.trim().toLowerCase().replace(/^["']|["']$/g, ''))
-    .filter(k => k.length > 0 && !existingSet.has(k));
+    .filter(k => k.length > 0 && !existingSet.has(k))
+    .slice(0, 10);
 }
 
 // ── Curated download list ─────────────────────────────────────────────────────
@@ -152,8 +153,15 @@ export function createOllamaProvider(baseUrl: string): AIProvider {
       if (!supportsVision(modelId)) {
         throw new AIError('VISION_REQUIRED', 'This model does not support images — choose a vision model in Settings');
       }
-      const existing = input.existingKeywords.join(', ');
-      const prompt = `List up to 10 descriptive keywords for this photo. Include activities, emotions, setting type (indoor/outdoor), era or decade if apparent, and notable objects.${existing ? ` Do not include: ${existing}.` : ''} Return only a comma-separated list. No explanation.`;
+      const photoKeywords = input.existingKeywords.join(', ');
+      const libraryKeywords = input.allLibraryKeywords.join(', ');
+      const prompt = [
+        'List up to 10 descriptive keywords for this photo.',
+        'Include activities, emotions, setting type (indoor/outdoor), era or decade if apparent, and notable objects.',
+        libraryKeywords ? `If you would use a synonym or alternative of any keyword in this list, use the exact keyword from the list instead: ${libraryKeywords}.` : '',
+        photoKeywords ? `Do not include these keywords already on this photo: ${photoKeywords}.` : '',
+        'Return only a comma-separated list. No explanation.',
+      ].filter(Boolean).join(' ');
       try {
         // Use /api/chat for vision queries — better multimodal support across models
         const raw = await httpPost(new URL('/api/chat', baseUrl), {

@@ -1,10 +1,11 @@
-import React, { useCallback, useEffect, useLayoutEffect, useState, useRef } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useState, useRef } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { writeMeta, normalizeExifDate, formatDisplayDate } from '../utils/exiftool';
 import { Photo } from '../context/types';
 import { generateMapThumbnail, getMapUrl, ensureMapThumbnail, deleteMapIfUnshared } from '../utils/mapThumbnail';
 import MapModal from './MapModal';
 import { getProvider, AIError } from '../utils/ai';
+import { AI_ENABLED } from '../utils/settings';
 
 const path = (window as any).require('path') as typeof import('path');
 
@@ -218,6 +219,11 @@ export default function MetadataFields({ readOnly, alwaysEdit, saveOnNavigate, o
   const [generatingKeywords, setGeneratingKeywords] = useState(false);
   const [keywordsError, setKeywordsError] = useState<string | null>(null);
 
+  const allLibraryKeywords = useMemo(
+    () => [...new Set(state.photos.flatMap(p => p.keywords ?? []).map(k => k.toLowerCase()))],
+    [state.photos]
+  );
+
   const prevPhotoRef = useRef<typeof activePhoto>(null);
   const prevDraftRef = useRef<Draft | null>(null);
   const saveOnNavigateRef = useRef(saveOnNavigate);
@@ -385,7 +391,7 @@ export default function MetadataFields({ readOnly, alwaysEdit, saveOnNavigate, o
       const imageBase64 = buf.toString('base64');
       const mimeType = fsPath.endsWith('.png') ? 'image/png' : 'image/jpeg';
       const newKeywords = await provider.generateKeywords(
-        { imageBase64, mimeType, existingKeywords: draft.keywords },
+        { imageBase64, mimeType, existingKeywords: draft.keywords, allLibraryKeywords },
         modelId
       );
       if (newKeywords.length > 0) set({ keywords: [...draft.keywords, ...newKeywords] });
@@ -456,7 +462,7 @@ export default function MetadataFields({ readOnly, alwaysEdit, saveOnNavigate, o
       <div>
         <div style={label}>Keywords</div>
         <KeywordInput keywords={draft.keywords} onChange={kw => set({ keywords: kw })} readOnly={readOnly} onNavigate={onNavigate} />
-        {!readOnly && state.settings.aiProvider && state.settings.aiOllamaKeywordsModel && activePhoto.thumbnailPath && (
+        {AI_ENABLED && !readOnly && state.settings.aiProvider && state.settings.aiOllamaKeywordsModel && activePhoto.thumbnailPath && (
           <div style={{ marginTop: 5 }}>
             <button
               type="button"

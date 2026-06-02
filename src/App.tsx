@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { HashRouter, Route, Routes, NavLink, useNavigate } from 'react-router-dom';
 import { AppProvider, useAppContext } from './context/AppContext';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
@@ -34,9 +34,10 @@ function AppNav({ onOpenSettings }: { onOpenSettings: () => void }) {
   const navigate = useNavigate();
   const { theme, toggle } = useTheme();
   const { state } = useAppContext();
-  const navLinks = state.familyChart !== null
-    ? [...BASE_NAV_LINKS, TREE_NAV_LINK]
-    : BASE_NAV_LINKS;
+  const navLinks = useMemo(
+    () => state.familyChart !== null ? [...BASE_NAV_LINKS, TREE_NAV_LINK] : BASE_NAV_LINKS,
+    [state.familyChart]
+  );
   return (
     <nav style={{
       display: 'flex', alignItems: 'center', gap: 0,

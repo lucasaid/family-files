@@ -13,6 +13,7 @@ import MapModal, { MapPoint } from '../Photos/MapModal';
 import Modal from '../components/Modal';
 import { getProvider, AIError } from '../utils/ai';
 import type { SummaryInput } from '../utils/ai';
+import { AI_ENABLED } from '../utils/settings';
 
 const path = (window as any).require('path') as typeof import('path');
 
@@ -512,12 +513,18 @@ export default function PersonDetail() {
     setSummaryModalOpen(false);
   };
 
+  const photoCount = useMemo(
+    () => state.photos.filter(p => p.faces.some(f => f.personId === id)).length,
+    [state.photos, id]
+  );
+  const docCount = useMemo(
+    () => state.documents.filter(d => d.personIds.includes(id ?? '')).length,
+    [state.documents, id]
+  );
+
   if (!id) return <div style={{ padding: 24, color: 'var(--text-3)' }}>Invalid URL.</div>;
   const person = state.people.find(p => p.id === id);
   if (!person) return <div style={{ padding: 24, color: 'var(--text-3)' }}>Person not found.</div>;
-
-  const photoCount = state.photos.filter(p => p.faces.some(f => f.personId === id)).length;
-  const docCount = state.documents.filter(d => d.personIds.includes(id)).length;
 
   return (
     <div style={{ padding: '32px 36px', maxWidth: 800, fontFamily: 'var(--font-sans)', color: 'var(--text-1)' }}>
@@ -592,7 +599,7 @@ export default function PersonDetail() {
             >
               Export record
             </button>
-            {state.settings.aiProvider && state.settings.aiOllamaSummaryModel && (
+            {AI_ENABLED && state.settings.aiProvider && state.settings.aiOllamaSummaryModel && (
               <button
                 onClick={generateSummary}
                 disabled={summaryGenerating}
