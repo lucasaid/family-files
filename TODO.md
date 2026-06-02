@@ -44,8 +44,8 @@ Show the following EXIF fields in the side panel when viewing a photo:
 - data backups - should just backup metadata to a compressed file with ext .ff
 - data resets?
 - Slideshows - Immersive/basic
-- Extract metadata on person (Has all image they are in, notes, family tree data ect)
-- Satellite view of map option
+- power mode
 - AI ask local
-- map showing locations people have been in
 - map of all photos
+- tag people who are not in family tree
+- update json files to be sqllite db
