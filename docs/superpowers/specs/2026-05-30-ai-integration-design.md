@@ -120,9 +120,9 @@ Response is split on commas, trimmed, lowercased, deduplicated against `existing
 
 Sends a `/api/generate` request (text-only, no image):
 ```
-Prompt: "Write a 2–3 paragraph biographical summary of [name] based on 
+Prompt: "Write a short detailed biographical summary of [name] based on 
 this family archive data. Be factual about what is documented. Use a 
-measured, respectful tone where information is sparse.
+measured, respectful tone where information is sparse. Make sure to add any interesting findings within the data.
 
 Data: [JSON of SummaryInput fields]"
 ```
