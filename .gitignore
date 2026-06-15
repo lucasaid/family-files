@@ -23,6 +23,8 @@ family-tree.ged
 settings.json
 .peoplemaps/
 .env
+.claude
+.vscode
 
 # misc
 .DS_Store
