@@ -49,3 +49,5 @@ Show the following EXIF fields in the side panel when viewing a photo:
 - map of all photos
 - tag people who are not in family tree
 - update json files to be sqllite db
+- remove the need to install exiftool — bundle it (`exiftool-vendored.pl`/`.exe`) with a WebAssembly fallback (`@uswriting/exiftool`); a first attempt caused issues and was reverted
+- fix captions and tags not saving — lead: on HEIC, `IPTC:City`/`IPTC:Keywords` are silently not written (exiftool can't write IPTC to HEIC), so also write the XMP equivalents (`XMP:City`, `XMP:Subject`)

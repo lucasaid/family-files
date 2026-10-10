@@ -19,13 +19,20 @@ Family Files is designed to be self-contained on a local disk or external drive 
 
 ## Requirements
 
-- **Node.js 18+**
-- **[pnpm](https://pnpm.io)** (this repo uses a `pnpm-lock.yaml`)
-- **[exiftool](https://exiftool.org)** installed and on your `PATH` — required for reading and writing photo metadata
+### Running the app
+
+- **[exiftool](https://exiftool.org)** installed and on your `PATH` — required for reading and writing photo metadata. It is not bundled with the app.
   - macOS: `brew install exiftool`
   - Linux: `sudo apt install libimage-exiftool-perl`
   - Windows: download from exiftool.org and add to `PATH`
 - **[Ollama](https://ollama.com)** — optional, only needed for the local AI features
+
+### Development
+
+Everything above, plus:
+
+- **Node.js 18+**
+- **[pnpm](https://pnpm.io)** (this repo uses a `pnpm-lock.yaml`)
 
 Install dependencies once:
 
