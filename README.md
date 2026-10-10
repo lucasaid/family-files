@@ -113,12 +113,3 @@ AI features can be disabled at build/run time with an environment variable (see 
 ```
 VITE_AI_ENABLED=false
 ```
-
-## Architecture
-
-- **`public/main.js`** — Electron main process. Creates the `BrowserWindow`, disables hardware acceleration (avoids GPU crashes on recent macOS), and resolves the data path: the project root in development, or the folder containing `Family Files.app` when packaged. Exposes `get-data-path` and a file-open dialog over IPC. Loads `localhost:3000` in dev and the built `index.html` in production.
-- **`src/App.tsx`** — Root component. Uses `HashRouter` (required for Electron's `file://` routing) with routes for Home, Photos, Albums, Documents, People, Family Tree, and research Profiles. On launch it runs `syncAndLoad`, which reads the GEDCOM, people, documents, and images, reconciles face tags against the roster, and populates app context.
-- **`src/utils/paths.ts`** — Resolves the single `dataPath` via IPC; all file utilities import from here rather than using `process.cwd()`.
-- **`src/utils/exiftool.ts`** — Reads and writes photo metadata by shelling out to `exiftool` through Electron's `child_process`. Augments `PATH` with Homebrew bin directories so the packaged app can find the binary.
-- **`src/utils/sync.ts`, `gedcom.ts`, `people.ts`, `documents.ts`, `albums.ts`, `thumbnails.ts`** — Data loading, GEDCOM-to-tree conversion, and JSON persistence.
-- **`src/utils/ai/`** — Pluggable AI provider layer with an Ollama implementation (vision keywords, person summaries, model management).
